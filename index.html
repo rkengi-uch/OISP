@@ -851,6 +851,8 @@ table.hm{min-width:0; border-collapse:separate; border-spacing:2px;}
 /* uma só lógica de filtros: todas as etiquetas com a mesma cor */
 .chips-row .chip, .chips-row .chip.sel-chip{background:var(--navy) !important; color:#fff;}
 #net-chips{display:none !important;}
+/* celular estreito: o contador de registros do topo não empurra a página para o lado */
+@media (max-width:440px){ .mbar-rc{display:none !important;} }
 /* ===== Página inicial do OISP (camada sobre o painel) =====
    Layout: barra com a marca; abertura em duas colunas (logo + texto e busca); faixa de números;
    grade de módulos = abas do painel, cada um com os atalhos das suas seções; fontes; rodapé.
