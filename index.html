@@ -3440,7 +3440,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   (function(){ const svgEl=$('tl-svg'), sel=$('tl-op'), wrap=$('tl-wrap'), tip=$('tl-tip'); if(!svgEl||!window.d3) return;
     const lim=document.createElement('button'); lim.type='button'; lim.id='tl-limpar'; lim.className='op-filter tl-limpar'; lim.textContent='Limpar seleção'; lim.title='Voltar a mostrar todos os casos'; sel.after(lim);
     const ops={}; R.forEach(x=>{ if(!x.op) return; const o=ops[x.op]=ops[x.op]||{n:0,muns:new Set(),ult:0}; o.n++; o.muns.add(x.mun); const d=pd(x.data)||(x.ano?new Date(x.ano,0,1):null); if(d&&d>o.ult) o.ult=d; });
-    const lista=Object.entries(ops).sort((a,b)=>(b[1].ult||0)-(a[1].ult||0));
+    const lista=Object.entries(ops).sort((a,b)=>a[0].localeCompare(b[0],'pt',{sensitivity:'base',numeric:true}));
     sel.innerHTML=`<option value="">Todos os casos (sem seleção) · ${R.length} registros</option>`+lista.map(([k,o])=>`<option value="${esc(k)}">${esc(k)} · ${o.n} registro${o.n>1?'s':''} · ${esc([...o.muns].slice(0,2).join(', '))}${o.muns.size>2?'…':''}</option>`).join('');
     const LANES=[['crim','Criminal'],['impr','Improbidade'],['pol','Político-adm.'],['ele','Eleitoral'],['cont','Contas'],['news','Notícias']];
     const baseF=()=>(window.painelRows?window.painelRows({noOp:true}):R);
