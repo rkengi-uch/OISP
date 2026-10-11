@@ -865,6 +865,7 @@ table.hm{min-width:0; border-collapse:separate; border-spacing:2px;}
 .tj-ac .tj-sug{display:none !important;}
 .rk-tag{color:#b5651d; font-weight:700;}
 
+.imp-tc{color:var(--navy); font-weight:600; text-decoration:underline; text-underline-offset:2px;}
 /* ===== Página inicial do OISP (camada sobre o painel) =====
    Layout: barra com a marca; abertura em duas colunas (logo + texto e busca); faixa de números;
    grade de módulos = abas do painel, cada um com os atalhos das suas seções; fontes; rodapé.
@@ -3625,10 +3626,22 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   (function(){ const body=$('imp-body'); if(!body) return; const st={pag:0}, PS=25;
     const ncon=c=>ICON().filter(x=>x.c===c).length;
     function linhas(){ return window.__fxUnion?window.__fxUnion(()=>linhas0()):linhas0(); }
-    function linhas0(){ const q=nrm($('imp-q').value), qd=$('imp-q').value.replace(/\D/g,''), l=$('imp-lista').value, al=$('imp-al').value, f=F(), t=nrm(f.txt||'');
+    function linhas0(lx){ const q=nrm($('imp-q').value), qd=$('imp-q').value.replace(/\D/g,''), l=lx||$('imp-lista').value, al=l==='r'?'':$('imp-al').value, f=F(), t=nrm(f.txt||'');
       return IMP.itens.filter(x=>x.l===l&&(!al||x.al===al)&&(!f.mun||x.m===f.mun)&&(!f.niv||(f.niv==='Estadual'?x.nv==='Estadual':x.nv!=='Estadual'))&&(!t||nrm(x.n).includes(t)||(window.__casaNome&&window.__casaNome(x.n,F())))
         &&(!q||nrm([x.n,x.o,x.m,x.p,x.mo].join(' ')).includes(q)||(qd.length>=8&&(x.c||'').includes(qd)))); }
-    function render(){ $('imp-al').disabled=$('imp-lista').value==='r';
+    // lista escolhida sozinha: ao buscar ou filtrar, vai para a lista onde há resultado; alcance volta a "Todos os alcances"
+    const nL=l=>window.__fxUnion?window.__fxUnion(()=>linhas0(l)).length:linhas0(l).length;
+    let manual=false;
+    function autoLista(){ const sl=$('imp-lista'), sa=$('imp-al'); const nc=nL('c'), nr=nL('r');
+      const busca=!!($('imp-q').value.trim()||F().txt||F().mun);
+      sl.options[0].textContent='Impedidas de licitar ou contratar'+(busca?` (${fmt(nc)})`:''); sl.options[1].textContent='Impedidas de receber repasses'+(busca?` (${fmt(nr)})`:'');
+      if(manual&&(sl.value==='c'?nc:nr)) return;
+      const alvo=!busca?sl.value:(nc&&nr?(sl.value):(nr?'r':'c'));
+      if(alvo!==sl.value){ sl.value=alvo; sa.value=''; } }
+    const procTC=p=>{ p=String(p||'').replace(/\D/g,''); return p.length>=6?`${+p.slice(0,-5)}/${p.slice(-5,-2)}/${p.slice(-2)}`:''; };
+    const tcLinks=x=>{ const v=new Set(); if(x.l==='r'&&procTC(x.p)) v.add(procTC(x.p)); (String(x.mo||'').match(/TC[-\s]*0*\d{2,6}[.\/]\d{3}[.\/]\d{2}/gi)||[]).forEach(m=>{ const d=m.match(/0*(\d{2,6})[.\/](\d{3})[.\/](\d{2})/); if(d) v.add(`${+d[1]}/${d[2]}/${d[3]}`); });
+      return [...v].slice(0,4).map(n=>`<a class="imp-tc" href="https://www.tce.sp.gov.br/processos?XPROCESSO=${encodeURI(n)}" target="_blank" rel="noopener" title="Abrir o processo no site do TCE-SP">TC-${esc(n.replace(/\//g,'.'))}</a>`).join(' · '); };
+    function render(){ if(pronto.imp) autoLista(); const sa=$('imp-al'); if($('imp-lista').value==='r') sa.value=''; sa.disabled=$('imp-lista').value==='r';
       if(!pronto.imp){ carregando(body,6,erro.imp?'Não foi possível carregar as listas agora.':'Carregando as listas do TCE-SP…'); return; }
       const L=linhas(), C=IMP.itens.filter(x=>x.l==='c'), Rp=IMP.itens.filter(x=>x.l==='r');
       kpis('imp-kpis',[[C.length,'penas de impedimento de licitar ou contratar'],[new Set(C.map(x=>x.c||x.n)).size,'empresas e pessoas impedidas'],[C.filter(x=>x.al==='todos').length,'declarações de inidoneidade'],[Rp.length,'impedimentos de receber repasses'],[new Set(Rp.map(x=>x.c||x.n)).size,'entidades do terceiro setor']]);
@@ -3636,11 +3649,11 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       body.innerHTML=pager('imp',st,L,PS).map(x=>{ const n=ncon(x.c); return `<tr><td><span class="tj-nome nm-link" data-nome="${esc(x.c||nomeImp(x.n))}">${esc(nomeImp(x.n))}</span><span class="tj-sub">${x.c?'CNPJ '+esc(x.c):'pessoa física'}</span></td>
         <td>${esc(x.tp)}${x.l==='c'?`<span class="tj-sub">${esc(window.__alc&&window.__alc.get()==='s51'&&x.al!=='todos'&&/8\.666|10\.520/.test(x.tp)?'Súmula 51: vale para a esfera de governo de quem aplicou':(AL[x.al]||''))}</span>`:''}</td><td>${esc(x.o)}<span class="tj-sub">${x.m&&x.nv!=='Estadual'?`<a class="clk imp-mun" data-mun="${esc(x.m)}">${esc(x.m)}</a>`:esc(x.m||'')}</span></td>
         <td>${x.l==='c'?`${esc(x.i||'')} a ${esc(x.t||'sem prazo')}`:`publicado em ${esc(x.i||'')}<span class="tj-sub">trânsito em julgado ${esc(x.tr||'—')}</span>`}</td>
-        <td>${esc((x.mo||'—').slice(0,160))}${(x.mo||'').length>160?'…':''}${x.p?`<span class="tj-sub">processo ${esc(x.p)}</span>`:''}</td><td>${n?`<a class="clk imp-con" data-c="${esc(x.c)}">${fmt(n)} contrato${n===1?'':'s'}</a>`:'—'}</td></tr>`; }).join('')||'<tr><td colspan="6" class="empty-msg">Nada no filtro atual.</td></tr>'; }
+        <td>${esc((x.mo||'—').slice(0,160))}${(x.mo||'').length>160?'…':''}${(()=>{ const tl=tcLinks(x); return tl?`<span class="tj-sub">processo ${tl}</span>`:(x.p?`<span class="tj-sub">processo do órgão nº ${esc(x.p)}</span>`:''); })()}</td><td>${n?`<a class="clk imp-con" data-c="${esc(x.c)}">${fmt(n)} contrato${n===1?'':'s'}</a>`:'—'}</td></tr>`; }).join('')||'<tr><td colspan="6" class="empty-msg">Nada no filtro atual.</td></tr>'; }
     body.addEventListener('click',e=>{ const a=e.target.closest('a.imp-mun'); if(a){ e.preventDefault(); window.painelMun&&window.painelMun(a.dataset.mun); }
       const b=e.target.closest('a.imp-con'); if(b){ e.preventDefault(); local('ic-q',b.dataset.c); $('ic-body').closest('.panel').scrollIntoView({behavior:'smooth',block:'start'}); } });
-    exp.imp=linhas; ['imp-q','imp-lista','imp-al'].forEach(id=>$(id).addEventListener('input',()=>{ st.pag=0; render(); })); ligaPager('imp',st,render);
-    R_.push(()=>{ st.pag=0; render(); }); render();
+    exp.imp=linhas; $('imp-q').addEventListener('input',()=>{ manual=false; st.pag=0; render(); }); $('imp-lista').addEventListener('input',()=>{ manual=true; $('imp-al').value=''; st.pag=0; render(); }); $('imp-al').addEventListener('input',()=>{ st.pag=0; render(); }); ligaPager('imp',st,render);
+    R_.push(()=>{ manual=false; st.pag=0; render(); }); render();
     $('imp-foot').textContent=`Fonte: listas de apenados do Tribunal de Contas do Estado de São Paulo (www4.tce.sp.gov.br/apenados), exportadas em ${IMP.ref||'—'}. A lista de impedimentos de contratar reúne as penas vigentes comunicadas ao TCE-SP por órgãos estaduais e municipais; a de repasses, as entidades impedidas de receber novos recursos do órgão concessor até regularizar a prestação de contas. CPF e RG publicados pelo TCE-SP não são gravados no painel. Uma pena pode ter sido suspensa por decisão judicial depois da publicação: confira no órgão que a aplicou.`;
   })();
 
@@ -3984,7 +3997,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
 
   // ===================== EXPORTAÇÃO =====================
   if(window.__expTab){ const T=window.__expTab, g=k=>()=>exp[k]?exp[k]():[];
-    T.imp={t:'Impedimentos publicados pelo TCE-SP',f:'tce_impedimentos',get:g('imp'),cols:[['Apenada',x=>nomeImp(x.n),1],['CNPJ',x=>x.c,1],['Lista',x=>x.l==='c'?'impedida de licitar/contratar':'impedida de receber repasses',1],['Pena',x=>x.tp,1],['Alcance',x=>AL[x.al]||''],['Órgão que aplicou',x=>x.o,1],['Município',x=>x.m,1],['Início/publicação',x=>x.i,1],['Término',x=>x.t,1],['Trânsito em julgado',x=>x.tr],['Motivo',x=>x.mo],['Processo',x=>x.p,1]]};
+    T.imp={t:'Impedimentos publicados pelo TCE-SP',f:'tce_impedimentos',get:g('imp'),cols:[['Apenada',x=>nomeImp(x.n),1],['CNPJ',x=>x.c,1],['Lista',x=>x.l==='c'?'impedida de licitar/contratar':'impedida de receber repasses',1],['Pena',x=>x.tp,1],['Alcance',x=>AL[x.al]||''],['Órgão que aplicou',x=>x.o,1],['Município',x=>x.m,1],['Início/publicação',x=>x.i,1],['Término',x=>x.t,1],['Trânsito em julgado',x=>x.tr],['Motivo',x=>x.mo],['Processo',x=>{ const d=String(x.p||'').replace(/\D/g,''); return x.l==='r'&&d.length>=6?'TC-'+(+d.slice(0,-5))+'.'+d.slice(-5,-2)+'.'+d.slice(-2):(x.p?'nº '+x.p+' (processo do órgão)':''); },1],['Link do processo no TCE-SP',x=>{ const d=String(x.p||'').replace(/\D/g,''); return x.l==='r'&&d.length>=6?'https://www.tce.sp.gov.br/processos?XPROCESSO='+(+d.slice(0,-5))+'/'+d.slice(-5,-2)+'/'+d.slice(-2):''; },0,'url']]};
     T.icon={t:'Contratos assinados durante impedimento do TCE-SP (PNCP)',f:'contratos_durante_impedimento_tcesp',get:g('icon'),cols:[['Empresa',c=>c.f||nomeImp(c.n),1],['CNPJ',c=>c.c,1],['Pena',c=>c.tp,1],['Órgão que aplicou',c=>c.oa,1],['Início',c=>c.i,1],['Término',c=>c.t,1],['Órgão contratante',c=>c.o,1],['Município',c=>c.m,1],['Assinatura',c=>br(c.ass),1],['Valor global',c=>c.v,1],['Alcance pelo registro e lei',c=>c.apl!==false?'sim':'não',1],['Alcance pela Súmula 51 TCE-SP',c=>c.a51?'sim':'não',1],['Objeto',c=>c.obj],['Link PNCP',c=>c.link,1,'url']]};
     T.qsa={t:'Sócios e dirigentes (QSA) que coincidem com pessoas do painel ou eleitos',f:'socios_qsa',get:g('qsa'),cols:[['Sócio/dirigente',r=>r.s,1],['Qualificação',r=>r.q,1],['Desde',r=>br(r.de)],['Empresa/entidade',r=>r.e,1],['CNPJ',r=>r.c,1],['Município da empresa',r=>r.me,1],['Por que está no painel',r=>(r.or||[]).map(o=>ORIG[o]||o).join('; '),1],['Pessoa do painel',r=>r.pn,1],['Eleito(a) em 2024',r=>(r.el||[]).map(e=>`${e.urna||e.nome} (${e.cargo}, ${e.municipio})`).join('; '),1],['Correspondência',r=>r.cf,1]]};
     T.fl={t:'Candidaturas indeferidas por inelegibilidade (LC 64/90) - TSE',f:'tse_candidaturas_barradas',get:g('fl'),cols:[['Nome',x=>x.n,1],['Nome de urna',x=>x.u,1],['Eleição',x=>x.a,1],['Cargo',x=>x.c,1],['Município',x=>x.m,1],['Partido',x=>x.p,1],['Situação',x=>x.s,1],['Fundamentos',x=>(x.mo||[]).join('; '),1],['Processo',x=>x.pr],['Link',x=>x.lk,0,'url']]};
