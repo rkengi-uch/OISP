@@ -3868,10 +3868,12 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       const VC=new Set([...C.values()].map(x=>x.cnpj).filter(Boolean)); const addC=(c,nome,t)=>{ if(!c||VC.has(c)) return; VC.add(c); C.set('c:'+c,{cnpj:c,label:nome,tipo:t,k:chave(limpaEmp(nome))}); };
       IMP.itens.forEach(x=>addC(x.c,nomeImp(x.n),x.l==='r'?'Entidade (TCE-SP)':'Empresa (TCE-SP)')); ((D.SANC||{}).emp||[]).forEach(e=>addC(e.cnpj,e.nome,'Empresa (CEIS/CNEP)'));
       ((D.TCU||{}).itens||[]).forEach(x=>{ if(x.cnpj) addC(x.cnpj,x.nome,'Empresa (TCU)'); }); Object.entries(QSA.emp).forEach(([c,e])=>e&&addC(c,e[0],'Empresa (Receita)'));
+      const ks=new Set([...C.values()].map(x=>x.cnpj).filter(Boolean)), kl=new Set([...C.values()].map(x=>x.k));
+      ((window.__rfbCat&&window.__rfbCat())||[]).forEach((x,i)=>{ if(x.cnpj&&ks.has(x.cnpj)) return; if(!x.cnpj&&kl.has(x.k)) return; C.set('rf:'+i,x); });
       return [...C.values()]; }
     let CAT=null; R_.push(()=>{ CAT=null; });
     function buscar(){ const t=q.value.trim(); const k=nrm(t).replace(/[^a-z0-9]+/g,' ').trim(), dig=t.replace(/\D/g,''); if(t.length<2){ res.hidden=true; q.setAttribute('aria-expanded','false'); return; }
-      CAT=CAT||catalogo(); itens=CAT.filter(x=>(dig.length>=8&&x.cnpj&&x.cnpj.includes(dig))||(k&&x.k.includes(k))).sort((a,b)=>(a.k.startsWith(k)?0:1)-(b.k.startsWith(k)?0:1)||a.label.length-b.label.length).slice(0,14); ativo=-1;
+      if(!CAT||(!CAT.rf&&window.__rfb&&window.__rfb.ok)){ CAT=catalogo(); CAT.rf=!!(window.__rfb&&window.__rfb.ok); } itens=CAT.filter(x=>(dig.length>=8&&x.cnpj&&x.cnpj.includes(dig))||(k&&x.k.includes(k))).sort((a,b)=>(a.k.startsWith(k)?0:1)-(b.k.startsWith(k)?0:1)||a.label.length-b.label.length).slice(0,14); ativo=-1;
       res.innerHTML=itens.length?itens.map((x,i)=>`<button type="button" role="option" class="net-ri" data-i="${i}"><b>${esc(x.label)}</b><span>${esc(x.tipo)}${x.cnpj?' · CNPJ '+esc(x.cnpj):''}</span></button>`).join(''):'<p class="net-rv">Nada encontrado.</p>'; res.hidden=false; q.setAttribute('aria-expanded','true'); }
     function chaveFiltro(x){ const t=x.tipo||''; if(t==='Operação') return ['op',x.label]; if(t==='Município') return ['mun',x.label]; return ['txt',x.label]; }
     function escolher(x){ if(!x) return; const [fk,fv]=chaveFiltro(x);
@@ -3913,7 +3915,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     const PN={}; nodes.forEach((n,id)=>{ if(n.type==='ag'||n.type==='tce') (PN[chave(n.label)]=PN[chave(n.label)]||[]).push(id); });
     // empresas citadas na base com CNPJ: reaproveita o nó já existente
     const EB={}; QSA.base.forEach(b=>b.como.forEach(n=>{ const id='e:'+limpaEmp(n); if(nodes.has(id)) EB[b.c]=id; }));
-    const nomeEmp=c=>{ const e=QSA.emp[c]; if(e&&e[0]) return e[0]; const s=SEm.find(x=>x.cnpj===c); if(s) return s.nome; const i=IMP.itens.find(x=>x.c===c); return i?nomeImp(i.n):c; };
+    const nomeEmp=c=>{ const e=QSA.emp[c]; if(e&&e[0]) return e[0]; const rf=window.__rfb&&window.__rfb.ok&&window.__rfb.C[String(c).slice(0,8)]; if(rf&&rf[0]) return tit(rf[0]); const s=SEm.find(x=>x.cnpj===c); if(s) return s.nome; const i=IMP.itens.find(x=>x.c===c); return i?nomeImp(i.n):c; };
     const empNo=(c,tipo,info)=>{ if(EB[c]) return EB[c]; const id='c:'+c; if(!nodes.has(id)) add(id,nomeEmp(c),tipo||'emp',{cargo:'CNPJ '+c+(info?' · '+info:''),ficha:c}); return id; };
     // ===== empresas e entidades ligadas aos órgãos de ocorrência (sanção, impedimento, contratação, TCU, Justiça)
     const FOC=[...new Set(focoCNPJ(f.txt).concat(NSEL.filter(x=>x.cnpj).map(x=>x.cnpj)))]; window.__netFoc={cnpjs:FOC,k:chave(limpo(f.txt||'')),ids:[],cmap:{}};
@@ -4093,7 +4095,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   const tit=t=>/[a-zà-ú]/.test(t||'')?t:String(t||'').toLowerCase().replace(/(^|\s)\S/g,m=>m.toUpperCase()).replace(/\s(Da|De|Do|Das|Dos|E|Em)\s/g,m=>m.toLowerCase()).replace(/\b(Ltda|Me|Epp|Eireli|S\/a|Sa)\b/g,m=>m.toUpperCase());
   const CF={mun:'nome igual e empresa no mesmo município da pessoa',sp:'nome igual e único entre sócios de empresas paulistas: verificar homonímia',cnpj:'vínculo registrado no CNPJ'};
   const ORI={'Base de registros':'agente político ou servidor da base','TCE-SP contas irregulares':'responsável por contas irregulares (TCE-SP)','TCE-SP parecer desfavorável':'prefeito com parecer desfavorável (TCE-SP)','TCMSP':'responsável no TCMSP','TJSP':'parte em processo no TJSP','TJSP 2º grau':'parte em processo no TJSP (2º grau)','CNIA':'condenado por improbidade (CNIA)','TCU':'listado pelo TCU','TSE Ficha Limpa':'candidatura barrada (Ficha Limpa)','Cadastro de pessoas':'pessoa do painel'};
-  const emp=b=>RF.C[b]||null, nomeE=b=>{ const e=emp(b); return e?tit(e[0]||e[1]||b):b; }, cnpjE=b=>{ const e=emp(b); return e&&e[9]?e[9]:b; };
+  const emp=b=>RF.C[b]||null, nomeE=b=>{ const e=emp(b); return e?tit(e[0]||e[1]||b).replace(/[\s.,;\-–]+$/,''):b; }, cnpjE=b=>{ const e=emp(b); return e&&e[9]?e[9]:b; };
   const pes=p=>RF.P[p]||null, nomeP=p=>{ const x=pes(p); return x?tit(x[0]):p; };
   const socNome=s=>s[0]==='c'?nomeE(s.slice(1)):nomeP(s);
   const porque=p=>{ const x=pes(p); if(!x) return ''; if(x[4]==='semente') return (x[1]||[]).map(o=>ORI[o]||o).join('; '); if(x[4]==='socio'){ const bs=[...new Set((VS[p]||[]).filter(v=>v[4]===1&&(emp(v[0])||[])[10]&&emp(v[0])[10].length).map(v=>v[0]))];
@@ -4105,6 +4107,8 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   // pessoas da Receita que correspondem a um nome do painel (só as validadas: semente ou sócio identificado)
   function pidsDe(nome,KS){ const ks=KS?[...KS]:[chave(nome)]; const out=new Set(); ks.forEach(k=>(NP[k]||[]).forEach(p=>{ const x=pes(p); if(x&&(x[4]==='semente'||x[4]==='socio')) out.add(p); })); return [...out]; }
   window.__rfbPids=pidsDe;
+  window.__rfbCat=()=>{ if(!RF.ok) return []; const L=[]; Object.entries(RF.C).forEach(([b,e])=>{ if(e&&e[0]) L.push({cnpj:e[9]||'',label:nomeE(b),tipo:'Empresa ou entidade (Receita)',k:nrm(nomeE(b)).replace(/[^a-z0-9]+/g,' ').trim()+' '+b}); });
+    Object.entries(RF.P).forEach(([p,x])=>{ if(x[4]==='semente'||x[4]==='socio') L.push({label:tit(x[0]),tipo:'Pessoa (Receita)',k:nrm(x[0]).replace(/[^a-z0-9]+/g,' ').trim()}); }); return L; };
   // ---------- ficha: empresas na Receita, quadro societário e 2ª camada
   (window.__fichaExtra=window.__fichaExtra||[]).push(CX=>{ if(!RF.ok){ if(CX.tipo==='pessoa') CX.XB.push('<p class="fi-nota">Carregando a base do CNPJ da Receita…</p>'); return; }
     const FULL=!!window.__fichaFull, cap=(L,n)=>FULL?L:L.slice(0,n);
@@ -4143,7 +4147,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     return [tit(n),esf==='Municipal'?m:null]; };
   const prevNet=window.__netExtra;
   window.__netExtra=o=>{ if(prevNet) prevNet(o); if(!REDE||!RF.ok) return; try{ rede(o); }catch(err){ console.error(err); } };
-  function rede({add,lk,nodes}){ let novos=0; const MAX=260; const feito=new Set(); const par=(a,b)=>{ const k=a<b?a+'|'+b:b+'|'+a; if(feito.has(k)) return false; feito.add(k); return true; };
+  function rede({add,lk,nodes}){ let novos=0; const MAX=1500; const feito=new Set(); const par=(a,b)=>{ const k=a<b?a+'|'+b:b+'|'+a; if(feito.has(k)) return false; feito.add(k); return true; };
     const PN={}; nodes.forEach((n,id)=>{ if(['ag','tce','soc','ele'].includes(n.type)) (PN[chave(n.label)]=PN[chave(n.label)]||[]).push(id); });
     const CN={}; nodes.forEach((n,id)=>{ if(id.startsWith('c:')) CN[id.slice(2,10)]=id; });
     const noE=b=>{ if(CN[b]) return CN[b]; const e=emp(b); const id='c:'+(e&&e[9]?e[9]:b); if(!nodes.has(id)){ if(novos++>MAX) return null; add(id,nomeE(b),'emp',{cargo:'CNPJ '+fmtC(cnpjE(b))+(e?' · '+(e[2]||'')+(e[4]?' · '+e[4]+'/'+e[3]:''):'')+' (Receita)',ficha:nomeE(b)}); } CN[b]=id; return id; };
@@ -4152,17 +4156,18 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     const lab=(v,b,p)=>`${qc(v[2])}¦${v[2]||'sócio'} de ${nomeE(b)}${v[3]?' desde '+v[3]:''} · base CNPJ da Receita (${v[4]===1?'1ª':'2ª'} camada) · ${CF[v[5]]||''}`;
     // nome filtrado no painel que só existe na base do CNPJ: entra na rede com as empresas dele
     const TX=(window.__fxVals?window.__fxVals('txt'):[F().txt]).filter(Boolean);
-    TX.forEach(t=>{ const ks=new Set([chave(t)].concat(((A.PESK||{})[chave(t)]||{}).k||[])); pidsDe(t,ks).forEach(p=>{ const id=noP(p); if(!id) return; (VS[p]||[]).slice(0,15).forEach(v=>{ const e=noE(v[0]); if(e&&par(id,e)) lk(id,e,'rfb',lab(v,v[0],p)); }); });
+    TX.forEach(t=>{ const dg=String(t).replace(/\D/g,''); if(dg.length>=8&&RF.C[dg.slice(0,8)]){ const id=noE(dg.slice(0,8)); if(id){ CN[dg.slice(0,8)]=id; const nd=nodes.get(id); if(nd&&/^\d+$/.test(nd.label)) nd.label=nomeE(dg.slice(0,8)); } }
+      const ks=new Set([chave(t)].concat(((A.PESK||{})[chave(t)]||{}).k||[])); pidsDe(t,ks).forEach(p=>{ const id=noP(p); if(!id) return; (VS[p]||[]).slice(0,15).forEach(v=>{ const e=noE(v[0]); if(e&&par(id,e)) lk(id,e,'rfb',lab(v,v[0],p)); }); });
       ks.forEach(k=>Object.keys(RF.C).forEach(b=>{ const e=RF.C[b]; if(e&&chave(e[0])===k){ const id=noE(b); if(id) CN[b]=id; } })); });
-    // pessoas do grafo -> empresas (1ª camada) -> sócios dessas empresas (2ª camada, só com contrato ou sanção)
-    Object.entries(PN).forEach(([k,ids])=>{ (NP[k]||[]).forEach(p=>{ const x=pes(p); if(!x||x[4]!=='semente') return;
-      (VS[p]||[]).slice(0,12).forEach(v=>{ const e=noE(v[0]); if(!e) return; if(par(ids[0],e)) lk(ids[0],e,'rfb',lab(v,v[0],p)); }); }); });
     // empresas do grafo -> sócios (1ª camada) -> outras empresas dos sócios (2ª camada)
     Object.keys(CN).forEach(b=>{ const e=CN[b]; (VB[b]||[]).slice(0,15).forEach(v=>{ const s=v[1][0]==='c'?noE(v[1].slice(1)):noP(v[1]); if(!s) return; if(par(s,e)) lk(s,e,'rfb',lab(v,b,v[1]));
         (VS[v[1]]||[]).filter(w=>w[0]!==b&&(KB[w[0]]||[]).length).slice(0,6).forEach(w=>{ const e2=noE(w[0]); if(e2&&par(s,e2)) lk(s,e2,'rfb',lab(w,w[0],v[1])); }); }); });
     // contratos públicos de empresas de envolvidos (risco)
     Object.keys(CN).forEach(b=>{ (KB[b]||[]).slice(0,8).forEach(k=>{ const [lb,m]=orgLab(k[2],k[3],k[4]); const id='og:'+chave(lb); if(!nodes.has(id)){ if(novos++>MAX) return; add(id,lb,'orgp',{cargo:m?'órgão de '+m:'órgão público',mun:m||''}); }
       if(par(CN[b],id)) lk(CN[b],id,'ctrp',`${k[5]} contrato${k[5]===1?'':'s'}¦contrato público com empresa de envolvido: ${k[5]} contrato(s) · ${brl(k[6])} · ${k[7]||''}${k[8]&&k[8]!==k[7]?' a '+k[8]:''} · sócio(s) envolvido(s): ${(k[1]||[]).map(nomeP).join('; ')} (PNCP)`); }); });
+    // pessoas do grafo -> empresas (1ª camada) -> sócios dessas empresas (2ª camada, só com contrato ou sanção)
+    Object.entries(PN).forEach(([k,ids])=>{ (NP[k]||[]).forEach(p=>{ const x=pes(p); if(!x||x[4]!=='semente') return;
+      (VS[p]||[]).slice(0,12).forEach(v=>{ const e=noE(v[0]); if(!e) return; if(par(ids[0],e)) lk(ids[0],e,'rfb',lab(v,v[0],p)); }); }); });
   }
   // ---------- painel do risco na aba Empresas e contratos
   const st={pag:0}, PS=25;
