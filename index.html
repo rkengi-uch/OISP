@@ -864,14 +864,7 @@ table.hm{min-width:0; border-collapse:separate; border-spacing:2px;}
 .ac-nota{margin:4px 12px 6px; font-size:11px; color:var(--text-muted); font-style:italic;}
 .tj-ac .tj-sug{display:none !important;}
 .rk-tag{color:#b5651d; font-weight:700;}
-/* atualizar página */
-.atu-btn{display:inline-flex; align-items:center; gap:6px; min-height:38px; padding:0 12px; font:600 13.5px var(--sans); color:var(--text); background:var(--card); border:1px solid var(--border); border-radius:4px; cursor:pointer;}
-.atu-btn:hover{border-color:var(--gold);} .atu-btn:focus-visible{outline:2px solid var(--gold); outline-offset:2px;}
-.oi-btn.atu-oi{display:inline-flex; align-items:center; gap:6px;}
-.atu-aviso{position:fixed; left:50%; top:calc(12px + env(safe-area-inset-top,0px)); transform:translateX(-50%); z-index:90; display:flex; align-items:center; gap:10px; max-width:min(560px,94vw); padding:10px 12px 10px 16px; font:13.5px var(--sans); color:#fff; background:var(--navy); border-radius:6px; box-shadow:0 10px 28px rgba(0,0,0,.28);}
-.atu-aviso .atu-ok{padding:6px 12px; font:600 13px var(--sans); color:var(--navy-dark); background:var(--gold-soft); border:0; border-radius:4px; cursor:pointer;}
-.atu-aviso .atu-x{width:28px; height:28px; font-size:20px; line-height:1; color:#fff; background:none; border:0; cursor:pointer;}
-@media (max-width:760px){ .atu-btn span{display:none;} .atu-btn{padding:0 10px;} }
+
 /* ===== Página inicial do OISP (camada sobre o painel) =====
    Layout: barra com a marca; abertura em duas colunas (logo + texto e busca); faixa de números;
    grade de módulos = abas do painel, cada um com os atalhos das suas seções; fontes; rodapé.
@@ -4769,8 +4762,8 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
 </script>
 <script>
 // ===================== ATUALIZAÇÃO DA PÁGINA =====================
-// Botão "Atualizar" no topo do painel e da página inicial, e verificação automática de versão nova
-// (a cada 5 minutos e ao voltar para a aba). Ao recarregar, a aba, os filtros e a posição são mantidos.
+// Atualização automática (sem botão): verifica versão nova a cada 5 minutos e ao voltar para a aba;
+// recarrega ao voltar para a aba ou após 1 min sem interação. Ao recarregar, a aba, os filtros e a posição são mantidos.
 (function(){
   const CH='oisp-estado';
   const DIMS=['mun','txt','op','niv','cargo','tip','org','med','est','ano'];
@@ -4787,17 +4780,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       document.dispatchEvent(new Event('oisp-filtros')); }catch(e){} }
   function recarregar(){ salvar(); try{ const ini=$('inicio'); const ab=document.querySelector('section.aba:not([hidden])'); if(!(ini&&!ini.hidden)&&ab) history.replaceState(null,'','#aba-'+ab.dataset.aba); }catch(e){} location.reload(); }
   window.__oispRecarregar=recarregar;
-  // ---------- botões
-  const ico='<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M17.65 6.35A7.95 7.95 0 0 0 12 4a8 8 0 1 0 7.73 10h-2.08A6 6 0 1 1 12 6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>';
-  function botao(cls){ const b=document.createElement('button'); b.type='button'; b.className=cls; b.title='Atualizar o painel (mantém a aba e os filtros)'; b.setAttribute('aria-label','Atualizar o painel'); b.innerHTML=ico+'<span>Atualizar</span>'; b.addEventListener('click',recarregar); return b; }
-  const mb=document.querySelector('.mbar'); if(mb){ const b=botao('atu-btn'); const rc=mb.querySelector('.mbar-rc'); rc?mb.insertBefore(b,rc):mb.appendChild(b); }
-  const oa=document.querySelector('.oi-acoes'); if(oa) oa.insertBefore(botao('oi-btn atu-oi'),oa.firstChild);
-  // ---------- aviso de versão nova
-  const av=document.createElement('div'); av.className='atu-aviso'; av.hidden=true; av.setAttribute('role','status');
-  av.innerHTML='<span>Há uma versão mais nova do painel.</span><button type="button" class="atu-ok">Atualizar agora</button><button type="button" class="atu-x" aria-label="Agora não">×</button>';
-  document.body.appendChild(av);
-  av.querySelector('.atu-ok').addEventListener('click',recarregar); av.querySelector('.atu-x').addEventListener('click',()=>{ av.hidden=true; adiado=Date.now(); });
-  let base=null, nova=false, adiado=0, ultimaAcao=Date.now();
+  let base=null, nova=false, ultimaAcao=Date.now(), espera=null;
   ['pointerdown','keydown','scroll','input'].forEach(e=>window.addEventListener(e,()=>{ ultimaAcao=Date.now(); },{passive:true,capture:true}));
   async function assinatura(){ const u=location.href.split('#')[0].split('?')[0];
     try{ const r=await fetch(u,{method:'HEAD',cache:'no-store'}); if(r.ok){ const s=r.headers.get('etag')||r.headers.get('last-modified')||r.headers.get('content-length'); if(s) return 'h:'+s; } }catch(e){}
@@ -4806,10 +4789,11 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   const ocupado=()=>!!document.querySelector('dialog[open]')||(document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.body.classList.contains('f-open');
   async function verificar(){ const s=await assinatura(); if(!s) return; if(base==null){ base=s; return; } if(s===base) return;
     nova=true;
-    // aba escondida ou pessoa parada há 3 min, sem janela aberta: recarrega sozinho, mantendo o estado
+    // aba escondida: recarrega ao voltar; aberta: espera a pessoa ficar parada
     if(document.hidden) return;
-    if(Date.now()-ultimaAcao>3*60*1000&&!ocupado()){ recarregar(); return; }
-    if(Date.now()-adiado>15*60*1000) av.hidden=false; }
+    agendar(); }
+  // versão nova com a página aberta: recarrega assim que a pessoa ficar 1 min sem interagir e sem janela/campo aberto
+  function agendar(){ if(espera) return; espera=setInterval(()=>{ if(!nova||document.hidden) return; if(Date.now()-ultimaAcao>60*1000&&!ocupado()){ clearInterval(espera); espera=null; recarregar(); } },15*1000); }
   window.__oispVerificar=verificar;
   document.addEventListener('visibilitychange',()=>{ if(document.hidden) return; if(nova&&!ocupado()){ recarregar(); return; } verificar(); });
   setInterval(()=>{ if(!document.hidden) verificar(); else if(!nova) verificar(); },5*60*1000);
