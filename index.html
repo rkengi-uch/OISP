@@ -866,6 +866,10 @@ table.hm{min-width:0; border-collapse:separate; border-spacing:2px;}
 .rk-tag{color:#b5651d; font-weight:700;}
 
 .imp-tc{color:var(--navy); font-weight:600; text-decoration:underline; text-underline-offset:2px;}
+.cv-box{margin:6px 0 10px;padding:10px 12px;border:1px dashed var(--border);border-radius:6px;background:var(--card);}
+.cv-in{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+.cv-in input{flex:1 1 200px;min-width:0;min-height:36px;padding:0 10px;font:14px var(--sans);font-variant-numeric:tabular-nums;border:1px solid var(--border);border-radius:4px;background:var(--bg,#fff);color:var(--text);}
+.cv-msg{margin:6px 0 0;font-size:13px;color:var(--text);} .cv-nota{margin:6px 0 0;font-size:11.5px;color:var(--text-muted);}
 /* ===== Página inicial do OISP (camada sobre o painel) =====
    Layout: barra com a marca; abertura em duas colunas (logo + texto e busca); faixa de números;
    grade de módulos = abas do painel, cada um com os atalhos das suas seções; fontes; rodapé.
@@ -4330,6 +4334,83 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       (window.__posCarga||[]).forEach(f=>{ try{ f(); }catch(e){} }); rkRender(); rfRender(); window.__renderNet&&window.__renderNet(); })
     .catch(()=>{ const b=$('rk-body'); if(b) b.innerHTML='<tr><td colspan="5" class="empty-msg">Não foi possível carregar a base do CNPJ agora.</td></tr>'; }); }
   if(document.readyState==='complete') setTimeout(carregar,600); else window.addEventListener('load',()=>setTimeout(carregar,600));
+})();
+
+</script>
+<script>
+// ===================== CONSULTA DE CNPJ EM TEMPO REAL (site público) =====================
+// Consulta o cadastro aberto da Receita Federal (via BrasilAPI e, na falta, Minha Receita) na hora em que a pessoa pede,
+// e põe a empresa, seus sócios e as pessoas jurídicas sócias na rede de relações. Só funciona fora do claude.ai
+// (a página publicada lá não pode acessar outros sites). CPF de sócio, mesmo mascarado, nunca é guardado nem exibido.
+(function(){
+  const $=id=>document.getElementById(id);
+  const A=window.__ab||{}; const esc=A.esc||(t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])));
+  const chave=A.chave||(t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim());
+  const LIBERADO=!/(^|\.)claude\.ai$|claudeusercontent|anthropic/i.test(location.hostname);
+  const VIVO=window.__cnpjVivo=window.__cnpjVivo||{};
+  const so=t=>String(t||'').replace(/\D/g,'');
+  const fmtC=c=>c.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5');
+  const tit=t=>String(t||'').toLowerCase().replace(/(^|\s)\S/g,m=>m.toUpperCase()).replace(/\s(Da|De|Do|Das|Dos|E)\s/g,m=>m.toLowerCase());
+  const hoje=()=>new Date().toLocaleDateString('pt-BR');
+  const brl=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+  function valido(c){ if(!/^\d{14}$/.test(c)||/^(\d)\1+$/.test(c)) return false; const d=(b,p)=>{ let s=0; for(let i=0;i<p.length;i++) s+=+b[i]*p[i]; const r=s%11; return r<2?0:11-r; };
+    return d(c,[5,4,3,2,9,8,7,6,5,4,3,2])===+c[12]&&d(c,[6,5,4,3,2,9,8,7,6,5,4,3,2])===+c[13]; }
+  // padroniza a resposta das duas fontes; o documento de sócio pessoa física é descartado aqui
+  function normal(j,fonte){ const q=(j.qsa||[]).map(s=>{ const pj=String(s.identificador_de_socio)==='1'||s.identificador_de_socio==='PESSOA JURÍDICA'; const doc=so(s.cnpj_cpf_do_socio);
+      return {n:tit(s.nome_socio||s.nome||''),q:s.qualificacao_socio||s.qualificacao||'sócio',de:s.data_entrada_sociedade?String(s.data_entrada_sociedade).slice(0,10).split('-').reverse().join('/'):'',pj,c:pj&&doc.length===14?doc:''}; });
+    return {c:so(j.cnpj),r:j.razao_social||'',f:j.nome_fantasia||'',s:j.descricao_situacao_cadastral||j.situacao_cadastral||'',m:tit(j.municipio||''),uf:j.uf||'',
+      cn:j.cnae_fiscal_descricao||'',nj:j.natureza_juridica||'',cap:+j.capital_social||0,ab:j.data_inicio_atividade?String(j.data_inicio_atividade).slice(0,10).split('-').reverse().join('/'):'',q,fonte,em:hoje()}; }
+  async function busca(url,ms){ const ac=new AbortController(); const t=setTimeout(()=>ac.abort(),ms||12000);
+    try{ const r=await fetch(url,{signal:ac.signal,headers:{Accept:'application/json'}}); if(r.status===404) return {nf:true}; if(!r.ok) return null; return {j:await r.json()}; }catch(e){ return null; } finally{ clearTimeout(t); } }
+  async function consultar(c){ c=so(c); if(VIVO[c]) return VIVO[c];
+    try{ const s=JSON.parse(sessionStorage.getItem('oisp-cnpj-'+c)||'null'); if(s){ VIVO[c]=s; return s; } }catch(e){}
+    let r=await busca('https://brasilapi.com.br/api/cnpj/v1/'+c), fonte='BrasilAPI';
+    if(!r||(!r.j&&!r.nf)){ r=await busca('https://minhareceita.org/'+c); fonte='Minha Receita'; }
+    if(!r) throw new Error('indisponível'); if(r.nf||!r.j) throw new Error('não encontrado');
+    const d=normal(r.j,fonte); VIVO[c]=d; try{ sessionStorage.setItem('oisp-cnpj-'+c,JSON.stringify(d)); }catch(e){} return d; }
+  window.__consultarCNPJ=consultar;
+
+  // ---------- rede: empresa consultada, sócios e pessoas jurídicas sócias
+  const prev=window.__netExtra;
+  window.__netExtra=o=>{ if(prev) prev(o); try{ rede(o); }catch(err){ console.error('consulta em tempo real',err); } };
+  function rede({add,lk,nodes}){ const ks=Object.keys(VIVO); if(!ks.length) return;
+    const PN={}; nodes.forEach((n,id)=>{ if(['ag','tce','soc','ele'].includes(n.type)) (PN[chave(n.label)]=PN[chave(n.label)]||[]).push(id); });
+    const noC=(c,nome,info)=>{ const id='c:'+c; if(!nodes.has(id)) add(id,nome||fmtC(c),'emp',{cargo:'CNPJ '+fmtC(c)+(info?' · '+info:''),ficha:c}); else { const n=nodes.get(id); if(/^\d/.test(n.label)&&nome) n.label=nome; } return id; };
+    ks.forEach(c=>{ const d=VIVO[c]; const id='c:'+c; if(!nodes.has(id)&&!d.raiz) return;
+      const e=noC(c,tit(d.r),`consulta em tempo real à Receita (${d.fonte}, ${d.em}) · ${d.s}${d.m?' · '+d.m+'/'+d.uf:''}`);
+      d.q.forEach(s=>{ if(s.pj&&s.c){ const pj=noC(s.c,s.n,'pessoa jurídica sócia'); lk(e,pj,'soc',`${s.q} (PJ)¦${s.n} é ${String(s.q).toLowerCase()} de ${tit(d.r)}${s.de?' desde '+s.de:''} · consulta em tempo real à Receita (${d.fonte}, ${d.em})`); return; }
+        const k=chave(s.n); const ex=(PN[k]||[]).filter(x=>x.startsWith('s:'));
+        const sid=ex[0]||add('s:'+k,s.n,'soc',{cargo:s.q,ficha:s.n});
+        lk(e,sid,'soc',`${s.q}¦${s.n} é ${String(s.q).toLowerCase()} de ${tit(d.r)}${s.de?' desde '+s.de:''} · consulta em tempo real à Receita (${d.fonte}, ${d.em}); mesmo nome não prova que seja a mesma pessoa de outros registros`); }); }); }
+
+  // ---------- interface: quadro na rede e botão na ficha da empresa
+  function montar(){ const pick=document.querySelector('.net-pick'); if(!pick||$('cv-box')) return;
+    const box=document.createElement('div'); box.id='cv-box'; box.className='cv-box';
+    box.innerHTML=LIBERADO?`<label for="cv-q" class="net-pick-l">Consultar CNPJ na Receita em tempo real</label><div class="cv-in"><input id="cv-q" inputmode="numeric" autocomplete="off" placeholder="00.000.000/0000-00" aria-label="CNPJ para consultar"><button type="button" id="cv-ok" class="op-filter" style="margin:0">Consultar e pôr na rede</button></div><p class="cv-msg" id="cv-msg" role="status"></p><p class="cv-nota">Cadastro aberto da Receita Federal, consultado na hora (BrasilAPI; reserva: Minha Receita). Traz razão social, situação, endereço, atividade e quadro de sócios. Sócios pessoa física aparecem só pelo nome; CPF não é exibido nem guardado.</p>`
+      :`<p class="cv-nota">A consulta de CNPJ em tempo real funciona no site público do Observatório da Integridade (oisp.vercel.app). Aqui, a rede usa a base da Receita já carregada no painel.</p>`;
+    pick.after(box); if(!LIBERADO) return;
+    const q=$('cv-q'), msg=$('cv-msg');
+    q.addEventListener('input',()=>{ const d=so(q.value).slice(0,14); q.value=d.length===14?fmtC(d):d; });
+    const ir=async()=>{ const c=so(q.value); if(!valido(c)){ msg.textContent='Digite um CNPJ válido, com 14 dígitos.'; return; }
+      msg.textContent='Consultando a Receita…'; $('cv-ok').disabled=true;
+      try{ const d=await consultar(c); d.raiz=true; msg.innerHTML=`<b>${esc(tit(d.r))}</b> · ${esc(d.s)} · ${esc(d.m)}/${esc(d.uf)} · ${d.q.length} sócio(s) · ${esc(d.fonte)}, ${esc(d.em)}`;
+        window.__netAdd&&window.__netAdd({cnpj:c,label:tit(d.r),tipo:'Empresa'}); window.__renderNet&&window.__renderNet(); q.value=''; }
+      catch(e){ msg.textContent=e.message==='não encontrado'?'CNPJ não encontrado no cadastro da Receita.':'Serviço de consulta indisponível agora. Tente de novo em instantes.'; }
+      finally{ $('cv-ok').disabled=false; } };
+    $('cv-ok').addEventListener('click',ir); q.addEventListener('keydown',e=>{ if(e.key==='Enter'){ e.preventDefault(); ir(); } }); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(montar,0)); else setTimeout(montar,0);
+  setTimeout(montar,1500);
+
+  // ficha de empresa: consulta na hora e mostra o cadastro atual
+  (window.__fichaExtra=window.__fichaExtra||[]).push(CX=>{ if(!LIBERADO||CX.tipo!=='pessoa') return; const c=so(CX.dig||''); if(c.length!==14||!valido(c)) return;
+    CX.XB.push(`<h3 class="fi-h">Receita Federal agora <span>tempo real</span></h3><div class="cv-ficha" data-c="${c}">${VIVO[c]?blocoFicha(VIVO[c]):`<button type="button" class="op-filter cv-fi-ok" data-c="${c}">Consultar o cadastro atual na Receita</button>`}</div>`); });
+  function blocoFicha(d){ return `<p class="fi-nota">CNPJ ${esc(fmtC(d.c))} · ${esc(d.s)} · ${esc(d.m)}/${esc(d.uf)}${d.ab?' · aberta em '+esc(d.ab):''}${d.cn?' · '+esc(d.cn):''}${d.nj?' · '+esc(d.nj):''} · capital ${esc(brl(d.cap))} · consulta em ${esc(d.em)} (${esc(d.fonte)})</p>`+
+    (d.q.length?`<ul class="fi-list">${d.q.map(s=>`<li><b>${esc(s.n)}</b> · ${esc(s.q)}${s.de?' · desde '+esc(s.de):''}${s.pj?' · pessoa jurídica'+(s.c?' ('+esc(fmtC(s.c))+')':''):''}</li>`).join('')}</ul>`:'<p class="fi-nota">Sem quadro de sócios informado.</p>')+
+    `<button type="button" class="op-filter cv-fi-rede" data-c="${esc(d.c)}">Pôr na rede de relações</button>`; }
+  document.addEventListener('click',async e=>{ const b=e.target.closest('.cv-fi-ok'); if(b){ const box=b.closest('.cv-ficha'); b.disabled=true; b.textContent='Consultando…';
+      try{ const d=await consultar(b.dataset.c); box.innerHTML=blocoFicha(d); }catch(err){ box.innerHTML=`<p class="fi-nota">${err.message==='não encontrado'?'CNPJ não encontrado no cadastro da Receita.':'Serviço de consulta indisponível agora.'}</p>`; } return; }
+    const r=e.target.closest('.cv-fi-rede'); if(r){ const d=VIVO[r.dataset.c]; if(!d) return; d.raiz=true; window.__oispFecharFicha&&window.__oispFecharFicha(); const dl=r.closest('dialog'); if(dl) dl.close();
+      window.__mostrarAba&&window.__mostrarAba('casos'); window.__netAdd&&window.__netAdd({cnpj:d.c,label:tit(d.r),tipo:'Empresa'}); window.__renderNet&&window.__renderNet(); } });
 })();
 
 </script>
