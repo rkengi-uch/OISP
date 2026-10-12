@@ -1889,6 +1889,42 @@ const ETYPE={inv:{lab:'investigação com agente político/servidor',col:'#a13d3
 ETYPE.tce={lab:'conta julgada irregular pelo TCE-SP',col:'#2f6f9f',w:1.4,dash:'3,2'};
 const EPRI={inv:5,cit:4,news:3,entop:2,ent:2,cargo:1,emp:1,tce:1,soc:1,ctr:2,pena:1,doa:2,forn:2,jud:2,sede:0}; ETYPE.soc={lab:'sócio ou dirigente (quadro societário da Receita)',col:'#b4457f',w:1.4,dash:'4,3'}; ETYPE.ctr={lab:'contratação pelo órgão durante a sanção ou o impedimento (PNCP)',col:'#c0392b',w:1.6,dash:'8,3'}; ETYPE.pena={lab:'sanção, impedimento ou lista aplicada pelo órgão (CEIS/CNEP, TCE-SP, TCU)',col:'#7a2a2a',w:1.3,dash:'2,2'}; ETYPE.jud={lab:'processo judicial em nome da empresa (TJSP)',col:'#5a5a8c',w:1.3,dash:'6,2'}; ETYPE.sede={lab:'órgão do município',col:'#8a94a6',w:1,dash:'1,2'}; ETYPE.doa={lab:'doação à campanha de eleito em 2024 (TSE)',col:'#4d7c2a',w:1.6,dash:null}; ETYPE.forn={lab:'fornecedor da campanha de eleito em 2024 (TSE)',col:'#4d7c2a',w:1.4,dash:'5,3'}; ETYPE.rep={lab:'impedida de receber repasses do órgão concessor (TCE-SP)',col:'#9a6a1f',w:1.4,dash:'3,3'}; ETYPE.rfb={lab:'sócio ou administrador (base CNPJ da Receita, 2 camadas)',col:'#8e44ad',w:1.3,dash:'2,4'}; ETYPE.ctrp={lab:'contrato público com empresa de envolvido (PNCP)',col:'#d35400',w:1.7,dash:null}; EPRI.rep=1; EPRI.rfb=1; EPRI.ctrp=2; ETYPE.dec={lab:'ato da instância responsável: investigação, decisão, julgamento, registro ou publicação (TCE-SP, TCU, CGU, Justiça, MPSP, polícias, Justiça Eleitoral)',col:'#1f6f5c',w:1.5,dash:'7,2,2,2'}; EPRI.dec=2;
 function edgeLegend(){ const el=$('edge-legend'); if(!el) return; el.innerHTML='<b style="font-size:11.5px;">Arestas:</b> '+Object.values(ETYPE).map(e=>`<span><svg width="26" height="8" aria-hidden="true"><line x1="0" y1="4" x2="26" y2="4" stroke="${e.col}" stroke-width="${e.w+.4}" ${e.dash?`stroke-dasharray="${e.dash}"`:''}/></svg>${e.lab}</span>`).join(''); }
+// ---------- rede: um nó por pessoa, empresa ou órgão (junta nós repetidos criados por camadas diferentes)
+// empresa: mesmo CNPJ básico (matriz e filiais viram um nó); pessoa: mesmo nome normalizado, salvo dois agentes
+// da base em municípios diferentes; órgão: mesmo nome sem a UF. As ligações do nó repetido passam para o principal.
+function netDedup(nodes,adj,et){
+  const AL=window.__netAlias={};
+  const nk=t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/\(.*?\)/g,' ').replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim();
+  const PES={ag:1,tce:2,ele:3,soc:4};
+  const ENTC={}; ((typeof DATA!=='undefined'&&DATA.ENT)||[]).forEach(e=>{ const d=String(e.cnpj||'').replace(/\D/g,''); if(d.length>=8) ENTC['n:'+e.ent]=d.slice(0,8); });
+  const chaveNo=(id,n)=>{ if(ENTC[id]) return 'C'+ENTC[id]; if(id.startsWith('c:')){ const d=id.slice(2).replace(/\D/g,''); return d.length>=8?'C'+d.slice(0,8):null; }
+    if(PES[n.type]) return 'P'+nk(n.label);
+    if(n.type==='orgp') return 'O'+nk(n.label).replace(/ (mt|ms|pr|mg|rj|es|go|df|ba|sc|rs|pe|ce|pa|am|ma|pb|rn|al|se|pi|to|ro|ac|ap|rr)$/,'');
+    return null; };
+  const G=new Map(); nodes.forEach((n,id)=>{ const k=chaveNo(id,n); if(!k) return; (G.get(k)||G.set(k,[]).get(k)).push(id); });
+  const melhor=(k,ids)=>ids.slice().sort((a,b)=>{ const na=nodes.get(a), nb=nodes.get(b);
+    if(k[0]==='P') return (PES[na.type]||9)-(PES[nb.type]||9)||a.localeCompare(b);
+    if(k[0]==='C'){ if(a.startsWith('c:')!==b.startsWith('c:')) return a.startsWith('c:')?-1:1; const ma=/0001\d\d$/.test(a)?0:1, mb=/0001\d\d$/.test(b)?0:1; return ma-mb||(/[a-z]/.test(na.label)?0:1)-(/[a-z]/.test(nb.label)?0:1)||a.localeCompare(b); }
+    return a.localeCompare(b); })[0];
+  const juntar=(can,dup)=>{ if(can===dup||!nodes.has(dup)) return; AL[dup]=can; const c=nodes.get(can), d=nodes.get(dup);
+    if(d.core) c.core=true; if(!c.ficha&&d.ficha) c.ficha=d.ficha; if(d.cargo&&c.cargo&&!c.cargo.includes(d.cargo)&&c.cargo.length<160) c.cargo+=' · '+d.cargo; else if(!c.cargo&&d.cargo) c.cargo=d.cargo;
+    (adj.get(dup)||new Set()).forEach(m=>{ const a=adj.get(m); if(a){ a.delete(dup); if(m!==can) a.add(can); } if(m===can) return; adj.get(can).add(m);
+      const kd=[dup,m].sort().join('>'), kc=[can,m].sort().join('>'); const ed=et.get(kd), ec=et.get(kc);
+      if(ed&&(!ec||(EPRI[ed.type]||0)>(EPRI[ec.type]||0))) et.set(kc,ed); et.delete(kd); });
+    et.delete([can,dup].sort().join('>')); adj.get(can).delete(dup); adj.delete(dup); nodes.delete(dup); };
+  G.forEach((ids,k)=>{ if(ids.length<2) return;
+    if(k[0]==='P'){ // agentes da base em municípios diferentes podem ser homônimos: ficam separados entre si
+      const ags=ids.filter(id=>nodes.get(id).type==='ag'), muns=new Set(ags.map(id=>id.split('|').pop()));
+      if(muns.size>1){ const outros=ids.filter(id=>nodes.get(id).type!=='ag'); const can=ags.sort()[0]; outros.forEach(id=>juntar(can,id)); return; } }
+    const can=melhor(k,ids); const en=ids.find(id=>id.startsWith('n:')); if(en&&can!==en){ const c=nodes.get(can), e=nodes.get(en); c.label=e.label; c.type='ent'; }
+    ids.forEach(id=>juntar(can,id)); });
+  // empresas diferentes (CNPJ básico distinto) com o mesmo nome: o rótulo leva o CNPJ para distinguir
+  const LB=new Map(); nodes.forEach((n,id)=>{ if(!id.startsWith('c:')) return; const k=nk(n.label); (LB.get(k)||LB.set(k,[]).get(k)).push(id); });
+  LB.forEach(ids=>{ if(ids.length<2) return; ids.forEach(id=>{ const d=id.slice(2).replace(/\D/g,''); const n=nodes.get(id); if(d.length===14&&!n.label.includes(d.slice(0,2)+'.')) n.label+=' ('+d.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5')+')'; }); });
+  if(window.__netFoc&&window.__netFoc.ids) window.__netFoc.ids=window.__netFoc.ids.map(id=>AL[id]||id);
+  if(typeof NET!=='undefined') [...NET.expanded].forEach(id=>{ if(AL[id]){ NET.expanded.delete(id); NET.expanded.add(AL[id]); } });
+}
+
 function buildNet(){
   const nodes=new Map(), adj=new Map(), et=new Map();
   const add=(id,label,type,extra)=>{ if(!nodes.has(id)) nodes.set(id,Object.assign({id,label,type},extra||{})); else if(extra&&extra.core) nodes.get(id).core=true; if(!adj.has(id)) adj.set(id,new Set()); return id; };
@@ -1906,9 +1942,10 @@ function buildNet(){
   entRows(O).forEach(e=>{ const en=add('n:'+e.ent,e.ent,'ent'); lk(en,add('m:'+e.mun,e.mun,'mun'),'ent',e.papel.length>70?e.papel.slice(0,68)+'…':e.papel);
     Object.keys(opIdx).filter(k=>(ENT_OP[e.ent]||'').toLowerCase().includes(k)).forEach(k=>lk(en,opIdx[k],'entop')); });
   if(window.__netExtra) try{ window.__netExtra({add,lk,nodes}); }catch(e){ console.error(e); }
+  try{ netDedup(nodes,adj,et); }catch(e){ console.error('dedup',e); }
   return {nodes,adj,et};
 }
-function netRoots(nodes){ return fxUnion(()=>netRootsFX(nodes)); }
+function netRoots(nodes){ const A=window.__netAlias||{}; return [...new Set(fxUnion(()=>netRootsFX(nodes)).map(id=>A[id]||id))]; }
 function netRootsFX(nodes){ const ex=(window.__netRootsX&&window.__netRootsX(nodes))||[]; window.__netCustom=ex.length>0; let r=[...new Set(ex.concat(netRoots0(nodes)))]; if(!r.length&&window.__netRootsFallback) r=window.__netRootsFallback(nodes)||[]; return r; }
 function netRoots0(nodes){
   if(F.op){ const r=[...nodes.keys()].filter(k=>k.startsWith('o:')&&opKey(k.slice(2))===opKey(F.op)); if(r.length) return r; }
