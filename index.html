@@ -1877,7 +1877,7 @@ renderPortais();
 // ---------- network
 let sim;
 // ---------- rede de relações expansível
-const NET={key:null, expanded:new Set(), pos:new Map(), all:false};
+const NET={key:null, expanded:new Set(), pos:new Map(), all:false}; window.__NET=NET;
 const ETYPE={inv:{lab:'investigação com agente político/servidor',col:'#a13d3d',w:2.2,dash:null},cit:{lab:'mandado ou citação na operação',col:'#f07236',w:1.8,dash:'6,3'},news:{lab:'operação citada em notícia',col:'#3d7a6e',w:1.6,dash:'2,3'},
   cargo:{lab:'agente do município ou do órgão estadual',col:'#b8860b',w:1.6,dash:null},emp:{lab:'empresa citada',col:'#8c8c8c',w:1.2,dash:'4,3'},ent:{lab:'atuação da entidade',col:'#6b4c9a',w:1.6,dash:'5,3'},entop:{lab:'entidade investigada na operação',col:'#6b4c9a',w:1.2,dash:'1,3'}};
 ETYPE.tce={lab:'conta julgada irregular pelo TCE-SP',col:'#2f6f9f',w:1.4,dash:'3,2'};
@@ -1948,7 +1948,7 @@ function renderNet(rs){
   node.append('text').text(d=>{ const h=hidden(d.id); const lb=d.label.length>40?d.label.slice(0,38)+'…':d.label; return h?`${lb} (+${h})`:lb; }).each(function(d){ if(grid&&d.fx!=null){ const s=d.label.length>26?d.label.slice(0,25)+'…':d.label; const h=hidden(d.id); this.textContent=h?`${s} (+${h})`:s; } })
     .attr('x',d=>rad[d.type]+4).attr('y',4).attr('font-size',d=>d.type==='op'||d.type==='mun'?11:9.5).attr('font-weight',d=>d.type==='op'||d.type==='mun'?700:400).attr('fill',css('--text')).style('pointer-events','none')
     .attr('paint-order','stroke').attr('stroke',css('--card')).attr('stroke-width',3);
-  node.append('title').text(d=>`${d.label}${d.cargo?' – '+d.cargo:''}\nClique: ${NET.expanded.has(d.id)?'recolher':'expandir'} conexões${d.type==='op'||d.type==='mun'?'\nDuplo clique: filtrar o painel':''}`);
+  node.append('title').text(d=>`${d.label}${d.cargo?' – '+d.cargo:''}\nClique: ${NET.expanded.has(d.id)?'recolher':'expandir'} conexões${d.type==='op'||d.type==='mun'?'\nDuplo clique: filtrar o painel':['emp','ent'].includes(d.type)?'\nDuplo clique: consultar na Receita e expandir sócios\nCtrl + duplo clique: abrir a ficha':['soc','ele','ag','tce'].includes(d.type)?'\nDuplo clique: empresas desta pessoa na base da Receita\nCtrl + duplo clique: abrir a ficha':''}`);
   const parentPos={}; N.forEach(n=>{ if(n.x==null){ const p=[...(adj.get(n.id)||[])].map(m=>NET.pos.get(m)).find(Boolean); if(p){ n.x=p.x+(Math.random()-.5)*60; n.y=p.y+(Math.random()-.5)*60; } } });
   sim=d3.forceSimulation(N).force('link',d3.forceLink(L).id(d=>d.id).distance(d=>d.target.type==='ag'||d.source.type==='ag'||d.target.type==='emp'||d.source.type==='emp'?80:130)).force('charge',d3.forceManyBody().strength(grid?-60:(N.length>80?-140:-420)))
     .force('center',grid?null:d3.forceCenter(W/2,H/2)).force('collide',d3.forceCollide(d=>rad[d.type]+14)).force('x',d3.forceX(W/2).strength(grid?0:.04)).force('y',d3.forceY(H/2).strength(grid?0:.06))
@@ -1958,7 +1958,7 @@ function renderNet(rs){
   node.call(d3.drag().on('start',(e,d)=>{ if(!e.active) sim.alphaTarget(.3).restart(); d._g=d.fx!=null&&grid; d.fx=d.x; d.fy=d.y; }).on('drag',(e,d)=>{ d.fx=e.x; d.fy=e.y; }).on('end',(e,d)=>{ if(!e.active) sim.alphaTarget(0); if(!d._g){ d.fx=null; d.fy=null; } }));
   let clickT=null;
   node.on('click',(e,d)=>{ clearTimeout(clickT); if(grid&&d.type==='op'){ setF('op',d.label); $('net-svg').scrollIntoView({behavior:'smooth',block:'center'}); return; } clickT=setTimeout(()=>{ NET.all=false; if(NET.expanded.has(d.id)) NET.expanded.delete(d.id); else NET.expanded.add(d.id); renderNet(rows()); },220); });
-  node.on('dblclick',(e,d)=>{ clearTimeout(clickT); e.stopPropagation(); if(d.type==='ag'||d.type==='tce'){ window.painelNome(d.label); return; } if(['emp','ent','soc','ele'].includes(d.type)&&window.abrirFicha){ window.abrirFicha({tipo:'pessoa',nome:d.ficha||d.label}); return; } if(d.type==='orgp'){ if(d.mun) setF('mun',d.mun); return; } if(d.type==='org') setF('mun','São Paulo'); if(d.type==='mun') setF('mun',d.label); if(d.type==='op') setF('op',d.label); });
+  node.on('dblclick',(e,d)=>{ clearTimeout(clickT); e.stopPropagation(); if(window.__netDbl&&!(e.ctrlKey||e.metaKey||e.shiftKey)&&window.__netDbl(d)) return; if(d.type==='ag'||d.type==='tce'){ window.painelNome(d.label); return; } if(['emp','ent','soc','ele'].includes(d.type)&&window.abrirFicha){ window.abrirFicha({tipo:'pessoa',nome:d.ficha||d.label}); return; } if(d.type==='orgp'){ if(d.mun) setF('mun',d.mun); return; } if(d.type==='org') setF('mun','São Paulo'); if(d.type==='mun') setF('mun',d.label); if(d.type==='op') setF('op',d.label); });
 }
 $('net-reset').addEventListener('click',()=>{ NET.expanded=new Set(); NET.all=false; NET.pos=new Map(); renderNet(rows()); });
 $('net-all').addEventListener('click',()=>{ NET.all=true; renderNet(rows()); });
@@ -4376,7 +4376,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   function rede({add,lk,nodes}){ const ks=Object.keys(VIVO); if(!ks.length) return;
     const PN={}; nodes.forEach((n,id)=>{ if(['ag','tce','soc','ele'].includes(n.type)) (PN[chave(n.label)]=PN[chave(n.label)]||[]).push(id); });
     const noC=(c,nome,info)=>{ const id='c:'+c; if(!nodes.has(id)) add(id,nome||fmtC(c),'emp',{cargo:'CNPJ '+fmtC(c)+(info?' · '+info:''),ficha:c}); else { const n=nodes.get(id); if(/^\d/.test(n.label)&&nome) n.label=nome; } return id; };
-    ks.forEach(c=>{ const d=VIVO[c]; const id='c:'+c; if(!nodes.has(id)&&!d.raiz) return;
+    ks.forEach(c=>{ const d=VIVO[c]; const id='c:'+c; if(!nodes.has(id)&&!d.raiz&&!d.exp) return;
       const e=noC(c,tit(d.r),`consulta em tempo real à Receita (${d.fonte}, ${d.em}) · ${d.s}${d.m?' · '+d.m+'/'+d.uf:''}`);
       d.q.forEach(s=>{ if(s.pj&&s.c){ const pj=noC(s.c,s.n,'pessoa jurídica sócia'); lk(e,pj,'soc',`${s.q} (PJ)¦${s.n} é ${String(s.q).toLowerCase()} de ${tit(d.r)}${s.de?' desde '+s.de:''} · consulta em tempo real à Receita (${d.fonte}, ${d.em})`); return; }
         const k=chave(s.n); const ex=(PN[k]||[]).filter(x=>x.startsWith('s:'));
@@ -4411,6 +4411,36 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       try{ const d=await consultar(b.dataset.c); box.innerHTML=blocoFicha(d); }catch(err){ box.innerHTML=`<p class="fi-nota">${err.message==='não encontrado'?'CNPJ não encontrado no cadastro da Receita.':'Serviço de consulta indisponível agora.'}</p>`; } return; }
     const r=e.target.closest('.cv-fi-rede'); if(r){ const d=VIVO[r.dataset.c]; if(!d) return; d.raiz=true; window.__oispFecharFicha&&window.__oispFecharFicha(); const dl=r.closest('dialog'); if(dl) dl.close();
       window.__mostrarAba&&window.__mostrarAba('casos'); window.__netAdd&&window.__netAdd({cnpj:d.c,label:tit(d.r),tipo:'Empresa'}); window.__renderNet&&window.__renderNet(); } });
+
+  // ---------- duplo clique na rede: empresa → consulta na Receita (tempo real no site público; base mensal no claude.ai);
+  // pessoa ou sócio → empresas dela na base mensal da Receita do painel (os serviços públicos não buscam por nome)
+  const EXPC=new Set(), EXPP=new Map();
+  const RF=()=>window.__rfb&&window.__rfb.ok?window.__rfb:null;
+  const cnpjDe=d=>{ const f=so(d.ficha||''); if(f.length===14) return f; if(String(d.id).startsWith('c:')){ const c=so(d.id.slice(2)); if(c.length>=8) return c; }
+    if(String(d.id).startsWith('n:')){ const e=((window.DATA||{}).ENT||[]).find(x=>'n:'+x.ent===d.id); if(e&&e.cnpj) return so(e.cnpj); } return ''; };
+  const cheio=b=>{ const r=RF(); const x=r&&r.C[b]; return x&&x[9]?x[9]:''; };
+  function redeLocal({add,lk,nodes}){ const r=RF(); if(!r||(!EXPC.size&&!EXPP.size)) return;
+    const ref=r.ref||'mensal'; const PN={}; nodes.forEach((n,id)=>{ if(['ag','tce','soc','ele'].includes(n.type)) (PN[chave(n.label)]=PN[chave(n.label)]||[]).push(id); });
+    const nomeP=p=>(r.P[p]||[])[0]||''; const noE=b=>{ const c=cheio(b)||b; const id='c:'+c; const x=r.C[b]||[]; if(!nodes.has(id)) add(id,tit(x[0]||c),'emp',{cargo:'CNPJ '+(c.length===14?fmtC(c):c+'…')+(x[2]?' · '+x[2]:'')+(x[4]?' · '+x[4]+'/'+x[3]:''),ficha:c}); return id; };
+    EXPC.forEach(c=>{ const b=c.slice(0,8); const e=nodes.has('c:'+c)?'c:'+c:noE(b);
+      r.V.filter(v=>v[0]===b).forEach(v=>{ if(v[1][0]==='c'){ const pj=noE(v[1].slice(1)); lk(e,pj,'rfb',`${v[2]||'sócio'} (PJ)¦pessoa jurídica sócia (base CNPJ da Receita, ${ref})`); return; }
+        const n=tit(nomeP(v[1])); if(!n) return; const k=chave(n); const sid=(PN[k]||[])[0]||add('s:'+k,n,'soc',{cargo:v[2]||'sócio',ficha:n}); (PN[k]=PN[k]||[]).push(sid);
+        lk(e,sid,'rfb',`${v[2]||'sócio'}¦${n} é ${String(v[2]||'sócio').toLowerCase()}${v[3]?' desde '+v[3]:''} (base CNPJ da Receita, ${ref})`); }); });
+    EXPP.forEach((nome,pid0)=>{ if(!nodes.has(pid0)) return; const k=chave(nome); const pids=Object.keys(r.P).filter(p=>chave(nomeP(p))===k); const hom=pids.length>1;
+      pids.forEach(p=>r.V.filter(v=>v[1]===p).forEach(v=>{ const e=noE(v[0]); lk(pid0,e,'rfb',`${v[2]||'sócio'}¦${nome} consta como ${String(v[2]||'sócio').toLowerCase()}${v[3]?' desde '+v[3]:''} (base CNPJ da Receita, ${ref})${hom?` · há ${pids.length} cadastros com este nome: verificar homonímia`:''}`); })); }); }
+  const prev2=window.__netExtra; window.__netExtra=o=>{ if(prev2) prev2(o); try{ redeLocal(o); }catch(err){ console.error('expansão pela Receita',err); } };
+  const avisar=t=>{ try{ (A.aviso||console.log)(t); }catch(e){} };
+  const expandir=id=>{ const N=window.__NET; if(N){ N.all=false; N.expanded.add(id); } window.__renderNet&&window.__renderNet(); };
+  window.__netDbl=d=>{ if(!['emp','ent','soc','ele','ag','tce'].includes(d.type)) return false;
+    if(d.type==='emp'||d.type==='ent'){ const c=cnpjDe(d); if(!c) return false;
+      if(c.length===14) EXPC.add(c); else { const f=cheio(c.slice(0,8)); if(f) EXPC.add(f); }
+      if(LIBERADO&&c.length===14&&valido(c)){ avisar('Consultando a Receita em tempo real…');
+        consultar(c).then(v=>{ v.exp=true; avisar(`${tit(v.r)}: ${v.q.length} sócio(s) na Receita (${v.fonte}, ${v.em}).`); expandir(d.id); })
+          .catch(err=>{ avisar(err.message==='não encontrado'?'CNPJ não encontrado no cadastro da Receita.':'Consulta em tempo real indisponível agora; mostrando a base mensal do painel.'); expandir(d.id); }); }
+      else { if(!RF()) avisar('A base da Receita ainda está carregando; tente de novo em instantes.'); else avisar(LIBERADO?'Mostrando os sócios da base mensal da Receita.':'Sócios pela base mensal da Receita (a consulta em tempo real funciona no site público).'); expandir(d.id); }
+      return true; }
+    if(!RF()){ avisar('A base da Receita ainda está carregando; tente de novo em instantes.'); return true; }
+    EXPP.set(d.id,d.ficha||d.label); avisar('Empresas desta pessoa na base mensal da Receita (a consulta pública não busca por nome; mesmo nome não prova que seja a mesma pessoa).'); expandir(d.id); return true; };
 })();
 
 </script>
