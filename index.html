@@ -876,6 +876,7 @@ table.hm{min-width:0; border-collapse:separate; border-spacing:2px;}
 .rg-ac{position:relative; flex:1 1 360px; min-width:0;}
 .rg-ac input{width:100%; box-sizing:border-box; padding:8px 10px; font:14px var(--sans); border:1px solid var(--border); border-radius:4px; background:var(--card); color:var(--text);}
 .rg-sug{max-height:360px;}
+.fi-ok{min-width:96px;}
 /* ===== Página inicial do OISP (camada sobre o painel) =====
    Layout: barra com a marca; abertura em duas colunas (logo + texto e busca); faixa de números;
    grade de módulos = abas do painel, cada um com os atalhos das suas seções; fontes; rodapé.
@@ -3078,7 +3079,7 @@ syncInputs(); render();
       ${blocoNews(news,'Notícias que citam o nome')}
       ${!tot&&!emp.length&&!news.length&&!CX.XB.length?'<p class="fi-vazio">Nenhum item encontrado para este nome nas camadas do painel.</p>':''}`;
     AUTO={k:'txt',v:(/^\d{11,14}$/.test(String(nome).replace(/\D/g,''))&&!/[a-z]/i.test(nome)&&emp.length?emp[0].nome:limpo(regs[0]?regs[0].nome:nome))||nome};
-    $('fi-f').innerHTML=`${emp.length?`<button type="button" class="fi-btn ghost" data-ir-empresas="${esc(emp[0].cnpj)}">Ver na aba Empresas e contratos</button>`:''}<button type="button" class="fi-btn ghost" data-fechar>Fechar</button>`;
+    $('fi-f').innerHTML=`${emp.length?`<button type="button" class="fi-btn ghost" data-ir-empresas="${esc(emp[0].cnpj)}">Ver na aba Empresas e contratos</button>`:''}<button type="button" class="fi-btn fi-ok" data-fechar>OK</button>`;
   }
   function fichaMun(m){
     const regs=R.filter(x=>x.mun===m), cit=(D.CIT||[]).filter(x=>x.mun===m), co=(D.CO||[]).filter(c=>c[1]===m);
@@ -3103,7 +3104,7 @@ syncInputs(); render();
       ${CX.XB.join('')}
       ${blocoNews(news.sort((a,b)=>String(b[10]||'').split('/').reverse().join('').localeCompare(String(a[10]||'').split('/').reverse().join(''))),'Notícias sobre o município')}`;
     AUTO={k:'mun',v:m};
-    $('fi-f').innerHTML=`<button type="button" class="fi-btn ghost" data-fechar>Fechar</button>`;
+    $('fi-f').innerHTML=`<button type="button" class="fi-btn fi-ok" data-fechar>OK</button>`;
   }
   function fichaOp(op){
     const k=nrm(op), regs=R.filter(x=>nrm(x.op)===k), cit=(D.CIT||[]).filter(x=>nrm(x.op)===k), co=(D.CO||[]).filter(c=>nrm(c[5])===k);
@@ -3126,7 +3127,7 @@ syncInputs(); render();
       ${blocoNews(news,'Notícias que citam a operação')}
       ${!tot&&!co.length&&!links.length&&!news.length?'<p class="fi-vazio">Nenhum item encontrado para esta operação nas camadas do painel.</p>':''}`;
     AUTO={k:'op',v:op};
-    $('fi-f').innerHTML=`<button type="button" class="fi-btn ghost" data-fechar>Fechar</button>`;
+    $('fi-f').innerHTML=`<button type="button" class="fi-btn fi-ok" data-fechar>OK</button>`;
   }
   function renderFicha(o){ if(o.tipo==='mun') fichaMun(o.nome); else if(o.tipo==='op') fichaOp(o.nome); else fichaPessoa(o.nome); }
   // botões do relatório completo (PDF e Word), antes do "Fechar"
