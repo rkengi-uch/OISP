@@ -1891,7 +1891,7 @@ function buildNet(){
   const opIdx={}; [...nodes.keys()].filter(k=>k.startsWith('o:')).forEach(k=>{ opIdx[opKey(k.slice(2))]=k; });
   newsRows(true,O).forEach(n=>{ if(!n[6]) return; const m=add('m:'+n[11],n[11],'mun'); n[6].split('; ').forEach(op=>{ const oid=opIdx[op.toLowerCase()]||add('o:'+op,op,'op'); lk(oid,m,'news','citada em notícia: '+(n[3].length>60?n[3].slice(0,58)+'…':n[3])); }); });
   tceRows({noMun:true}).forEach(x=>{ const mn=x.mun||'São Paulo'; const m=add('m:'+mn,mn,'mun'); const tid='t:'+nrmT(x.resp);
-    const t=add(tid,x.resp,'tce',{cargo:x.papel}); lk(m,t,'tce',`${x.papel} · ${x.origem} · proc. TC ${x.proc} · exercício ${x.exerc}`);
+    const t=add(tid,x.resp,'tce',{cargo:x.papel}); lk(m,t,'tce',`contas irregulares¦${x.papel}; está na rede porque o TCE-SP julgou irregulares as contas (${x.materia||''}, ${x.origem}, processo TC ${x.proc}, exercício ${x.exerc})`);
     x.base.forEach(id=>{ const r=R.find(y=>y.id===id); if(r){ const aid='a:'+r.nome+'|'+r.mun; if(nodes.has(aid)) lk(aid,t,'tce','mesma pessoa: '+r.nome); } }); });
   entRows(O).forEach(e=>{ const en=add('n:'+e.ent,e.ent,'ent'); lk(en,add('m:'+e.mun,e.mun,'mun'),'ent',e.papel.length>70?e.papel.slice(0,68)+'…':e.papel);
     Object.keys(opIdx).filter(k=>(ENT_OP[e.ent]||'').toLowerCase().includes(k)).forEach(k=>lk(en,opIdx[k],'entop')); });
@@ -3928,6 +3928,9 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     const TUi=(D.TCU||{}).itens||[], TJa=(((D.TJSP||{}).processos)||[]).map(p=>[p,'1º grau']).concat((((D.TJ2||{}).processos)||[]).map(p=>[p,'2º grau'])).filter(([p])=>p.tipo==='empresa');
     const MUNK={}; [IMP.itens.map(x=>x.m),SCo.map(c=>c.mun),R.map(x=>x.mun),(D.NEWS||[]).map(n=>n[11])].forEach(L=>L.forEach(m=>{ if(m) MUNK[chave(m)]=m; }));
     const titulo=t=>/[a-zà-ú]/.test(t)?t:tit(t);
+    // sem ligação por empresa pública, de economia mista, S.A. aberta ou banco (doação de diretor de grande empresa não indica relação com o caso)
+    const PUBN=/empresa p[uú]blica|economia mista|an[oô]nima aberta|autarquia|funda[cç][aã]o p[uú]blica|[oó]rg[aã]o p[uú]blico|munic[ií]pio|poder (executivo|legislativo)/i;
+    const fraca=c=>{ const rf=window.__rfb&&window.__rfb.ok&&window.__rfb.C[String(c).slice(0,8)]; const nat=rf?String(rf[7]||''):''; const nm=(rf&&rf[0])||(QSA.emp[c]||[])[0]||''; return PUBN.test(nat)||/\bBANCO\b/i.test(nm); };
     // nome padronizado do órgão e o município a que pertence
     function orgao(nome,munHint,esfera){ let n=String(nome||'').trim(); if(!n) return null; const k=chave(n); let m=null, lab;
       let r=k.match(/^(?:prefeitura municipal|prefeitura|municipio) (?:de |da |do |dos |das )?(.+?)(?: sp| [a-z]{2})?$/);
@@ -3953,7 +3956,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     if(NETC.emp){ SCo.forEach(c=>inc(c.cnpj,'emp')); ICON().forEach(c=>inc(c.c,'emp')); if(f.mun) IMP.itens.forEach(x=>{ if(x.l==='c'&&x.c&&x.m===f.mun) inc(x.c,'emp'); }); }
     if(NETC.ent){ const relC=new Set(QSA.rel.filter(r=>r.pk||(r.el||[]).length).map(r=>r.c)); IMP.itens.forEach(x=>{ if(x.l==='r'&&x.c&&(relC.has(x.c)||(f.mun&&x.m===f.mun))) inc(x.c,'ent'); }); }
     Object.keys(EB).forEach(c=>inc(c,'emp'));   // empresas citadas na base (CNPJ confirmado)
-    if(NETC.tse){ TSE.doa.forEach(d=>inc(d.c,(d.or||[]).some(o=>/repasses/.test(o))?'ent':'emp')); TSE.forn.forEach(x=>inc(x.c,'emp')); }
+    if(NETC.tse){ TSE.doa.forEach(d=>!fraca(d.c)&&inc(d.c,(d.or||[]).some(o=>/repasses/.test(o))?'ent':'emp')); TSE.forn.forEach(x=>!fraca(x.c)&&inc(x.c,'emp')); }
     const comCNPJ=new Set(INC.keys());
     INC.forEach((tipo,c)=>{ const e=empNo(c,tipo,FOC.includes(c)?'em foco':''); window.__netFoc.cmap[c]=e; if(FOC.includes(c)&&!NSEL.some(x=>x.cnpj===c)) window.__netFoc.ids.push(e);
       // contratos durante a pena, por órgão contratante (PNCP)
@@ -3980,11 +3983,19 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
         if(PN[k]) return; const sid=add('s:'+k,tit(s[0]),'soc',{cargo:s[1],ficha:tit(s[0])}); lk(e,sid,'soc',`${s[1]||'sócio'} de ${nomeEmp(c)} (Receita)`); }); });
     }
     if(NETC.tse){
-      const elNo=d=>{ const k=chave(d.cand); const m=d.m; const ex=(PN[k]||[]).find(id=>id.endsWith('|'+m)); if(ex) return ex; const id='el:'+d.sq; if(!nodes.has(id)){ add(id,d.urna?tit(d.urna):d.cand,'ele',{cargo:`${d.cargo} eleito(a) em 2024 – ${m} (${d.partido||''})`,ficha:d.cand}); const mid=munId(m); if(mid) lk(mid,id,'cargo',`${d.cargo} eleito(a) em 2024`); } return id; };
-      TSE.doa.forEach(d=>{ const e=empNo(d.c,(d.or||[]).some(o=>/repasses/.test(o))?'ent':'emp',(d.or||[]).map(o=>ORIG[o]||o).join('; ')); const k=chave(d.d);
-        const sid=d.auto?elNo(d):(PN[k]&&PN[k][0])||add('s:'+k,tit(d.d),'soc',{cargo:d.q||'sócio',ficha:d.d}); lk(e,sid,'soc',`${d.q||'sócio'} de ${d.e||d.c} (nome e CPF parcial coincidem)`);
-        if(!d.auto) lk(sid,elNo(d),'doa',`doou ${brl(d.v)} à campanha de 2024 (${d.nd} doação(ões))`); });
-      TSE.forn.forEach(x=>{ const e=empNo(x.c,'emp',(x.or||[]).map(o=>ORIG[o]||o).join('; ')); lk(e,elNo(x),'forn',`forneceu ${brl(x.v)} à campanha de 2024`); });
+      // eleitos de 2024 só entram com motivo: doação de sócio de empresa do painel, o próprio eleito ser sócio dela, ou a empresa ter fornecido à campanha;
+      // a aresta município–eleito traz o motivo por extenso
+      const RZ=new Map(); const orTxt=d=>(d.or||[]).map(o=>ORIG[o]||o).join('; ')||'citada no painel';
+      const elNo=(d,motivo)=>{ const k=chave(d.cand); const m=d.m; const ex=(PN[k]||[]).find(id=>id.endsWith('|'+m)); const id=ex||'el:'+d.sq;
+        if(!ex&&!nodes.has(id)) add(id,d.urna?tit(d.urna):d.cand,'ele',{cargo:`${d.cargo} eleito(a) em 2024 – ${m} (${d.partido||''})`,ficha:d.cand});
+        if(!ex){ const r=RZ.get(id)||{d,m:[]}; if(!r.m.includes(motivo)) r.m.push(motivo); RZ.set(id,r); } return id; };
+      TSE.doa.forEach(d=>{ if(fraca(d.c)) return; const e=empNo(d.c,(d.or||[]).some(o=>/repasses/.test(o))?'ent':'emp',orTxt(d)); const k=chave(d.d); const emp=tit(d.e||d.c);
+        if(d.auto){ const el=elNo(d,`é ${String(d.q||'sócio').toLowerCase()} de ${emp} (${orTxt(d)}) e doou ${brl(d.v)} à própria campanha`); lk(e,el,'soc',`${d.q||'sócio'} de ${d.e||d.c} (nome e CPF parcial coincidem)¦${d.q||'sócio'} de ${emp}, empresa ${orTxt(d)}`); return; }
+        const sid=(PN[k]&&PN[k][0])||add('s:'+k,tit(d.d),'soc',{cargo:d.q||'sócio',ficha:d.d}); lk(e,sid,'soc',`${d.q||'sócio'} de ${d.e||d.c} (nome e CPF parcial coincidem)`);
+        lk(sid,elNo(d,`recebeu ${brl(d.v)} de ${tit(d.d)}, ${String(d.q||'sócio').toLowerCase()} de ${emp} (${orTxt(d)})`),'doa',`doou ${brl(d.v)} à campanha de 2024 (${d.nd} doação(ões))¦doação de ${tit(d.d)}, ${String(d.q||'sócio').toLowerCase()} de ${emp} (${orTxt(d)})`); });
+      TSE.forn.forEach(x=>{ if(fraca(x.c)) return; const e=empNo(x.c,'emp',orTxt(x)); lk(e,elNo(x,`a campanha pagou ${brl(x.v)} a ${tit(x.e||x.f)} (${orTxt(x)})`),'forn',`forneceu ${brl(x.v)} à campanha de 2024¦fornecedora da campanha: ${tit(x.e||x.f)}, empresa ${orTxt(x)}`); });
+      RZ.forEach((r,id)=>{ const mid=munId(r.d.m); if(!mid) return; const curto=r.m.length>1?'eleito 2024: '+r.m.length+' motivos':(/^recebeu/.test(r.m[0])?'eleito 2024: doação de sócio':/^a campanha/.test(r.m[0])?'eleito 2024: fornecedor':'eleito 2024: sócio');
+        lk(mid,id,'cargo',`${curto}¦${r.d.cargo} eleito(a) em 2024 em ${r.d.m}; está na rede porque ${r.m.join('; ')}`); });
     }
     // ===== decisões e atos por instância (quem investigou, decidiu, julgou, registrou ou publicou), em todas as tipologias
     // cada aresta "dec" liga a pessoa, empresa, entidade ou operação à instância responsável, com o ato no rótulo
@@ -4018,7 +4029,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       ((D.TCE||{}).itens||[]).forEach(x=>{ const tid='t:'+sa(x.resp); if(nodes.has(tid)) dec(aut('tce'),tid,'Contas julgadas irregulares','contas irregulares (decisão)',`contas julgadas irregulares · ${x.materia||''} · ${x.origem||''} · processo TC ${x.proc} · exercício ${x.exerc} · trânsito em julgado ${x.tj||'—'}`); });
       (D.PAR||[]).forEach(x=>{ if(!munOK(x.mun)) return; const mid=munId(x.mun); if(!mid) return;
         String(x.pref||'').split(/\s+e\s+|;|\/|,/).map(n=>n.trim()).filter(n=>n.split(' ').length>1).forEach(n=>{ const p=pesNo(n,x.mun,'Prefeito(a) – contas com parecer prévio desfavorável (TCE-SP)','tce'); if(!p) return;
-          lk(mid,p,'cargo',`Prefeito(a) · contas de ${x.exerc}`);
+          lk(mid,p,'cargo',`prefeito(a): parecer desfavorável¦Prefeito(a) de ${x.mun}; está na rede porque as contas de ${x.exerc} tiveram parecer prévio desfavorável do TCE-SP (${x.proc})`);
           dec(aut('tce'),p,'Pareceres prévios desfavoráveis',x.sit==='revertido em reexame'?'parecer desfavorável revertido':'parecer desfavorável (decisão)',`parecer prévio desfavorável às contas de ${x.exerc} da Prefeitura de ${x.mun} · processo ${x.proc} · ${x.col||''} · publicado em ${x.pub||'—'} · ${x.sit||''}`); }); });
       // 3) TCMSP: responsáveis pelas contas julgadas
       (D.TCM||[]).forEach(x=>{ if(!x.responsavel||!munOK('São Paulo')) return; 
