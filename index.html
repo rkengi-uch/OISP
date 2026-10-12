@@ -872,6 +872,7 @@ table.hm{min-width:0; border-collapse:separate; border-spacing:2px;}
 .cv-msg{margin:6px 0 0;font-size:13px;color:var(--text);} .cv-nota{margin:6px 0 0;font-size:11.5px;color:var(--text-muted);}
 .ag-sep{color:var(--text-muted);margin:0 2px;} .ag-n{font-weight:400;color:var(--text-muted);font-size:12px;}
 .ag-det{font-size:12.5px;margin:4px 0;} .ag-det summary{cursor:pointer;color:var(--text-muted);} .ag-det ul{margin:4px 0 0;padding-left:18px;}
+.rg-bar{margin-bottom:10px;} .rg-ac{flex:1 1 360px;}
 /* ===== Página inicial do OISP (camada sobre o painel) =====
    Layout: barra com a marca; abertura em duas colunas (logo + texto e busca); faixa de números;
    grade de módulos = abas do painel, cada um com os atalhos das suas seções; fontes; rodapé.
@@ -4446,6 +4447,37 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       return true; }
     if(!RF()){ avisar('A base da Receita ainda está carregando; tente de novo em instantes.'); return true; }
     EXPP.set(d.id,d.ficha||d.label); avisar('Empresas desta pessoa na base mensal da Receita (a consulta pública não busca por nome; mesmo nome não prova que seja a mesma pessoa).'); expandir(d.id); return true; };
+})();
+
+</script>
+<script>
+// ===================== BASE DE REGISTROS: escolher agente numa lista =====================
+// Caixa de filtro com lista de agentes políticos/servidores da base (nome · cargo · município · nº de registros).
+// Com a caixa vazia, a lista mostra todos; ao digitar, filtra. Escolher aplica o filtro de nome do painel.
+(function(){
+  const tb=document.getElementById('tbody'); if(!tb) return; const wrap=tb.closest('.table-wrap'); if(!wrap) return;
+  const D=window.DATA||(typeof DATA!=='undefined'?DATA:{}); const R=D.R||[];
+  const sa=t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
+  const esc=t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const M=new Map(); R.forEach(x=>{ const k=sa(x.nome); const a=M.get(k)||{n:x.nome,c:new Set(),m:new Set(),q:0}; a.c.add(x.cargo); a.m.add(x.mun); a.q++; M.set(k,a); });
+  const L=[...M.values()].sort((a,b)=>a.n.localeCompare(b.n,'pt',{sensitivity:'base'}));
+  const bar=document.createElement('div'); bar.className='tj-bar rg-bar';
+  bar.innerHTML=`<div class="tj-ac rg-ac"><input id="rg-q" type="search" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="rg-sug" aria-label="Escolher agente da lista" placeholder="Escolha um agente na lista ou digite parte do nome, cargo ou município…"><div class="tj-sug" id="rg-sug" role="listbox" hidden></div></div><span class="tj2-count" id="rg-n">${L.length} agentes · ${R.length} registros</span>`;
+  wrap.before(bar);
+  const q=bar.querySelector('#rg-q'), sug=bar.querySelector('#rg-sug'); let itens=[], at=-1;
+  function abrir(){ const t=sa(q.value.trim()); itens=L.filter(a=>!t||sa(a.n+' '+[...a.c].join(' ')+' '+[...a.m].join(' ')).includes(t)).slice(0,400); at=-1;
+    sug.innerHTML=itens.length?itens.map((a,i)=>`<button type="button" class="tj-opt" role="option" data-i="${i}"><b>${esc(a.n)}</b><small>${esc([...a.c].join(', '))} · ${esc([...a.m].join(', '))} · ${a.q} registro${a.q>1?'s':''}</small></button>`).join(''):'<div class="tj-vazio">Nenhum agente com esse termo.</div>';
+    sug.hidden=false; q.setAttribute('aria-expanded','true'); }
+  function fechar(){ sug.hidden=true; q.setAttribute('aria-expanded','false'); }
+  function escolher(a){ if(!a) return; fechar(); q.value=''; const ja=(window.__fxVals&&window.__fxVals('txt'))||[];
+    if(!ja.some(v=>sa(v)===sa(a.n))) window.painelNome&&window.painelNome(a.n); wrap.scrollIntoView({behavior:'smooth',block:'start'}); }
+  q.addEventListener('focus',abrir); q.addEventListener('click',abrir); q.addEventListener('input',abrir);
+  q.addEventListener('keydown',e=>{ const bs=[...sug.querySelectorAll('.tj-opt')];
+    if(e.key==='ArrowDown'||e.key==='ArrowUp'){ e.preventDefault(); if(sug.hidden) abrir(); if(!bs.length) return; at=(at+(e.key==='ArrowDown'?1:-1)+bs.length)%bs.length; bs.forEach((b,i)=>b.classList.toggle('ativo',i===at)); bs[at].scrollIntoView({block:'nearest'}); }
+    else if(e.key==='Enter'){ e.preventDefault(); escolher(itens[at>=0?at:0]); } else if(e.key==='Escape') fechar(); });
+  sug.addEventListener('mousedown',e=>e.preventDefault());
+  sug.addEventListener('click',e=>{ const b=e.target.closest('.tj-opt'); if(b) escolher(itens[+b.dataset.i]); });
+  document.addEventListener('click',e=>{ if(!bar.contains(e.target)) fechar(); });
 })();
 
 </script>
