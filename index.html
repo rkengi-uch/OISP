@@ -873,6 +873,9 @@ table.hm{min-width:0; border-collapse:separate; border-spacing:2px;}
 .ag-sep{color:var(--text-muted);margin:0 2px;} .ag-n{font-weight:400;color:var(--text-muted);font-size:12px;}
 .ag-det{font-size:12.5px;margin:4px 0;} .ag-det summary{cursor:pointer;color:var(--text-muted);} .ag-det ul{margin:4px 0 0;padding-left:18px;}
 .rg-bar{margin-bottom:10px;} .rg-ac{flex:1 1 360px;}
+.rg-ac{position:relative; flex:1 1 360px; min-width:0;}
+.rg-ac input{width:100%; box-sizing:border-box; padding:8px 10px; font:14px var(--sans); border:1px solid var(--border); border-radius:4px; background:var(--card); color:var(--text);}
+.rg-sug{max-height:360px;}
 /* ===== Página inicial do OISP (camada sobre o painel) =====
    Layout: barra com a marca; abertura em duas colunas (logo + texto e busca); faixa de números;
    grade de módulos = abas do painel, cada um com os atalhos das suas seções; fontes; rodapé.
@@ -4462,7 +4465,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   const M=new Map(); R.forEach(x=>{ const k=sa(x.nome); const a=M.get(k)||{n:x.nome,c:new Set(),m:new Set(),q:0}; a.c.add(x.cargo); a.m.add(x.mun); a.q++; M.set(k,a); });
   const L=[...M.values()].sort((a,b)=>a.n.localeCompare(b.n,'pt',{sensitivity:'base'}));
   const bar=document.createElement('div'); bar.className='tj-bar rg-bar';
-  bar.innerHTML=`<div class="tj-ac rg-ac"><input id="rg-q" type="search" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="rg-sug" aria-label="Escolher agente da lista" placeholder="Escolha um agente na lista ou digite parte do nome, cargo ou município…"><div class="tj-sug" id="rg-sug" role="listbox" hidden></div></div><span class="tj2-count" id="rg-n">${L.length} agentes · ${R.length} registros</span>`;
+  bar.innerHTML=`<div class="rg-ac"><input id="rg-q" type="search" autocomplete="off" role="combobox" aria-expanded="false" aria-controls="rg-sug" aria-label="Escolher agente da lista" placeholder="Escolha um agente na lista ou digite parte do nome, cargo ou município…"><div class="tj-sug rg-sug" id="rg-sug" role="listbox" hidden></div></div><span class="tj2-count" id="rg-n">${L.length} agentes · ${R.length} registros</span>`;
   wrap.before(bar);
   const q=bar.querySelector('#rg-q'), sug=bar.querySelector('#rg-sug'); let itens=[], at=-1;
   function abrir(){ const t=sa(q.value.trim()); itens=L.filter(a=>!t||sa(a.n+' '+[...a.c].join(' ')+' '+[...a.m].join(' ')).includes(t)).slice(0,400); at=-1;
