@@ -930,6 +930,15 @@ table.hm{min-width:0; border-collapse:separate; border-spacing:2px;}
 .pq-card[hidden]{display:none !important;}
 .pq-ctr{display:block; margin-top:3px;} .pq-ctr summary{cursor:pointer; color:var(--accent,#2a7); font-size:11.5px; width:max-content; max-width:100%;}
 .pq-ctr ul{margin:4px 0 2px; padding-left:16px; display:grid; gap:3px;} .pq-ctr li{font-size:11.5px; line-height:1.4;} .pq-ctr p{margin:3px 0 0; font-size:11px;}
+/* ficha da rede (duplo clique no grafo): painel lateral com todos os dados do painel sobre o nó */
+.pq-card.pq-ficha{top:calc(16px + env(safe-area-inset-top,0px)); bottom:calc(16px + env(safe-area-inset-bottom,0px)); width:min(640px,calc(100vw - 32px)); max-height:none;}
+.pq-ficha .pq-t{font-size:17px;} .pq-ficha .pq-body{flex:1 1 auto;}
+.pq-acoes{padding:10px 0 0; display:flex; flex-wrap:wrap; gap:8px;}
+.pq-painel .fi-grid{grid-template-columns:1fr !important;} .pq-painel .fi-aviso{font-size:12px;} .pq-painel h3.fi-h{font-size:13.5px;}
+.pq-foot{display:flex; flex-wrap:wrap; align-items:center; justify-content:flex-end; gap:8px 12px; padding:10px 14px; border-top:1px solid var(--border); background:var(--card-head);}
+.pq-ficha .nm-link{cursor:pointer; text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:2px;}
+@media (max-width:760px){ .pq-card.pq-ficha{top:auto; bottom:calc(64px + env(safe-area-inset-bottom,0px)); height:min(78vh,720px);} }
+.pq-painel .fi-col:has(> .fi-vazio){display:none;} .pq-painel .fi-col{margin-bottom:0;}
 /* ===== Página inicial do OISP (camada sobre o painel) =====
    Layout: barra com a marca; abertura em duas colunas (logo + texto e busca); faixa de números;
    grade de módulos = abas do painel, cada um com os atalhos das suas seções; fontes; rodapé.
@@ -2066,7 +2075,7 @@ function renderNet(rs){
   node.call(d3.drag().on('start',(e,d)=>{ if(!e.active) sim.alphaTarget(.3).restart(); d._g=d.fx!=null&&grid; d.fx=d.x; d.fy=d.y; }).on('drag',(e,d)=>{ d.fx=e.x; d.fy=e.y; }).on('end',(e,d)=>{ if(!e.active) sim.alphaTarget(0); if(!d._g){ d.fx=null; d.fy=null; } }));
   let clickT=null;
   node.on('click',(e,d)=>{ clearTimeout(clickT); if(grid&&d.type==='op'){ setF('op',d.label); $('net-svg').scrollIntoView({behavior:'smooth',block:'center'}); return; } clickT=setTimeout(()=>{ NET.all=false; if(NET.expanded.has(d.id)) NET.expanded.delete(d.id); else NET.expanded.add(d.id); renderNet(rows()); },220); });
-  node.on('dblclick',(e,d)=>{ clearTimeout(clickT); e.stopPropagation(); if(window.__netDbl&&!(e.ctrlKey||e.metaKey||e.shiftKey)&&window.__netDbl(d)) return; if(d.type==='ag'||d.type==='tce'){ window.painelNome(d.label); return; } if(['emp','ent','soc','ele'].includes(d.type)&&window.abrirFicha){ window.abrirFicha({tipo:'pessoa',nome:d.ficha||d.label}); return; } if(d.type==='orgp'){ if(d.mun) setF('mun',d.mun); return; } if(d.type==='org') setF('mun','São Paulo'); if(d.type==='mun') setF('mun',d.label); if(d.type==='op') setF('op',d.label); });
+  node.on('dblclick',(e,d)=>{ clearTimeout(clickT); e.stopPropagation(); if(window.__netDbl&&window.__netDbl(d,{ctrl:e.ctrlKey||e.metaKey||e.shiftKey})) return; if(d.type==='ag'||d.type==='tce'){ window.painelNome(d.label); return; } if(['emp','ent','soc','ele'].includes(d.type)&&window.abrirFicha){ window.abrirFicha({tipo:'pessoa',nome:d.ficha||d.label}); return; } if(d.type==='orgp'){ if(d.mun) setF('mun',d.mun); return; } if(d.type==='org') setF('mun','São Paulo'); if(d.type==='mun') setF('mun',d.label); if(d.type==='op') setF('op',d.label); });
 }
 $('net-reset').addEventListener('click',()=>{ NET.expanded=new Set(); NET.all=false; NET.pos=new Map(); renderNet(rows()); });
 $('net-all').addEventListener('click',()=>{ NET.all=true; renderNet(rows()); });
@@ -3230,8 +3239,8 @@ syncInputs(); render();
     const nl=t.closest('.nm-link'); if(nl){ e.preventDefault(); e.stopPropagation(); abrirFicha({tipo:'pessoa',nome:nl.dataset.nome}); } });
   // nomes clicáveis abrem a ficha, e a ficha filtra o painel automaticamente
   const abrirNome=el=>abrirFicha({tipo:'pessoa',nome:el.dataset.nome});
-  window.addEventListener('click',e=>{ const el=e.target.closest&&e.target.closest('.nm-link'); if(!el||dlg.contains(el)) return; e.preventDefault(); e.stopImmediatePropagation(); abrirNome(el); },true);
-  window.addEventListener('keydown',e=>{ if(e.key!=='Enter') return; const el=e.target.closest&&e.target.closest('.nm-link'); if(!el||dlg.contains(el)) return; e.preventDefault(); e.stopImmediatePropagation(); abrirNome(el); },true);
+  window.addEventListener('click',e=>{ const el=e.target.closest&&e.target.closest('.nm-link'); if(!el||dlg.contains(el)||el.closest('.pq-ficha')) return; e.preventDefault(); e.stopImmediatePropagation(); abrirNome(el); },true);
+  window.addEventListener('keydown',e=>{ if(e.key!=='Enter') return; const el=e.target.closest&&e.target.closest('.nm-link'); if(!el||dlg.contains(el)||el.closest('.pq-ficha')) return; e.preventDefault(); e.stopImmediatePropagation(); abrirNome(el); },true);
   // botão "Ficha por esfera" no perfil do município
   const pn=$('perfil-nome'); if(pn){ const b=document.createElement('button'); b.type='button'; b.className='op-filter fi-perfil-btn'; b.textContent='Ver ficha por esfera'; pn.after(b); b.addEventListener('click',()=>{ const m=F().mun; if(m) abrirFicha({tipo:'mun',nome:m}); }); }
 
@@ -4528,7 +4537,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   setTimeout(montar,1500);
 
   // ficha de empresa: consulta na hora e mostra o cadastro atual
-  (window.__fichaExtra=window.__fichaExtra||[]).push(CX=>{ if(!LIBERADO||CX.tipo!=='pessoa') return; const c=so(CX.dig||''); if(c.length!==14||!valido(c)) return;
+  (window.__fichaExtra=window.__fichaExtra||[]).push(CX=>{ if(!LIBERADO||CX.tipo!=='pessoa'||window.__fichaRede) return; const c=so(CX.dig||''); if(c.length!==14||!valido(c)) return;
     CX.XB.push(`<h3 class="fi-h">Receita Federal agora <span>tempo real</span></h3><div class="cv-ficha" data-c="${c}">${VIVO[c]?blocoFicha(VIVO[c]):`<button type="button" class="op-filter cv-fi-ok" data-c="${c}">Consultar o cadastro atual na Receita</button>`}</div>`); });
   function blocoFicha(d){ return `<p class="fi-nota">CNPJ ${esc(fmtC(d.c))} · ${esc(d.s)} · ${esc(d.m)}/${esc(d.uf)}${d.ab?' · aberta em '+esc(d.ab):''}${d.cn?' · '+esc(d.cn):''}${d.nj?' · '+esc(d.nj):''} · capital ${esc(brl(d.cap))} · consulta em ${esc(d.em)} (${esc(d.fonte)})</p>`+
     (d.q.length?`<ul class="fi-list">${d.q.map(s=>`<li><b>${esc(s.n)}</b> · ${esc(s.q)}${s.de?' · desde '+esc(s.de):''}${s.pj?' · pessoa jurídica'+(s.c?' ('+esc(fmtC(s.c))+')':''):''}</li>`).join('')}</ul>`:'<p class="fi-nota">Sem quadro de sócios informado.</p>')+
@@ -4648,11 +4657,12 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       const oid='og:'+chave(orgLab(g.o,munP(g.m),g.e)); (RV[oid]=RV[oid]||[]).push([g.v,b,g]); })); Object.values(RV).forEach(L=>L.sort((a,b)=>b[0]-a[0])); return RV; }
 
   // ---------- ficha da empresa: todos os órgãos contratantes
-  (window.__fichaExtra=window.__fichaExtra||[]).push(CX=>{ if(CX.tipo!=='pessoa') return; const bs=new Set();
+  (window.__fichaExtra=window.__fichaExtra||[]).push(CX=>{ if(CX.tipo!=='pessoa') return; const bs=new Set(); const so_rede=!!window.__fichaRede&&CX.dig&&CX.dig.length>=8;
     if(CX.dig&&CX.dig.length>=8) bs.add(CX.dig.slice(0,8)); (CX.cnpjs?[...CX.cnpjs]:[]).forEach(c=>{ const d=so(c); if(d.length>=8) bs.add(d.slice(0,8)); });
     { const k=chave(String(CX.nome||'').replace(/\(.*?\)/g,' ')); (D.ENT||[]).forEach(e=>{ const d=so(e.cnpj); if(d.length>=8&&chave(String(e.ent||'').replace(/\(.*?\)/g,' '))===k) bs.add(d.slice(0,8)); }); }
     if(!bs.size&&PN.ok){ const k=chave(CX.nome); Object.entries(PN.B).forEach(([b,e])=>{ if(chave(e[0])===k) bs.add(b); }); }
     const FULL=!!window.__fichaFull;
+    if(so_rede) return; // a ficha da rede mostra o PNCP numa seção própria
     bs.forEach(b=>{ const r=grupos(b); if(!r||!r.G.length) return; CX.empresa=true; const tot=r.G.reduce((a,g)=>a+g.n,0), v=r.G.reduce((a,g)=>a+g.v,0), x=r.G.reduce((a,g)=>a+(g.x||0),0);
       const L=FULL?r.G:r.G.slice(0,15);
       CX.XB.push(`<h3 class="fi-h">Contratos com órgãos paulistas no PNCP <span>${fmt(tot)}</span></h3><p class="fi-nota">${r.G.length} órgão(s) municipal(is) ou estadual(is) de SP · total informado ${brl(v)}${x?` · ${x} contrato(s) com valor acima de R$ 1 bilhão fora da soma (provável erro de registro no PNCP)`:''} · ${r.vivo?'consulta em tempo real ao PNCP em '+br(r.em):'carga do PNCP de '+esc(r.em)}. Ter contrato público não é irregular; o quadro serve para verificação.</p><ul class="fi-list">${L.map(g=>`<li><b>${esc(orgLab(g.o,munP(g.m),g.e))}</b>${g.e==='Municipal'?' · '+esc(munP(g.m)):' · Governo do Estado de SP'}<span class="fi-m">${g.n} contrato(s) · ${brl(g.v)} · ${esc(br(g.d1))}${g.d2&&g.d2!==g.d1?' a '+esc(br(g.d2)):''}${g.obj?' · '+esc(String(g.obj).slice(0,140)):''}${links(g)}</span></li>`).join('')}</ul>${!FULL&&r.G.length>15?`<p class="fi-nota">E mais ${r.G.length-15} órgão(s) no relatório completo.</p>`:''}`); }); });
@@ -4668,65 +4678,96 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     return PEND[c]; }
   window.__pncpVivo=pncpVivo;
 
-  // ---------- quadro da consulta tripla
+  // ---------- FICHA DA REDE: duplo clique (ou Ctrl/Shift + duplo clique) em qualquer nó do grafo abre só esta ficha,
+  // com todos os dados do painel sobre o nó; para empresas, também Receita e PNCP em tempo real e os sócios na base.
+  // A ficha não mexe nos filtros do painel; o duplo clique simples ainda abre o nó no grafo, o Ctrl/Shift só mostra a ficha.
   let card=null;
-  function quadro(){ if(card) return card; card=document.createElement('section'); card.className='pq-card'; card.setAttribute('role','region'); card.setAttribute('aria-label','Resultado da consulta da empresa'); card.hidden=true;
-    card.innerHTML='<div class="pq-top"><div><span class="pq-k">Consulta da empresa</span><h3 class="pq-t" id="pq-t"></h3><p class="pq-s" id="pq-s"></p></div><button type="button" class="pq-x" aria-label="Fechar consulta">×</button></div><div class="pq-body"><div class="pq-sec" id="pq-rfb"></div><div class="pq-sec" id="pq-base"></div><div class="pq-sec" id="pq-pncp"></div></div>';
-    document.body.appendChild(card); card.querySelector('.pq-x').addEventListener('click',()=>{ card.hidden=true; });
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!card.hidden&&!document.querySelector('dialog[open]')) card.hidden=true; });
-    card.addEventListener('click',e=>{ const b=e.target.closest('[data-pq-rede]'); if(b){ window.__netAdd&&window.__netAdd({label:b.dataset.pqRede,tipo:'Pessoa'}); b.disabled=true; b.textContent='Na rede'; return; }
-      const f=e.target.closest('[data-pq-ficha]'); if(f&&window.abrirFicha){ window.abrirFicha({tipo:'pessoa',nome:f.dataset.pqFicha}); } });
+  const TIPOS={emp:'Empresa',ent:'Entidade ou OS',soc:'Sócio ou dirigente',ele:'Eleito(a) em 2024',ag:'Agente político ou servidor',tce:'Responsável (TCE-SP)',op:'Operação',mun:'Município',orgp:'Órgão público',org:'Órgão estadual'};
+  function quadro(){ if(card) return card; card=document.createElement('section'); card.className='pq-card pq-ficha'; card.setAttribute('role','dialog'); card.setAttribute('aria-label','Ficha do nó da rede'); card.hidden=true;
+    card.innerHTML='<div class="pq-top"><div><span class="pq-k" id="pq-k">Ficha</span><h3 class="pq-t" id="pq-t"></h3><p class="pq-s" id="pq-s"></p></div><button type="button" class="pq-x" aria-label="Fechar ficha">×</button></div>'+
+      '<div class="pq-body" id="pq-body"><div class="pq-acoes" id="pq-acoes"></div><div class="pq-sec" id="pq-rfb"></div><div class="pq-sec" id="pq-pncp"></div><div class="pq-sec" id="pq-base"></div><div class="pq-sec pq-painel" id="pq-painel"></div></div>'+
+      '<div class="pq-foot"><span class="fi-rel"><span class="fi-rel-t">Relatório completo:</span><button type="button" class="fi-btn ghost" data-rel="pdf">PDF</button><button type="button" class="fi-btn ghost" data-rel="docx">Word (.docx)</button></span><button type="button" class="fi-btn fi-ok" data-pq-ok>OK</button></div>';
+    document.body.appendChild(card);
+    const fechar=()=>{ card.hidden=true; };
+    card.querySelector('.pq-x').addEventListener('click',fechar);
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&!card.hidden&&!document.querySelector('dialog[open]')) fechar(); });
+    card.addEventListener('keydown',e=>{ if(e.key!=='Enter') return; const nl=e.target.closest('.nm-link'); if(nl){ e.preventDefault(); fichaRede({type:'ag',label:nl.dataset.nome,id:''}); } });
+    card.addEventListener('click',e=>{ if(e.target.closest('[data-pq-ok]')){ fechar(); return; }
+      const b=e.target.closest('[data-pq-rede]'); if(b){ window.__netAdd&&window.__netAdd({label:b.dataset.pqRede,tipo:'Pessoa'}); b.disabled=true; b.textContent='Na rede'; return; }
+      const nl=e.target.closest('.nm-link'); if(nl){ e.preventDefault(); fichaRede({type:'ag',label:nl.dataset.nome,id:''}); return; }
+      const fl=e.target.closest('[data-pq-filtro]'); if(fl){ const [k,v]=fl.dataset.pqFiltro.split('|'); if(k==='op') window.painelOp&&window.painelOp(v); else if(k==='mun') window.painelMun&&window.painelMun(v); else window.painelNome&&window.painelNome(v); fl.disabled=true; fl.textContent='Painel filtrado'; } });
     return card; }
-  const sec=(id,h,corpo)=>{ const el=$(id); if(el) el.innerHTML=`<h4 class="pq-h">${h}</h4>${corpo}`; };
+  const sec=(id,h,corpo)=>{ const el=$(id); if(!el) return; el.hidden=false; el.innerHTML=`<h4 class="pq-h">${h}</h4>${corpo}`; };
   const carregando='<p class="pq-load"><span class="pq-spin" aria-hidden="true"></span>consultando…</p>';
+  // todos os dados do painel sobre o nó (mesmo motor da ficha da busca, sem cortes e sem duplicar o que a ficha da rede já mostra)
+  function dadosPainel(o){ if(!window.__fichaDados) return null; window.__fichaRede=true; try{ return window.__fichaDados(o); }catch(e){ console.error(e); return null; } finally{ window.__fichaRede=false; } }
+  function painel(o,h){ const F=dadosPainel(o); if(!F){ sec('pq-painel',h,'<p class="pq-nota">Dados do painel indisponíveis.</p>'); return null; }
+    const html=String(F.html||'').replace(/<p class="fi-nota"><button[^>]*data-ver-rede[\s\S]*?<\/p>/,'');
+    sec('pq-painel',h,html); window.__fichaAtual=o; return F; }
   // base do painel: em que camadas aparece o termo (empresa e cada sócio)
   function naBase(termo){ const L=(window.__camadasTermo&&window.__camadasTermo(termo))||[]; return L.filter(x=>x[1]>0); }
-  function blocoBase(nomeEmp,socios){ const linhas=[]; const ce=naBase(nomeEmp);
-    linhas.push(`<li><b>${esc(nomeEmp)}</b> <small>empresa</small>${ce.length?`<span class="pq-cam">${ce.map(x=>esc(x[0])+': '+fmt(x[1])).join(' · ')}</span>`:'<span class="pq-cam pq-nada">não aparece em outras camadas pelo nome</span>'}</li>`);
-    let comHit=0; socios.forEach(s=>{ const L=naBase(s.n); if(!L.length) return; comHit++;
-      linhas.push(`<li><b>${esc(s.n)}</b> <small>${esc(s.q||'sócio')}</small><span class="pq-cam">${L.map(x=>esc(x[0])+': '+fmt(x[1])).join(' · ')}</span><span class="pq-acts"><button type="button" class="op-filter pq-b" data-pq-rede="${esc(s.n)}">Pôr na rede</button></span></li>`); });
+  function blocoBase(socios){ if(!socios.length) return '<p class="pq-nota">Sem sócios ou dirigentes pessoas físicas no cadastro.</p>'; const linhas=[]; let comHit=0;
+    socios.forEach(s=>{ const L=naBase(s.n); if(!L.length) return; comHit++;
+      linhas.push(`<li><b class="nm-link" data-nome="${esc(s.n)}" tabindex="0">${esc(s.n)}</b> <small>${esc(s.q||'sócio')}</small><span class="pq-cam">${L.map(x=>esc(x[0])+': '+fmt(x[1])).join(' · ')}</span><span class="pq-acts"><button type="button" class="op-filter pq-b" data-pq-rede="${esc(s.n)}">Pôr na rede</button></span></li>`); });
     const sem=socios.length-comHit;
-    return `<ul class="pq-list">${linhas.join('')}</ul><p class="pq-nota">${socios.length?`${comHit} de ${socios.length} sócio(s) ou dirigente(s) aparecem em outras camadas pelo nome${sem?`; ${sem} não aparecem`:''}. `:''}Coincidência de nome não prova que seja a mesma pessoa: verificar homonímia antes de qualquer conclusão.</p>`; }
+    return `${linhas.length?`<ul class="pq-list">${linhas.join('')}</ul>`:''}<p class="pq-nota">${comHit} de ${socios.length} sócio(s) ou dirigente(s) aparecem em outras camadas do painel pelo nome${sem?`; ${sem} não aparecem`:''}. Clique no nome para abrir a ficha. Coincidência de nome não prova que seja a mesma pessoa: verificar homonímia antes de qualquer conclusão.</p>`; }
   function blocoPncp(r,erro){ if(erro&&!r) return `<p class="pq-nota">${esc(erro)}</p>`; if(!r||!r.G.length) return `<p class="pq-nota">Nenhum contrato com órgão municipal ou estadual de SP encontrado no PNCP${r&&r.vivo?' (consulta em tempo real)':PN.ok?' (carga de '+esc(PN.ref)+')':''}.</p>`;
     const tot=r.G.reduce((a,g)=>a+g.n,0), v=r.G.reduce((a,g)=>a+g.v,0), x=r.G.reduce((a,g)=>a+(g.x||0),0);
-    return `<p class="pq-res"><b>${fmt(tot)}</b> contrato(s) com <b>${r.G.length}</b> órgão(s) · ${brl(v)}${x?` <small>(${x} acima de R$ 1 bilhão fora da soma: provável erro de registro)</small>`:''}</p><ul class="pq-list">${r.G.slice(0,8).map(g=>`<li><b>${esc(orgLab(g.o,munP(g.m),g.e))}</b><span class="pq-cam">${g.n} contrato(s) · ${brl(g.v)} · ${esc(br(g.d1))}${g.d2&&g.d2!==g.d1?' a '+esc(br(g.d2)):''}${links(g)}</span></li>`).join('')}</ul><p class="pq-nota">${r.G.length>8?`E mais ${r.G.length-8} órgão(s) na ficha da empresa. `:''}A rede mostra os 5 órgãos de maior valor; a ficha mostra todos. ${r.vivo?'Consulta em tempo real ao PNCP ('+esc(br(r.em))+').':'Carga do PNCP de '+esc(r.em)+(LIBERADO?'':' (a consulta em tempo real funciona no site público)')+'.'} Ter contrato público não é irregular.</p>`; }
-  async function consultaTripla(c,label){ const q=quadro(); q.hidden=false; const b=c.slice(0,8);
-    $('pq-t').textContent=label||fmtC(c); $('pq-s').textContent=c.length===14?'CNPJ '+fmtC(c):'CNPJ básico '+b;
-    sec('pq-rfb','Receita Federal',carregando); sec('pq-base','Outras relações na base do painel',carregando); sec('pq-pncp','Contratos no PNCP (órgãos de SP)',carregando);
-    const t0=performance.now();
-    // (a) Receita: o duplo clique já disparou a consulta (cnpjvivo.js); aqui esperamos a mesma resposta
-    const pRfb=(async()=>{ let d=null, fonte='';
-      if(LIBERADO&&c.length===14&&window.__consultarCNPJ){ try{ d=await window.__consultarCNPJ(c); fonte=`tempo real (${d.fonte}, ${d.em})`; }catch(e){ d=null; } }
-      if(!d){ const R=window.__rfb; if(R&&R.ok&&R.C[b]){ const x=R.C[b]; const soc=R.V.filter(v=>v[0]===b&&v[1][0]!=='c').map(v=>({n:tit((R.P[v[1]]||[])[0]||''),q:v[2]})).filter(s=>s.n);
-          d={r:x[0]||label,s:x[2]||'',m:x[4]||'',uf:x[3]||'',q:soc}; fonte='base mensal da Receita do painel ('+(R.ref||'')+')'; } }
-      if(!d){ sec('pq-rfb','Receita Federal','<p class="pq-nota">Cadastro indisponível agora.</p>'); return []; }
-      const nome=tit(d.r||label); $('pq-t').textContent=nome;
-      const socios=(d.q||[]).filter(s=>!s.pj).map(s=>({n:s.n,q:s.q}));
-      sec('pq-rfb','Receita Federal',`<p class="pq-res">${esc(d.s||'')}${d.m?' · '+esc(d.m)+'/'+esc(d.uf||''):''} · ${(d.q||[]).length} sócio(s) ou dirigente(s)</p><p class="pq-nota">Fonte: ${esc(fonte)}.</p>`);
-      return [nome,socios]; })();
-    // (b) base do painel: empresa e sócios em todas as camadas (instantâneo depois que a Receita responde)
-    sec('pq-base','Outras relações na base do painel',blocoBase(label,[])+'<p class="pq-load"><span class="pq-spin" aria-hidden="true"></span>buscando os sócios…</p>');
-    pRfb.then(r=>{ const [nome,socios]=r&&r.length?r:[label,[]]; sec('pq-base','Outras relações na base do painel',blocoBase(nome||label,socios||[])); });
-    // (c) PNCP: na hora no site público; carga do painel como reserva
-    const pP=(async()=>{ if(LIBERADO&&c.length===14){ try{ await pncpVivo(c); window.__renderNet&&window.__renderNet(); return [grupos(b),null]; }catch(e){ const r=grupos(b); return [r,r?null:'O PNCP não respondeu agora; tente de novo em instantes.']; } }
-      return [grupos(b),null]; })();
-    pP.then(([r,erro])=>{ sec('pq-pncp','Contratos no PNCP (órgãos de SP)',blocoPncp(r,erro)+(r&&!r.vivo&&LIBERADO&&c.length===14?'<p class="pq-nota">O PNCP não respondeu agora; mostrando a carga do painel.</p>':'')); });
-    await Promise.allSettled([pRfb,pP]); $('pq-s').textContent+=` · consulta concluída em ${((performance.now()-t0)/1000).toFixed(1).replace('.',',')} s`; }
-  window.__consultaTripla=consultaTripla;
-  // duplo clique numa empresa: mantém a expansão pela Receita (cnpjvivo.js) e acrescenta a consulta tripla
-  const dbl0=window.__netDbl;
-  window.__netDbl=d=>{ const r=dbl0?dbl0(d):false; if(d&&(d.type==='emp'||d.type==='ent')){ const c=(function(){ const f=so(d.ficha||''); if(f.length===14) return f;
-        if(String(d.id).startsWith('c:')){ const x=so(d.id.slice(2)); if(x.length===14) return x; if(x.length>=8){ const R=window.__rfb; const e=R&&R.C[x.slice(0,8)]; if(e&&e[9]) return e[9]; const p=PN.B[x.slice(0,8)]; return p?p[1]:x; } }
-        if(String(d.id).startsWith('n:')){ const e=(D.ENT||[]).find(x=>'n:'+x.ent===d.id); return so(e&&e.cnpj); } return ''; })();
-      if(c.length>=8){ consultaTripla(c,d.label); const nb=naBaseEmp(c,d); if(nb&&window.abrirFicha) setTimeout(()=>{ try{ window.abrirFicha({tipo:'pessoa',nome:nb,cnpj:c.length===14?c:'',semFiltro:true}); }catch(e){ console.error(e); } },60); return true; } } return r; };
+    return `<p class="pq-res"><b>${fmt(tot)}</b> contrato(s) com <b>${r.G.length}</b> órgão(s) · ${brl(v)}${x?` <small>(${x} acima de R$ 1 bilhão fora da soma: provável erro de registro)</small>`:''}</p><ul class="pq-list">${r.G.map(g=>`<li><b>${esc(orgLab(g.o,munP(g.m),g.e))}</b><span class="pq-cam">${g.n} contrato(s) · ${brl(g.v)} · ${esc(br(g.d1))}${g.d2&&g.d2!==g.d1?' a '+esc(br(g.d2)):''}${links(g)}</span></li>`).join('')}</ul><p class="pq-nota">A rede mostra os 5 órgãos de maior valor; aqui estão todos. ${r.vivo?'Consulta em tempo real ao PNCP ('+esc(br(r.em))+').':'Carga do PNCP de '+esc(r.em)+(LIBERADO?'':' (a consulta em tempo real funciona no site público)')+'.'} Ter contrato público não é irregular.</p>`; }
+  function limpar(){ ['pq-acoes','pq-rfb','pq-pncp','pq-base','pq-painel'].forEach(id=>{ const el=$(id); if(el){ el.innerHTML=''; el.hidden=true; } }); }
+  function abrir(kick,titulo,sub){ const q=quadro(); limpar(); q.hidden=false; $('pq-k').textContent=kick; $('pq-t').textContent=titulo; $('pq-s').textContent=sub||''; $('pq-body').scrollTop=0; return q; }
+  function cnpjNo(d){ const f=so(d.ficha||''); if(f.length===14) return f;
+    if(String(d.id).startsWith('c:')){ const x=so(d.id.slice(2)); if(x.length===14) return x; if(x.length>=8){ const R=window.__rfb; const e=R&&R.C[x.slice(0,8)]; if(e&&e[9]) return e[9]; const p=PN.B[x.slice(0,8)]; return p?p[1]:x; } }
+    if(String(d.id).startsWith('n:')){ const e=(D.ENT||[]).find(x=>'n:'+x.ent===d.id); return so(e&&e.cnpj); } return ''; }
   // empresa que já consta na base do painel (qualquer camada): devolve o nome com que a base a registra
   function naBaseEmp(c,d){ const b=c.slice(0,8); const ix=window.__entIdx||[];
     const e=ix.find(x=>x.t==='e'&&String(x.k||'').replace(/\D/g,'').slice(0,8)===b); if(e) return e.n;
-    if(PN.B[b]) return tit(PN.B[b][0]); const R=window.__rfb; if(R&&R.ok&&R.C[b]) return tit(R.C[b][0]||d.label);
     if(String(d.id).startsWith('n:')) return String(d.id).slice(2);
-    const raw=JSON.stringify(((window.DATA||D).SANC)||'')+JSON.stringify(((window.DATA||D).TCU)||''); if(raw.includes(c)) return d.label;
+    if(PN.B[b]) return tit(PN.B[b][0]); const R=window.__rfb; if(R&&R.ok&&R.C[b]) return tit(R.C[b][0]||d.label);
     return null; }
-
+  async function fichaEmpresa(d,c){ const b=c.slice(0,8); const label=d.label||fmtC(c); const nb=naBaseEmp(c,d);
+    abrir(TIPOS[d.type]||'Empresa',label,c.length===14?'CNPJ '+fmtC(c):'CNPJ básico '+b);
+    sec('pq-rfb','Receita Federal',carregando); sec('pq-pncp','Contratos no PNCP (órgãos de SP)',carregando); sec('pq-base','Sócios e dirigentes em outras camadas do painel',carregando);
+    painel({tipo:'pessoa',nome:nb||label,cnpj:c.length===14?c:''},nb?'Dados do painel sobre a empresa':'Dados do painel');
+    const t0=performance.now();
+    const pRfb=(async()=>{ let x=null, fonte='';
+      if(LIBERADO&&c.length===14&&window.__consultarCNPJ){ try{ x=await window.__consultarCNPJ(c); fonte=`tempo real (${x.fonte}, ${x.em})`; }catch(e){ x=null; } }
+      if(!x){ const R=window.__rfb; if(R&&R.ok&&R.C[b]){ const e=R.C[b]; const soc=R.V.filter(v=>v[0]===b&&v[1][0]!=='c').map(v=>({n:tit((R.P[v[1]]||[])[0]||''),q:v[2]})).filter(s=>s.n);
+          x={r:e[0]||label,s:e[2]||'',m:e[4]||'',uf:e[3]||'',q:soc,cn:e[6]||'',nj:e[7]||'',ab:e[5]||''}; fonte='base mensal da Receita do painel ('+(R.ref||'')+')'; } }
+      if(!x){ sec('pq-rfb','Receita Federal','<p class="pq-nota">Cadastro indisponível agora.</p>'); return []; }
+      $('pq-t').textContent=tit(x.r||label);
+      const socios=(x.q||[]).filter(s=>!s.pj).map(s=>({n:s.n,q:s.q}));
+      sec('pq-rfb','Receita Federal',`<p class="pq-res">${esc(x.s||'')}${x.m?' · '+esc(x.m)+'/'+esc(x.uf||''):''}${x.ab?' · aberta em '+esc(x.ab):''}</p>${x.cn||x.nj?`<p class="pq-nota">${esc([x.cn,x.nj].filter(Boolean).join(' · '))}</p>`:''}${(x.q||[]).length?`<ul class="pq-list">${x.q.map(s=>`<li><b>${esc(s.n)}</b> <small>${esc(s.q||'sócio')}${s.de?' · desde '+esc(s.de):''}${s.pj?' · pessoa jurídica':''}</small></li>`).join('')}</ul>`:''}<p class="pq-nota">Fonte: ${esc(fonte)}. O CPF dos sócios não é exibido nem guardado.</p>`);
+      return socios; })();
+    pRfb.then(socios=>sec('pq-base','Sócios e dirigentes em outras camadas do painel',blocoBase(socios||[])));
+    const pP=(async()=>{ if(LIBERADO&&c.length===14){ try{ await pncpVivo(c); window.__renderNet&&window.__renderNet(); return [grupos(b),null,false]; }catch(e){ const r=grupos(b); return [r,r?null:'O PNCP não respondeu agora; tente de novo em instantes.',!!r]; } }
+      return [grupos(b),null,false]; })();
+    pP.then(([r,erro,falhou])=>sec('pq-pncp','Contratos no PNCP (órgãos de SP)',blocoPncp(r,erro)+(falhou?'<p class="pq-nota">O PNCP não respondeu agora; mostrando a carga do painel.</p>':'')));
+    await Promise.allSettled([pRfb,pP]); $('pq-s').textContent+=` · consultas concluídas em ${((performance.now()-t0)/1000).toFixed(1).replace('.',',')} s`; }
+  function fichaOrgao(d){ const lb=d.label; abrir(TIPOS[d.type]||'Órgão público',lb,d.mun?'órgão de '+d.mun:d.type==='org'?'Governo do Estado de SP':'');
+    const L=(PN.ok&&reverso()[d.id])||[];
+    if(L.length){ const tot=L.reduce((a,x)=>a+x[2].n,0), v=L.reduce((a,x)=>a+x[2].v,0);
+      sec('pq-pncp','Empresas da base contratadas por este órgão (PNCP)',`<p class="pq-res"><b>${fmt(L.length)}</b> empresa(s) · ${fmt(tot)} contrato(s) · ${brl(v)}</p><ul class="pq-list">${L.map(([,b,g])=>{ const e=PN.B[b]; return `<li><b class="nm-link" data-nome="${esc(tit(e[0]))}" tabindex="0">${esc(tit(e[0]))}</b> <small>CNPJ ${esc(fmtC(e[1]))}</small><span class="pq-cam">${g.n} contrato(s) · ${brl(g.v)} · ${esc(br(g.d1))}${g.d2&&g.d2!==g.d1?' a '+esc(br(g.d2)):''}${links(g)}</span>${e[3]?`<span class="pq-cam">No painel: ${esc(e[3])}</span>`:''}</li>`; }).join('')}</ul><p class="pq-nota">Carga do PNCP de ${esc(PN.ref)}. Ter contrato público não é irregular.</p>`); }
+    const m=d.type==='org'?'Governo do Estado de SP':d.mun;
+    if(m){ $('pq-acoes').hidden=false; $('pq-acoes').innerHTML=`<button type="button" class="op-filter pq-b" data-pq-filtro="mun|${esc(m)}">Filtrar o painel por ${esc(m)}</button>`; painel({tipo:'mun',nome:m},'Dados do painel sobre '+m); } }
+  function fichaRede(d){ if(!d||!TIPOS[d.type]) return false;
+    if(d.type==='emp'||d.type==='ent'){ const c=cnpjNo(d); if(c.length>=8){ fichaEmpresa(d,c); return true; } }
+    if(d.type==='orgp'||d.type==='org'){ fichaOrgao(d); return true; }
+    if(d.type==='op'){ abrir('Operação',d.label,''); $('pq-acoes').hidden=false; $('pq-acoes').innerHTML=`<button type="button" class="op-filter pq-b" data-pq-filtro="op|${esc(d.label)}">Filtrar o painel por esta operação</button>`; const F=painel({tipo:'op',nome:d.label},'Dados do painel sobre a operação'); if(F) $('pq-s').textContent=F.sub||''; return true; }
+    if(d.type==='mun'){ abrir('Município',d.label,''); $('pq-acoes').hidden=false; $('pq-acoes').innerHTML=`<button type="button" class="op-filter pq-b" data-pq-filtro="mun|${esc(d.label)}">Filtrar o painel por ${esc(d.label)}</button>`; const F=painel({tipo:'mun',nome:d.label},'Dados do painel sobre o município'); if(F) $('pq-s').textContent=F.sub||''; return true; }
+    // pessoas (agente, responsável, sócio, eleito) e empresas sem CNPJ conhecido
+    const nome=d.ficha&&!/^\d+$/.test(so(d.ficha)||'x')?d.ficha:d.label; abrir(TIPOS[d.type]||'Pessoa',nome,d.cargo||'');
+    const F=painel({tipo:'pessoa',nome},'Dados do painel'); if(F){ $('pq-t').textContent=F.titulo||nome; if(F.sub) $('pq-s').textContent=F.sub; }
+    return true; }
+  window.__fichaRedeAbrir=fichaRede;
+  window.__consultaTripla=(c,label)=>fichaEmpresa({type:'emp',label,id:'c:'+c,ficha:c},c);
+  // duplo clique: abre o nó no grafo (empresa e pessoa pela Receita, como antes; demais nós, expansão simples) e mostra a ficha da rede.
+  // Ctrl/Shift + duplo clique: só a ficha. A ficha antiga (modal da busca) não abre mais a partir do grafo.
+  const dbl0=window.__netDbl;
+  window.__netDbl=(d,o)=>{ if(!d||!TIPOS[d.type]) return dbl0?dbl0(d):false; const so_=o&&o.ctrl;
+    if(!so_){ let r=false; try{ r=dbl0?dbl0(d):false; }catch(e){ console.error(e); }
+      if(!r){ const N=window.__NET; if(N){ N.all=false; N.expanded.add(d.id); } window.__renderNet&&window.__renderNet(); } }
+    fichaRede(d); return true; };
   // ---------- carga
   function carregar(){ fetch('dados/pncp.json',{cache:'force-cache'}).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(j=>{ Object.assign(PN,{B:j.B||{},O:j.O||[],M:j.M||[],ref:j.ref||'',n:j.n||{}}); RV=null; PN.ok=true; window.__renderNet&&window.__renderNet(); }).catch(()=>{}); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',carregar); else carregar();
