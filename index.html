@@ -881,6 +881,31 @@ table.hm{min-width:0; border-collapse:separate; border-spacing:2px;}
 .nov-d summary b{font-family:var(--serif); font-size:15px;} .nov-d summary small{font-size:12px; color:var(--text-muted);}
 .nov-t{color:var(--text); font-size:13px;} .nov-d[open] summary{margin-bottom:4px;}
 .nov-tog{margin:0 0 6px;}
+/* páginas institucionais */
+.in-dlg{width:min(980px,96vw); max-height:92vh; padding:0; border:0; border-radius:10px; box-shadow:0 24px 60px rgba(0,0,0,.35); color:var(--text); background:var(--card);}
+.in-dlg::backdrop{background:rgba(12,22,44,.55);}
+.in-head{display:flex; justify-content:space-between; align-items:center; gap:10px; padding:14px 20px; color:#fff; background:var(--navy);}
+.in-head h2{margin:0; font-family:var(--serif); font-size:19px;}
+.in-x{width:38px; height:38px; font-size:26px; line-height:1; color:#fff; background:none; border:0; cursor:pointer;}
+.in-corpo{display:grid; grid-template-columns:230px minmax(0,1fr); min-height:0; max-height:calc(92vh - 130px);}
+.in-nav{display:flex; flex-direction:column; gap:2px; padding:12px 8px; border-right:1px solid var(--border); overflow-y:auto; background:var(--card-head);}
+.in-nav button{text-align:left; padding:8px 10px; font:13.5px var(--sans); color:var(--text); background:none; border:0; border-radius:4px; cursor:pointer;}
+.in-nav button:hover{background:var(--bg);} .in-nav button.on{background:var(--navy); color:#fff; font-weight:600;}
+.in-txt{padding:16px 24px 10px; overflow-y:auto; font-size:14px; line-height:1.65; max-width:none; outline:none;}
+.in-txt p,.in-txt li,.in-txt dd{max-width:72ch;} .in-txt h3{font-family:var(--serif); font-size:16px; margin:18px 0 6px; color:var(--navy);}
+.in-txt a{color:var(--link);} .in-val dt{font-weight:700; margin-top:10px;} .in-val dd{margin:2px 0 0 0;}
+.in-tab{min-width:0; width:100%; font-size:13px; margin:8px 0;} .in-tab th,.in-tab td{padding:6px 8px; text-align:left; border-bottom:1px solid var(--border);}
+.in-cit{padding:10px 12px; background:var(--card-head); border-left:3px solid var(--gold); font-size:13.5px;}
+.in-pend{color:#8a5a00; background:#fff3d1; padding:0 6px; border-radius:3px;}
+.in-data{margin-top:18px; font-size:12px; color:var(--text-muted);}
+.in-foot{display:flex; justify-content:flex-end; padding:10px 20px 14px; border-top:1px solid var(--border);}
+.in-rod-w{margin-top:18px; padding-top:12px; border-top:1px solid var(--border);}
+.in-rod{display:flex; flex-wrap:wrap; gap:6px 16px; font-size:12.5px;} .in-rod a{color:var(--link); text-decoration:none;} .in-rod a:hover{text-decoration:underline;}
+.in-rod-n{margin:8px 0 0; font-size:11.5px; color:var(--text-muted);}
+.in-rod-ini{padding:14px 0 6px;} .in-rod-ini .in-rod a{color:#c9d5ea;} .in-rod-ini .in-rod-n{color:#9fb0cc;}
+.in-ck{position:fixed; left:50%; bottom:calc(16px + env(safe-area-inset-bottom,0px)); transform:translateX(-50%); z-index:2147483000; display:flex; align-items:center; gap:14px; width:min(720px,94vw); padding:12px 14px 12px 18px; font-size:13px; color:var(--text); background:var(--card); border:1px solid var(--border); border-left:4px solid var(--gold); border-radius:8px; box-shadow:0 10px 30px rgba(0,0,0,.25);}
+.in-ck p{margin:0; flex:1;} .in-ck a{color:var(--link);}
+@media (max-width:760px){ .in-corpo{grid-template-columns:1fr; max-height:calc(100vh - 130px);} .in-nav{flex-direction:row; overflow-x:auto; border-right:0; border-bottom:1px solid var(--border);} .in-nav button{white-space:nowrap;} .in-dlg{width:100vw; max-width:100vw; height:100vh; max-height:100vh; border-radius:0;} .in-txt{padding:14px 16px;} .in-ck{flex-direction:column; align-items:stretch;} }
 /* ===== Página inicial do OISP (camada sobre o painel) =====
    Layout: barra com a marca; abertura em duas colunas (logo + texto e busca); faixa de números;
    grade de módulos = abas do painel, cada um com os atalhos das suas seções; fontes; rodapé.
@@ -4539,6 +4564,142 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   sug.addEventListener('mousedown',e=>e.preventDefault());
   sug.addEventListener('click',e=>{ const b=e.target.closest('.tj-opt'); if(b) escolher(itens[+b.dataset.i]); });
   document.addEventListener('click',e=>{ if(!bar.contains(e.target)) fechar(); });
+})();
+
+</script>
+<script>
+// ===================== PÁGINAS INSTITUCIONAIS =====================
+// Quem somos, missão e valores, aviso legal, termos de uso, privacidade (LGPD), cookies e armazenamento,
+// direito de resposta e correções, fontes e licenças, como citar e acessibilidade. Abrem numa janela própria,
+// pelo rodapé da página inicial e do painel, ou por link direto (#sobre, #privacidade, #cookies…).
+(function(){
+  const CONTATO=''; // canal de contato oficial (e-mail ou formulário): preencher. Vazio = "a definir".
+  const ATUALIZADO='13/10/2026';
+  const contato=()=>CONTATO?`<a href="${/^https?:/.test(CONTATO)?CONTATO:'mailto:'+CONTATO}">${CONTATO}</a> (copie o endereço se o link não abrir)`:'<span class="in-pend">canal de contato a definir</span>';
+  const P=[
+   ['sobre','Quem somos',()=>`
+    <p>O <b>Observatório da Integridade – SP (OISP)</b> reúne, organiza e apresenta informações públicas sobre investigações, medidas judiciais e administrativas e decisões de controle externo que envolvem agentes públicos dos <b>municípios paulistas e do Governo do Estado de São Paulo</b>.</p>
+    <p>Seu propósito é <b>apoiar as investigações e a transparência pública</b>: facilitar o trabalho de órgãos de controle, imprensa, pesquisadores e cidadãos que acompanham a integridade da gestão pública, com dados verificáveis e sempre ligados às fontes originais.</p>
+    <h3>O que o painel apresenta</h3>
+    <ul><li>Operações policiais e ministeriais, medidas cautelares, denúncias, ações de improbidade, cassações, condenações, absolvições e arquivamentos.</li>
+    <li>Atos de controle externo (Tribunal de Contas do Estado, Tribunal de Contas do Município de São Paulo, TCU), sanções administrativas (CEIS/CNEP) e impedimentos.</li>
+    <li>Cruzamentos de dados abertos (contratos públicos, quadro societário, dados eleitorais), apresentados como <b>sinais para verificação</b>, nunca como conclusão.</li></ul>
+    <h3>O que o painel não é</h3>
+    <p>O Observatório não é órgão público, não investiga, não acusa e não julga. Não substitui a consulta aos autos, às decisões oficiais e aos órgãos competentes.</p>`],
+   ['valores','Missão, visão e valores',()=>`
+    <h3>Missão</h3><p>Tornar acessível, organizada e verificável a informação pública sobre integridade na administração dos municípios paulistas e do Governo do Estado, em apoio às investigações e ao controle social.</p>
+    <h3>Visão</h3><p>Ser referência de informação pública confiável, rigorosa e equilibrada sobre integridade na gestão pública paulista.</p>
+    <h3>Valores</h3>
+    <dl class="in-val">
+      <dt>Presunção de inocência</dt><dd>Investigação não é condenação. Toda pessoa citada é tratada como inocente até decisão definitiva, e os desfechos favoráveis (absolvição, arquivamento, anulação) recebem o mesmo destaque que as acusações.</dd>
+      <dt>Rigor e verificabilidade</dt><dd>Cada informação vem de fonte identificada e classificada por confiabilidade, com link para o original. Um registro a menos é preferível a um registro errado.</dd>
+      <dt>Separação das esferas</dt><dd>Criminal, improbidade, político-administrativa, eleitoral e controle de contas são esferas distintas e nunca são somadas num mesmo indicador.</dd>
+      <dt>Imparcialidade e apartidarismo</dt><dd>Os mesmos critérios valem para qualquer pessoa, cargo, partido ou governo.</dd>
+      <dt>Linguagem não acusatória</dt><dd>Os fatos são descritos com verbos precisos e atribuídos à fonte, sem adjetivos e sem antecipar desfechos.</dd>
+      <dt>Transparência metodológica</dt><dd>Critérios de inclusão, classificação e cruzamento são públicos e explicados na aba Metodologia.</dd>
+      <dt>Proteção de dados pessoais</dt><dd>Só se tratam os dados necessários à finalidade de interesse público; documentos pessoais, como CPF, nunca são guardados nem exibidos.</dd>
+      <dt>Correção e direito de resposta</dt><dd>Erros são corrigidos com registro do que mudou, e as pessoas citadas podem pedir correção, atualização ou inclusão de sua manifestação.</dd>
+    </dl>`],
+   ['aviso-legal','Aviso legal',()=>`
+    <p>As informações deste site têm <b>caráter exclusivamente informativo</b> e foram obtidas em <b>fontes públicas</b>: comunicados oficiais de órgãos públicos, diários oficiais, consultas processuais públicas, cadastros e bases de dados abertos e reportagens de veículos de imprensa identificados.</p>
+    <ul>
+      <li><b>Presunção de inocência.</b> A menção a uma pessoa, empresa ou entidade não significa que ela tenha cometido ilícito. Investigação, denúncia, indiciamento, afastamento, prisão cautelar ou apontamento de Tribunal de Contas não equivalem a condenação. Condenação só é definitiva após o trânsito em julgado (Constituição Federal, art. 5º, LVII).</li>
+      <li><b>Natureza dos cruzamentos.</b> Cruzamentos de dados (por exemplo, empresa sancionada com contrato público, sócio com mesmo nome de agente) são <b>sinais para verificação</b>. Podem conter homonímia, erro de registro na fonte ou situação já regularizada.</li>
+      <li><b>Atualidade.</b> As informações refletem a data-base indicada no painel. Decisões posteriores podem alterar a situação descrita; confira sempre a fonte original e os autos.</li>
+      <li><b>Responsabilidade.</b> O conteúdo das fontes é de responsabilidade de quem o publicou. O Observatório não se responsabiliza por decisões tomadas exclusivamente com base no painel, nem pelo conteúdo de sites externos.</li>
+      <li><b>Não é órgão oficial.</b> O Observatório não tem vínculo com os órgãos citados e não fala em nome deles.</li>
+      <li><b>Correções.</b> Se encontrar erro ou informação desatualizada, use o canal de <a href="#direito-de-resposta" data-in="direito-de-resposta">direito de resposta e correções</a>.</li>
+    </ul>`],
+   ['termos','Termos de uso',()=>`
+    <ol>
+      <li><b>Aceitação.</b> Ao usar este site, você concorda com estes termos e com a <a href="#privacidade" data-in="privacidade">política de privacidade</a>.</li>
+      <li><b>Uso permitido.</b> O conteúdo pode ser consultado, citado e reutilizado para fins de informação, pesquisa, jornalismo, controle social e controle institucional, com <a href="#como-citar" data-in="como-citar">citação da fonte</a> e da data-base.</li>
+      <li><b>Uso vedado.</b> Não é permitido usar o conteúdo para assédio, discriminação, exposição indevida de pessoas, ou de forma que distorça o sentido das informações, retire o contexto (por exemplo, apresentar investigação como condenação) ou omita desfechos favoráveis.</li>
+      <li><b>Dados de terceiros.</b> Dados de bases públicas (Receita Federal, CGU, PNCP, TSE, CNJ, Tribunais de Contas e outras) seguem as condições de uso de cada fonte, indicadas em <a href="#fontes" data-in="fontes">fontes e licenças</a>.</li>
+      <li><b>Disponibilidade.</b> O site pode ficar indisponível, mudar ou ser descontinuado sem aviso. Consultas em tempo real a serviços externos dependem desses serviços.</li>
+      <li><b>Alterações.</b> Estes termos podem ser atualizados; a data da última revisão aparece no fim de cada página.</li>
+      <li><b>Legislação.</b> Aplicam-se as leis brasileiras, em especial a Lei de Acesso à Informação (Lei 12.527/2011), o Marco Civil da Internet (Lei 12.965/2014) e a Lei Geral de Proteção de Dados (Lei 13.709/2018).</li>
+    </ol>`],
+   ['privacidade','Política de privacidade',()=>`
+    <h3>1. Dados de visitantes</h3>
+    <p>O site <b>não pede cadastro, não usa formulários de coleta e não usa ferramentas de análise de audiência nem publicidade</b>. Não identificamos quem visita o site.</p>
+    <p>Como em qualquer site, o serviço de hospedagem (Vercel) e as redes de distribuição de bibliotecas e fontes (Cloudflare/cdnjs e Google Fonts) recebem dados técnicos de acesso, como endereço IP e tipo de navegador, para entregar as páginas. Esses dados são tratados por esses provedores conforme suas próprias políticas.</p>
+    <p>Quando você usa a <b>consulta de CNPJ em tempo real</b> (site público), o número consultado é enviado ao serviço BrasilAPI (ou, na falta, ao Minha Receita) para buscar o cadastro aberto da Receita Federal. Nada mais é enviado.</p>
+    <h3>2. Dados de pessoas citadas no painel</h3>
+    <p>O painel trata dados de <b>agentes públicos, empresas e entidades</b> relacionados a atos de interesse público, a partir de informações de acesso público. O tratamento observa a finalidade, a boa-fé e o interesse público que justificaram a disponibilização desses dados (LGPD, art. 7º, §3º) e a natureza jornalística, informativa e de controle social do conteúdo.</p>
+    <ul>
+      <li><b>Dados tratados:</b> nome, cargo ou função, órgão, município, fatos processuais e administrativos noticiados ou publicados por órgãos oficiais, vínculos societários públicos e dados eleitorais públicos.</li>
+      <li><b>Dados que nunca tratamos:</b> CPF (inteiro ou mascarado), RG, endereço residencial, dados de saúde e dados de familiares que não sejam agentes públicos. Ao ler bases que trazem documentos, eles são descartados na leitura.</li>
+      <li><b>Homonímia:</b> quando a ligação entre registros depende só do nome, o painel avisa "verificar homonímia".</li>
+      <li><b>Atualização:</b> desfechos favoráveis e correções são incorporados e registrados no histórico de alterações.</li>
+    </ul>
+    <h3>3. Direitos do titular</h3>
+    <p>Você pode pedir confirmação de tratamento, acesso, correção, atualização ou inclusão de manifestação sobre dados que lhe digam respeito (LGPD, art. 18), pelo canal ${contato()}. Veja também <a href="#direito-de-resposta" data-in="direito-de-resposta">direito de resposta e correções</a>.</p>
+    <h3>4. Segurança</h3>
+    <p>A base mestre fica em banco de dados com acesso de escrita restrito; o site público só lê os dados já publicados.</p>`],
+   ['cookies','Política de cookies e armazenamento',()=>`
+    <p><b>Este site não usa cookies de rastreamento, de publicidade nem de análise de audiência.</b></p>
+    <p>Para funcionar, o painel guarda algumas informações <b>apenas no seu navegador</b>, sem envio a nós:</p>
+    <table class="in-tab"><thead><tr><th>Item</th><th>Onde</th><th>Para quê</th><th>Duração</th></tr></thead><tbody>
+      <tr><td>Critério de alcance das sanções</td><td>armazenamento local</td><td>lembrar a escolha entre "registro e lei" e "Súmula 51"</td><td>até você limpar os dados do site</td></tr>
+      <tr><td>Estado da página ao atualizar</td><td>armazenamento da sessão</td><td>manter aba, filtros e posição quando a página se atualiza sozinha</td><td>até fechar a aba (no máximo 10 minutos)</td></tr>
+      <tr><td>Consultas de CNPJ em tempo real</td><td>armazenamento da sessão</td><td>evitar repetir a mesma consulta</td><td>até fechar a aba</td></tr>
+      <tr><td>Aviso de cookies lido</td><td>armazenamento local</td><td>não mostrar de novo este aviso</td><td>até você limpar os dados do site</td></tr>
+    </tbody></table>
+    <p>Esses itens são estritamente necessários ao funcionamento das funções que você usa. Você pode apagá-los a qualquer momento nas configurações do navegador (dados do site), sem prejuízo da consulta.</p>
+    <p>Provedores de terceiros (hospedagem, bibliotecas e fontes) podem registrar dados técnicos de acesso conforme suas políticas; veja a <a href="#privacidade" data-in="privacidade">política de privacidade</a>.</p>`],
+   ['direito-de-resposta','Direito de resposta e correções',()=>`
+    <p>Pessoas, empresas e entidades citadas podem pedir <b>correção, atualização ou inclusão de sua manifestação</b>. Qualquer pessoa pode apontar erro.</p>
+    <h3>Como pedir</h3>
+    <ol><li>Envie o pedido pelo canal ${contato()}.</li>
+    <li>Informe o registro ou a página (nome, município, operação), o que deve ser corrigido e, se possível, o documento que comprova (decisão, certidão, publicação oficial ou reportagem).</li></ol>
+    <h3>Como tratamos</h3>
+    <ul><li>Todo pedido é conferido nas fontes. Comprovada a informação, o registro é atualizado e a mudança fica no histórico de alterações, com data, valor anterior e novo valor.</li>
+    <li>Desfechos favoráveis (absolvição, arquivamento, trancamento, anulação, suspensão de efeitos) entram como evento novo e atualizam a situação dos registros anteriores.</li>
+    <li>A manifestação da pessoa citada pode ser incluída na descrição do registro.</li>
+    <li>Erros do próprio Observatório são corrigidos assim que identificados.</li></ul>`],
+   ['fontes','Fontes e licenças',()=>`
+    <p>O painel usa informações públicas, sempre com link para o original. As principais fontes são:</p>
+    <ul>
+      <li><b>Órgãos oficiais:</b> Ministério Público de São Paulo, Polícia Federal, Polícia Civil, Controladoria-Geral da União, Controladoria Geral do Estado, Agência SP, prefeituras e câmaras.</li>
+      <li><b>Justiça:</b> consultas públicas do Tribunal de Justiça de São Paulo (1º e 2º grau) e Cadastro Nacional de Condenações por Improbidade (CNJ).</li>
+      <li><b>Controle externo:</b> Tribunal de Contas do Estado de São Paulo (contas, pareceres, listas de apenados), Tribunal de Contas do Município de São Paulo e Tribunal de Contas da União.</li>
+      <li><b>Dados abertos:</b> CEIS e CNEP (Portal da Transparência/CGU), Portal Nacional de Contratações Públicas (PNCP), base do CNPJ da Receita Federal e dados eleitorais do TSE.</li>
+      <li><b>Imprensa:</b> veículos identificados, classificados por confiabilidade da fonte (A a F) e credibilidade da informação (1 a 6).</li>
+    </ul>
+    <p>Cada base segue as condições de uso de quem a publica. Recortes de manchetes reproduzem só o título e levam à reportagem original. Marcas e nomes de veículos pertencem aos seus titulares.</p>`],
+   ['como-citar','Como citar',()=>`
+    <p>Ao usar informações do painel, cite o Observatório, a data-base e, sempre que possível, a fonte original do registro:</p>
+    <p class="in-cit">OBSERVATÓRIO DA INTEGRIDADE – SP (OISP). <i>Painel do Observatório da Integridade – SP: municípios paulistas e Governo do Estado de São Paulo</i>. Data-base: ${(((document.querySelector('.hero-id')||{}).textContent||'').match(/\d{2}\/\d{2}\/\d{4}/)||['[data-base do painel]'])[0]}. Disponível em: https://oisp.vercel.app. Acesso em: [data].</p>
+    <p>Lembre de manter o contexto: investigação não é condenação, e a situação processual pode ter mudado depois da data-base.</p>`],
+   ['acessibilidade','Acessibilidade',()=>`
+    <p>O painel busca seguir boas práticas de acessibilidade na web: navegação por teclado (atalho "/" para a busca), textos alternativos, contraste adequado, tema claro e escuro, leitura em telas pequenas e tabelas que podem ser baixadas em CSV.</p>
+    <p>Gráficos e redes de relações têm a informação equivalente em tabelas e fichas. Se encontrar barreira de acesso, informe pelo canal ${contato()}.</p>`]
+  ];
+  const IDX=Object.fromEntries(P.map(p=>[p[0],p]));
+  const dlg=document.createElement('dialog'); dlg.className='in-dlg'; dlg.setAttribute('aria-labelledby','in-t');
+  dlg.innerHTML=`<div class="in-head"><h2 id="in-t">Institucional</h2><button type="button" class="in-x" aria-label="Fechar">×</button></div><div class="in-corpo"><nav class="in-nav" aria-label="Páginas institucionais">${P.map(p=>`<button type="button" data-in="${p[0]}">${p[1]}</button>`).join('')}</nav><article class="in-txt" id="in-txt" tabindex="-1"></article></div><div class="in-foot"><button type="button" class="fi-btn in-ok">OK</button></div>`;
+  document.body.appendChild(dlg);
+  function abrir(id){ const p=IDX[id]||P[0]; dlg.querySelector('#in-t').textContent=p[1];
+    dlg.querySelector('#in-txt').innerHTML=p[2]()+`<p class="in-data">Observatório da Integridade – SP · última revisão: ${ATUALIZADO}</p>`;
+    dlg.querySelectorAll('.in-nav button').forEach(b=>b.classList.toggle('on',b.dataset.in===p[0]));
+    if(!dlg.open) dlg.showModal(); dlg.querySelector('#in-txt').scrollTop=0; dlg.querySelector('#in-txt').focus({preventScroll:true}); }
+  window.__institucional=abrir;
+  dlg.addEventListener('click',e=>{ if(e.target===dlg||e.target.closest('.in-x,.in-ok')){ dlg.close(); return; } const b=e.target.closest('[data-in]'); if(b){ e.preventDefault(); abrir(b.dataset.in); } });
+  document.addEventListener('click',e=>{ const a=e.target.closest('a[data-in],button[data-in]'); if(a&&!dlg.contains(a)){ e.preventDefault(); e.stopPropagation(); abrir(a.dataset.in); } },true);
+  // rodapé institucional na página inicial e no painel
+  const links=()=>`<nav class="in-rod" aria-label="Institucional">${P.map(p=>`<a href="#${p[0]}" data-in="${p[0]}">${p[1]}</a>`).join('')}</nav><p class="in-rod-n">Observatório da Integridade – SP · apoio às investigações e à transparência pública · informações de fontes públicas; investigação não é condenação.</p>`;
+  function montar(){ const f=document.querySelector('body > footer, footer'); if(f&&!f.querySelector('.in-rod')){ const d=document.createElement('div'); d.className='in-rod-w'; d.innerHTML=links(); f.appendChild(d); }
+    const ini=document.querySelector('#inicio .oi-wrap'); if(ini&&!ini.querySelector('.in-rod')){ const d=document.createElement('footer'); d.className='in-rod-w in-rod-ini'; d.innerHTML=links(); ini.appendChild(d); } }
+  montar(); setTimeout(montar,1200);
+  // link direto (#sobre, #privacidade…)
+  const porHash=()=>{ const h=location.hash.slice(1); if(IDX[h]) setTimeout(()=>abrir(h),300); };
+  porHash(); window.addEventListener('hashchange',porHash);
+  // aviso de cookies: uma vez por navegador
+  let visto=false; try{ visto=localStorage.getItem('oisp-aviso-cookies')==='1'; }catch(e){ visto=true; }
+  if(!visto){ const av=document.createElement('div'); av.className='in-ck'; av.setAttribute('role','region'); av.setAttribute('aria-label','Aviso de cookies');
+    av.innerHTML=`<p>Este site <b>não usa cookies de rastreamento nem de publicidade</b>. Guardamos só preferências no seu navegador para o painel funcionar. <a href="#cookies" data-in="cookies">Saiba mais</a> · <a href="#privacidade" data-in="privacidade">Privacidade</a></p><button type="button" class="fi-btn">OK</button>`;
+    document.body.appendChild(av); av.querySelector('button').addEventListener('click',()=>{ try{ localStorage.setItem('oisp-aviso-cookies','1'); }catch(e){} av.remove(); }); }
 })();
 
 </script>
