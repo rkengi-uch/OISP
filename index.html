@@ -1928,23 +1928,25 @@ function netDedup(nodes,adj,et){
 
 function orgMun(x,add,lk){ const ch=(window.__ab&&window.__ab.chave)||(t=>nrmT(t)); const mun=x.mun; if(!mun||mun==='Intermunicipal') return add('m:'+mun,mun,'mun');
   const lab=x.orgest?x.orgest:(/legislativ/i.test(x.esfera||'')||/vereador|c[âa]mara/i.test(x.cargo||'')?'Câmara Municipal de '+mun:'Prefeitura Municipal de '+mun);
-  const id='og:'+ch(lab); add(id,lab,'orgp',{cargo:'órgão de '+mun,mun}); const mid=add('m:'+mun,mun,'mun'); lk(id,mid,'sede','órgão de '+mun); return id; }
+  const id='og:'+ch(lab); add(id,lab,'orgp',{cargo:'órgão de '+mun,mun}); const mid=add('m:'+mun,mun,'mun'); lk(id,mid,'sede',`órgão do município¦${lab} é órgão de ${mun}`); return id; }
 function buildNet(){
   const nodes=new Map(), adj=new Map(), et=new Map();
   const add=(id,label,type,extra)=>{ if(!nodes.has(id)) nodes.set(id,Object.assign({id,label,type},extra||{})); else if(extra&&extra.core) nodes.get(id).core=true; if(!adj.has(id)) adj.set(id,new Set()); return id; };
   const lk=(a,b,type,lab)=>{ adj.get(a).add(b); adj.get(b).add(a); const k=[a,b].sort().join('>'); const cur=et.get(k); if(!cur||EPRI[type]>EPRI[cur.type]) et.set(k,{type,lab:lab||ETYPE[type].lab}); };
   const O={noOp:true,noMun:true};
   rows(true,O).forEach(x=>{ const o=add('o:'+x.op,x.op,'op',{core:true}), m=x.nivel==='Estadual'&&x.orgest?add('g:'+x.orgest,x.orgest,'org'):orgMun(x,add,lk), a=add('a:'+x.nome+'|'+x.mun,x.nome,'ag',{cargo:x.cargo});
-    lk(o,m,'inv'); lk(m,a,'cargo',`${x.cargo} · ${x.op} · ${x.medida}`); lk(o,a,'inv',`${x.medida} · ${x.cargo}`);
-    if(x.empresa) x.empresa.split(';').forEach(e=>{ const n=e.replace(/\(.*?\)/g,'').trim(); if(n.length>2) lk(a,add('e:'+n,n,'emp'),'emp'); }); });
-  citRows(O).forEach(c=>{ lk(add('o:'+c.op,c.op,'op',{core:true}),c.nivel==='Estadual'&&c.orgest?add('g:'+c.orgest,c.orgest,'org'):add('m:'+c.mun,c.mun,'mun'),'cit',c.obs.length>70?c.obs.slice(0,68)+'…':c.obs); });
+    const orgN=(nodes.get(m)||{}).label||x.mun; lk(o,m,'inv',`investigação¦a operação ${x.op} alcança agente(s) de ${orgN}; veja cada agente para a medida e a situação`); lk(m,a,'cargo',`${x.cargo}¦${x.nome} atua (ou atuou) como ${String(x.cargo||'').toLowerCase()} em ${orgN}`); lk(o,a,'inv',`${x.medida}¦${x.medida} de ${x.nome} na operação ${x.op}${x.data?' ('+x.data+')':''} · situação: ${x.situacao||'—'} · fonte: ${x.fonte||''}`);
+    if(x.empresa) x.empresa.split(';').forEach(e=>{ const n=e.replace(/\(.*?\)/g,'').trim(); if(n.length>2) lk(a,add('e:'+n,n,'emp'),'emp',`empresa citada¦empresa citada no registro de ${x.nome} (operação ${x.op})`); }); });
+  citRows(O).forEach(c=>{ const est=c.nivel==='Estadual'&&c.orgest; const so=/mandado|busca|apreens|cumprid|pris[aã]o/i.test(c.obs||'')&&!/prefeit|c[aâ]mara|secretari|servidor|contrato|licita/i.test(c.obs||'');
+    const lab=est?`órgão alcançado¦órgão estadual alcançado pela operação ${c.op}: ${c.obs}`:so?`local de mandados¦${c.mun} é local de cumprimento de mandados da operação ${c.op}; isso não indica envolvimento da Prefeitura nem da Câmara · ${c.obs}`:`citado na operação¦${c.obs} · sem agente público identificado neste município`;
+    lk(add('o:'+c.op,c.op,'op',{core:true}),est?add('g:'+c.orgest,c.orgest,'org'):add('m:'+c.mun,c.mun,'mun'),'cit',lab); });
   const opIdx={}; [...nodes.keys()].filter(k=>k.startsWith('o:')).forEach(k=>{ opIdx[opKey(k.slice(2))]=k; });
-  newsRows(true,O).forEach(n=>{ if(!n[6]) return; const m=add('m:'+n[11],n[11],'mun'); n[6].split('; ').forEach(op=>{ const oid=opIdx[op.toLowerCase()]||add('o:'+op,op,'op'); lk(oid,m,'news','citada em notícia: '+(n[3].length>60?n[3].slice(0,58)+'…':n[3])); }); });
+  newsRows(true,O).forEach(n=>{ if(!n[6]) return; const m=add('m:'+n[11],n[11],'mun'); n[6].split('; ').forEach(op=>{ const oid=opIdx[op.toLowerCase()]||add('o:'+op,op,'op'); lk(oid,m,'news',`notícia¦notícia sobre a operação ${op} que menciona ${n[11]}: ${n[3]} (${n[10]||''})`); }); });
   tceRows({noMun:true}).forEach(x=>{ const mn=x.mun||'São Paulo'; const m=add('m:'+mn,mn,'mun'); const tid='t:'+nrmT(x.resp);
     const t=add(tid,x.resp,'tce',{cargo:x.papel}); lk(m,t,'tce',`contas irregulares¦${x.papel}; está na rede porque o TCE-SP julgou irregulares as contas (${x.materia||''}, ${x.origem}, processo TC ${x.proc}, exercício ${x.exerc})`);
-    x.base.forEach(id=>{ const r=R.find(y=>y.id===id); if(r){ const aid='a:'+r.nome+'|'+r.mun; if(nodes.has(aid)) lk(aid,t,'tce','mesma pessoa: '+r.nome); } }); });
-  entRows(O).forEach(e=>{ const en=add('n:'+e.ent,e.ent,'ent'); lk(en,add('m:'+e.mun,e.mun,'mun'),'ent',e.papel.length>70?e.papel.slice(0,68)+'…':e.papel);
-    Object.keys(opIdx).filter(k=>(ENT_OP[e.ent]||'').toLowerCase().includes(k)).forEach(k=>lk(en,opIdx[k],'entop')); });
+    x.base.forEach(id=>{ const r=R.find(y=>y.id===id); if(r){ const aid='a:'+r.nome+'|'+r.mun; if(nodes.has(aid)) lk(aid,t,'tce',`mesma pessoa¦${r.nome}: agente da base e responsável com contas julgadas irregulares pelo TCE-SP`); } }); });
+  entRows(O).forEach(e=>{ const en=add('n:'+e.ent,e.ent,'ent'); lk(en,add('m:'+e.mun,e.mun,'mun'),'ent',`atuação no município¦${e.papel}`);
+    Object.keys(opIdx).filter(k=>(ENT_OP[e.ent]||'').toLowerCase().includes(k)).forEach(k=>lk(en,opIdx[k],'entop',`investigada na operação¦${e.ent} é citada na operação ${nodes.get(opIdx[k]).label}`)); });
   if(window.__netExtra) try{ window.__netExtra({add,lk,nodes}); }catch(e){ console.error(e); }
   try{ netDedup(nodes,adj,et); }catch(e){ console.error('dedup',e); }
   return {nodes,adj,et};
@@ -3992,7 +3994,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       else if((r=k.match(/^camara municipal (?:de |da |do |dos |das )?(.+?)(?: sp)?$/))&&MUNK[r[1]]){ m=MUNK[r[1]]; lab='Câmara Municipal de '+m; }
       else { lab=titulo(n.replace(/^\d+-/,'')); if(esfera==='Municipal'&&munHint&&munHint!=='Governo do Estado de SP') m=munHint; }
       const id='og:'+chave(lab); if(!nodes.has(id)) add(id,lab,'orgp',{cargo:m?'órgão de '+m:(esfera?'órgão '+String(esfera).toLowerCase().replace('judiciário','do Judiciário'):'órgão público'),mun:m||''});
-      if(m){ const mid=munId(m); if(mid) lk(id,mid,'sede','órgão de '+m); }
+      if(m){ const mid=munId(m); if(mid) lk(id,mid,'sede',`órgão do município¦${lab} é órgão de ${m}`); }
       return id; }
     // arestas empresa–órgão, agrupadas quando um órgão tem muitas empresas do mesmo tipo de relação
     // cada aresta leva um rótulo curto (tipo do evento) e o detalhe, separados por "¦"
@@ -4076,9 +4078,9 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       const f2=F(); const munOK=m=>!f2.mun||m===f2.mun;
       // 1) agentes da base e operações: medida (prisão, afastamento, denúncia…) e instâncias que investigam ou decidem
       R.forEach(x=>{ const aid='a:'+x.nome+'|'+x.mun, oid='o:'+x.op; if(!nodes.has(aid)&&!nodes.has(oid)) return; const ins=instancias(x.orgao,x.mun);
-        ins.forEach(org=>{ dec(org,aid,'Medidas e decisões',(x.medida||'medida')+(x.op?' ('+x.op+')':''),`${x.medida||'medida'}${x.data?' em '+x.data:''} · ${x.situacao||''} · operação ${x.op||'—'} · ${x.cargo||''}`);
-          dec(org,oid,'Operações e investigações','investigação',`operação ${x.op}: ${x.orgao}`); }); });
-      (D.CIT||[]).forEach(c=>{ const oid='o:'+c.op; if(!nodes.has(oid)) return; instancias(c.orgao,c.mun).forEach(org=>dec(org,oid,'Operações e investigações','investigação',`operação ${c.op}: ${c.orgao}`)); });
+        ins.forEach(org=>{ const ol=(nodes.get(org)||{}).label||''; dec(org,aid,'Medidas e decisões',(x.medida||'medida')+(x.op?' ('+x.op+')':''),`${x.medida||'medida'}${x.data?' em '+x.data:''} de ${x.nome} na operação ${x.op||'—'}, com atuação de ${ol} (órgãos citados na fonte: ${x.orgao}) · situação: ${x.situacao||'—'}`);
+          dec(org,oid,'Operações e investigações','conduz a investigação',`${ol} conduz ou participa da operação ${x.op} (órgãos citados na fonte: ${x.orgao})`); }); });
+      (D.CIT||[]).forEach(c=>{ const oid='o:'+c.op; if(!nodes.has(oid)) return; instancias(c.orgao,c.mun).forEach(org=>dec(org,oid,'Operações e investigações','conduz a investigação',`${(nodes.get(org)||{}).label||''} conduz ou participa da operação ${c.op} (órgãos citados na fonte: ${c.orgao})`)); });
       // 2) TCE-SP: contas julgadas irregulares e pareceres prévios desfavoráveis
       ((D.TCE||{}).itens||[]).forEach(x=>{ const tid='t:'+sa(x.resp); if(nodes.has(tid)) dec(aut('tce'),tid,'Contas julgadas irregulares','contas irregulares (decisão)',`contas julgadas irregulares · ${x.materia||''} · ${x.origem||''} · processo TC ${x.proc} · exercício ${x.exerc} · trânsito em julgado ${x.tj||'—'}`); });
       (D.PAR||[]).forEach(x=>{ if(!munOK(x.mun)) return; const mid=munId(x.mun); if(!mid) return;
@@ -4104,7 +4106,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       // 7) entidades citadas em operações: CNPJ, operações e relações registradas (órgão, ato e data)
       (D.ENT||[]).forEach(e=>{ const nid='n:'+e.ent; if(!nodes.has(nid)){ const c0=String(e.cnpj||'').replace(/\D/g,''); if(c0&&(nodes.has('c:'+c0)||(EB[c0]&&nodes.has(EB[c0])))){ add(nid,e.ent,'ent',{cargo:'citada em operação'}); const mid=munId(e.mun); if(mid) lk(nid,mid,'ent',String(e.papel||'').slice(0,68)+'…¦'+(e.papel||'')); } else return; }
         if(e.cnpj){ const c=String(e.cnpj).replace(/\D/g,''); const cid=empNo(c,'ent',''); if(cid&&cid!==nid) lk(nid,cid,'ent','mesma entidade (CNPJ '+c+')¦cadastro da Receita Federal'); }
-        String(e.op||'').split(/;\s*/).filter(Boolean).forEach(op=>{ const oid=[...nodes.keys()].find(k=>k.startsWith('o:')&&sa(k.slice(2))===sa(op))||add('o:'+op,op,'op'); lk(nid,oid,'entop','investigada na operação '+op); });
+        String(e.op||'').split(/;\s*/).filter(Boolean).forEach(op=>{ const oid=[...nodes.keys()].find(k=>k.startsWith('o:')&&sa(k.slice(2))===sa(op))||add('o:'+op,op,'op'); lk(nid,oid,'entop',`investigada na operação¦${e.ent} é citada na operação ${op}`); });
         (e.rel||[]).forEach(r=>{ const ins=/prefeitura|c[aâ]mara|sptrans|secretaria|–/i.test(r.org)?[]:instancias(r.org,r.mun||e.mun); const orgs=ins.length?ins:[orgao(r.org,r.mun||e.mun,r.esf)]; orgs.forEach(org=>dec(org,nid,'Relações registradas',r.t,`${r.t}${r.d?' · '+r.d:''}`)); }); });
       // agrupa quando uma instância tem mais de 15 ligações do mesmo tipo
       Object.values(DEC).forEach(g=>{ const es=[...g.M.entries()]; const rt=x=>x.s.slice(0,2).join(' + ')+(x.s.length>2?' …':'')+'¦'+x.l.join(' | ');
