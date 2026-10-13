@@ -4612,6 +4612,10 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   function grupos(b){ const v=Object.keys(PN.VIVO).find(c=>c.slice(0,8)===b); if(v&&PN.VIVO[v].grupos) return {vivo:true,em:PN.VIVO[v].em,c:v,nome:'',G:PN.VIVO[v].grupos};
     const e=PN.B[b]; if(!e) return null; return {vivo:false,em:PN.ref,c:e[1],nome:e[0],G:e[2].map(r=>({o:PN.O[r[0]],m:PN.M[r[1]],e:r[2]?'Estadual':'Municipal',n:r[3],v:r[4],d1:r[5],d2:r[6],l:r[7],obj:r[8],x:r[9]||0,k:r[10]||[]}))}; }
   window.__pncpGrupos=grupos;
+  // empresas citadas na base sem CNPJ: CNPJ procurado pelo nome nos arquivos completos da Receita (dados/empcnpj.json)
+  const EC={L:{},ref:'',ok:false}; window.__empCnpj=EC;
+  const kEC=t=>chave(String(t||'').replace(/\(.*?\)/g,' ')).replace(/\b(ltda|s a|sa|eireli|me|epp|s s|ss|cia|companhia)\b/g,' ').replace(/\s+/g,' ').trim().toUpperCase();
+  const ecRaw=t=>EC.L[kEC(t)]||null; const ecDe=t=>{ const e=ecRaw(t); return e&&e.status==='confirmado'&&e.cnpj?e:null; };
   // link do contrato; vários contratos com o mesmo órgão: lista expansível, um link por contrato
   const urlK=u=>/^http/.test(u||'')?u:'https://pncp.gov.br/app/contratos/'+u;
   function links(g){ if(g.n>1&&g.k&&g.k.length) return `<details class="pq-ctr"><summary>ver os ${g.n} contratos</summary><ul>${g.k.map(k=>`<li>${esc(br(k[0]))} · ${brl(k[1])}${k[1]>1e9?' (fora da soma)':''}${k[2]?' · '+esc(k[2]):''} · <a href="${esc(urlK(k[3]))}" target="_blank" rel="noopener">PNCP ↗</a></li>`).join('')}</ul>${g.n>g.k.length?`<p>Os ${g.k.length} mais recentes; os demais estão no PNCP, pelo CNPJ da empresa.</p>`:''}</details>`;
@@ -4635,7 +4639,8 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   window.__netExtra=o=>{ if(prev) prev(o); if(!REDE||(!PN.ok&&!Object.keys(PN.VIVO).length)) return; try{ rede(o); }catch(err){ console.error('PNCP na rede',err); } };
   function basico(id,n){ const f=so(n.ficha||''); if(f.length>=8) return f.slice(0,8); const s=String(id);
     if(s.startsWith('c:')){ const d=so(s.slice(2)); return d.length>=8?d.slice(0,8):''; }
-    if(s.startsWith('n:')){ const e=(D.ENT||[]).find(x=>'n:'+x.ent===s); const d=so(e&&e.cnpj); return d.length>=8?d.slice(0,8):''; } return ''; }
+    if(s.startsWith('n:')){ const e=(D.ENT||[]).find(x=>'n:'+x.ent===s); const d=so(e&&e.cnpj); if(d.length>=8) return d.slice(0,8); }
+    const ec=ecDe(n.label); return ec&&ec.cnpj?ec.cnpj.slice(0,8):''; }
   function rede({add,lk,nodes}){ const N=window.__NET; const EXP=N&&N.expanded?N.expanded:new Set(); const SEL=window.__netSel||[];
     const EMP=[]; nodes.forEach((n,id)=>{ if(!['emp','ent'].includes(n.type)) return; const b=basico(id,n); if(b) EMP.push([id,n,b]); });
     const feito=new Set(), FILA={};
@@ -4720,7 +4725,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       linhas.push(`<li><b class="nm-link" data-nome="${esc(s.n)}" tabindex="0">${esc(s.n)}</b> <small>${esc(s.q||'sócio')}</small><span class="pq-cam">${L.map(x=>esc(x[0])+': '+fmt(x[1])).join(' · ')}</span><span class="pq-acts"><button type="button" class="op-filter pq-b" data-pq-rede="${esc(s.n)}">Pôr na rede</button></span></li>`); });
     const sem=socios.length-comHit;
     return `${linhas.length?`<ul class="pq-list">${linhas.join('')}</ul>`:''}<p class="pq-nota">${comHit} de ${socios.length} sócio(s) ou dirigente(s) aparecem em outras camadas do painel pelo nome${sem?`; ${sem} não aparecem`:''}. Clique no nome para abrir a ficha. Coincidência de nome não prova que seja a mesma pessoa: verificar homonímia antes de qualquer conclusão.</p>`; }
-  function blocoPncp(r,erro){ if(erro&&!r) return `<p class="pq-nota">${esc(erro)}</p>`; if(!r||!r.G.length) return `<p class="pq-nota">Nenhum contrato com órgão municipal ou estadual de SP encontrado no PNCP${r&&r.vivo?' (consulta em tempo real)':PN.ok?' (carga de '+esc(PN.ref)+')':''}.</p>`;
+  function blocoPncp(r,erro,b){ if(!r&&b&&PN.Z&&PN.Z.has(b)) return `<p class="pq-res">Nenhum contrato com órgão municipal ou estadual de SP no PNCP.</p><p class="pq-nota">Busca pelo CNPJ da empresa (matriz e filiais conhecidas) na carga do PNCP de ${esc(PN.ref)}.</p>`; if(erro&&!r) return `<p class="pq-nota">${esc(erro)}</p>`; if(!r||!r.G.length) return `<p class="pq-nota">Nenhum contrato com órgão municipal ou estadual de SP encontrado no PNCP${r&&r.vivo?' (consulta em tempo real)':PN.ok?' (carga de '+esc(PN.ref)+')':''}.</p>`;
     const tot=r.G.reduce((a,g)=>a+g.n,0), v=r.G.reduce((a,g)=>a+g.v,0), x=r.G.reduce((a,g)=>a+(g.x||0),0);
     return `<p class="pq-res"><b>${fmt(tot)}</b> contrato(s) com <b>${r.G.length}</b> órgão(s) · ${brl(v)}${x?` <small>(${x} acima de R$ 1 bilhão fora da soma: provável erro de registro)</small>`:''}</p><ul class="pq-list">${r.G.map(g=>`<li><b>${esc(orgLab(g.o,munP(g.m),g.e))}</b><span class="pq-cam">${g.n} contrato(s) · ${brl(g.v)} · ${esc(br(g.d1))}${g.d2&&g.d2!==g.d1?' a '+esc(br(g.d2)):''}${links(g)}</span></li>`).join('')}</ul><p class="pq-nota">A rede mostra os 5 órgãos de maior valor; aqui estão todos. ${r.vivo?'Consulta em tempo real ao PNCP ('+esc(br(r.em))+').':'Carga do PNCP de '+esc(r.em)+(LIBERADO?'':' (a consulta em tempo real funciona no site público)')+'.'} Ter contrato público não é irregular.</p>`; }
   function limpar(){ ['pq-acoes','pq-rfb','pq-soc2','pq-pncp','pq-base','pq-painel'].forEach(id=>{ const el=$(id); if(el){ el.innerHTML=''; el.hidden=true; } }); }
@@ -4735,7 +4740,8 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     if(PN.B[b]) return tit(PN.B[b][0]); const R=window.__rfb; if(R&&R.ok&&R.C[b]) return tit(R.C[b][0]||d.label);
     return null; }
   async function fichaEmpresa(d,c){ const b=c.slice(0,8); const label=d.label||fmtC(c); const nb=naBaseEmp(c,d);
-    abrir(TIPOS[d.type]||'Empresa',label,c.length===14?'CNPJ '+fmtC(c):'CNPJ básico '+b);
+    const ec=ecDe(label); const ecOk=ec&&ec.cnpj===c;
+    abrir(TIPOS[d.type]||'Empresa',label,(c.length===14?'CNPJ '+fmtC(c):'CNPJ básico '+b)+(ecOk?' · identificado pelo nome na base completa da Receita: '+ec.crit:''));
     sec('pq-rfb','Receita Federal',carregando); sec('pq-pncp','Contratos no PNCP (órgãos de SP)',carregando); sec('pq-base','Sócios e dirigentes em outras camadas do painel',carregando);
     painel({tipo:'pessoa',nome:nb||label,cnpj:c.length===14?c:''},nb?'Dados do painel sobre a empresa':'Dados do painel',true);
     const t0=performance.now();
@@ -4743,6 +4749,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       if(LIBERADO&&c.length===14&&window.__consultarCNPJ){ try{ x=await window.__consultarCNPJ(c); fonte=`tempo real (${x.fonte}, ${x.em})`; }catch(e){ x=null; } }
       if(!x){ const R=window.__rfb; if(R&&R.ok&&R.C[b]){ const e=R.C[b]; const soc=R.V.filter(v=>v[0]===b&&v[1][0]!=='c').map(v=>({n:tit((R.P[v[1]]||[])[0]||''),q:v[2]})).filter(s=>s.n);
           x={r:e[0]||label,s:e[2]||'',m:e[4]||'',uf:e[3]||'',q:soc,cn:e[6]||'',nj:e[7]||'',ab:e[5]||''}; fonte='base mensal da Receita do painel ('+(R.ref||'')+')'; } }
+      if(!x&&ecOk){ x={r:ec.razao,s:ec.sit,m:munP(ec.mun),uf:ec.uf,ab:ec.ab,cn:ec.cnae,nj:ec.nj,q:(ec.soc||[]).map(z=>({n:z.n,q:z.q,de:z.de,pj:z.pj}))}; fonte='arquivos abertos do CNPJ da Receita ('+EC.ref+')'; }
       if(!x){ sec('pq-rfb','Receita Federal','<p class="pq-nota">Cadastro indisponível agora.</p>'); return []; }
       $('pq-t').textContent=tit(x.r||label);
       const socios=(x.q||[]).filter(s=>!s.pj).map(s=>({n:s.n,q:s.q}));
@@ -4751,7 +4758,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     pRfb.then(socios=>sec('pq-base','Sócios e dirigentes em outras camadas do painel',blocoBase(socios||[])));
     const pP=(async()=>{ if(LIBERADO&&c.length===14){ try{ await pncpVivo(c); window.__renderNet&&window.__renderNet(); return [grupos(b),null,false]; }catch(e){ const r=grupos(b); return [r,r?null:'O PNCP não respondeu agora; tente de novo em instantes.',!!r]; } }
       return [grupos(b),null,false]; })();
-    pP.then(([r,erro,falhou])=>sec('pq-pncp','Contratos no PNCP (órgãos de SP)',blocoPncp(r,erro)+(falhou?'<p class="pq-nota">O PNCP não respondeu agora; mostrando a carga do painel.</p>':'')));
+    pP.then(([r,erro,falhou])=>sec('pq-pncp','Contratos no PNCP (órgãos de SP)',blocoPncp(r,PN.Z&&PN.Z.has(b)?null:erro,b)+(falhou?'<p class="pq-nota">O PNCP não respondeu agora; mostrando a carga do painel.</p>':'')));
     await Promise.allSettled([pRfb,pP]); $('pq-s').textContent+=` · consultas concluídas em ${((performance.now()-t0)/1000).toFixed(1).replace('.',',')} s`; }
   function fichaOrgao(d){ const lb=d.label; abrir(TIPOS[d.type]||'Órgão público',lb,d.mun?'órgão de '+d.mun:d.type==='org'?'Governo do Estado de SP':'');
     const L=(PN.ok&&reverso()[d.id])||[];
@@ -4769,9 +4776,16 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     // pessoas (agente, responsável, sócio, eleito) e empresas sem CNPJ conhecido
     const emp=d.type==='emp'||d.type==='ent';
     const nome=d.ficha&&!/^\d+$/.test(so(d.ficha)||'x')?d.ficha:d.label; abrir(TIPOS[d.type]||'Pessoa',nome,emp?'CNPJ não identificado nas bases do painel':(d.cargo||''));
+    if(emp){ const ec=ecRaw(nome);
+      if(!EC.ok) sec('pq-rfb','Receita Federal','<p class="pq-nota">A base de CNPJs ainda está carregando; reabra a ficha em instantes.</p>');
+      else if(ec&&ec.status==='possivel') sec('pq-rfb','Receita Federal',`<p class="pq-res">Possível correspondência, <b>não ligada</b> à empresa citada:</p><ul class="pq-list"><li><b>${esc(ec.razao)}</b>${ec.fant&&ec.fant!==ec.razao?' <small>(estabelecimento: '+esc(ec.fant)+')</small>':''}<span class="pq-cam">CNPJ ${esc(fmtC(ec.cnpj))} · ${esc(ec.sit||'')} · ${esc(munP(ec.mun||''))}/${esc(ec.uf||'')}</span></li></ul><p class="pq-nota">Motivo de não ligar: ${esc(ec.crit)}. Fonte: arquivos abertos do CNPJ da Receita (${esc(EC.ref)}).</p>`);
+      else if(!ec||!ec.n) sec('pq-rfb','Receita Federal',`<p class="pq-res">Nenhuma empresa com esta razão social ou nome fantasia em SP nos arquivos abertos do CNPJ da Receita (${esc(EC.ref)}).</p><p class="pq-nota">O nome pode estar abreviado ou diferente na fonte; sem CNPJ, a empresa não é ligada a outras bases.</p>`);
+      else sec('pq-rfb','Receita Federal',`<p class="pq-res"><b>${ec.n}</b> empresas com este nome em SP nos arquivos abertos do CNPJ: não foi possível identificar qual é a citada.</p><ul class="pq-list">${ec.cand.map(z=>`<li><b>${esc(z.r)}</b>${z.f&&z.f!==z.r?' <small>('+esc(z.f)+')</small>':''}<span class="pq-cam">CNPJ ${esc(fmtC(z.c))} · ${esc(z.s)} · ${esc(munP(z.m))}/${esc(z.uf)}</span></li>`).join('')}</ul><p class="pq-nota">Nenhuma delas é ligada à empresa citada sem confirmação em fonte pública.</p>`);
+      sec('pq-pncp','Contratos no PNCP (órgãos de SP)','<p class="pq-nota">Sem CNPJ identificado não é possível consultar o PNCP com segurança (a busca é pelo CNPJ do fornecedor).</p>'); }
     const F=painel({tipo:'pessoa',nome,emp},'Dados do painel'); if(F){ $('pq-t').textContent=F.titulo||nome; if(F.sub) $('pq-s').textContent=F.sub; }
     return true; }
-  function cnpjPorNome(n){ const suf=t=>chave(String(t||'').replace(/\(.*?\)/g,' ')).replace(/\b(s a|sa|ltda|eireli|me|epp)\b/g,' ').replace(/\s+/g,' ').trim(); const k=suf(n); if(!k||k.split(' ').length<2) return '';
+  function cnpjPorNome(n){ { const ec=ecDe(n); if(ec&&ec.cnpj) return ec.cnpj; }
+    const suf=t=>chave(String(t||'').replace(/\(.*?\)/g,' ')).replace(/\b(s a|sa|ltda|eireli|me|epp)\b/g,' ').replace(/\s+/g,' ').trim(); const k=suf(n); if(!k||k.split(' ').length<2) return '';
     const ix=window.__entIdx||[]; const e=ix.find(x=>x.t==='e'&&String(x.k||'').replace(/\D/g,'').length===14&&[x.n].concat(x.a||[]).some(a=>suf(a)===k)); if(e) return String(e.k).replace(/\D/g,'');
     const p=Object.values(PN.B).find(x=>suf(x[0])===k); if(p) return p[1];
     const R=window.__rfb; if(R&&R.ok){ const b=Object.keys(R.C).find(b=>suf(R.C[b][0])===k||(R.C[b][1]&&suf(R.C[b][1])===k)); if(b&&R.C[b][9]) return R.C[b][9]; }
@@ -4786,7 +4800,8 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       if(!r){ const N=window.__NET; if(N){ N.all=false; N.expanded.add(d.id); } window.__renderNet&&window.__renderNet(); } }
     fichaRede(d); return true; };
   // ---------- carga
-  function carregar(){ fetch('dados/pncp.json',{cache:'force-cache'}).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(j=>{ Object.assign(PN,{B:j.B||{},O:j.O||[],M:j.M||[],ref:j.ref||'',n:j.n||{}}); RV=null; PN.ok=true; window.__renderNet&&window.__renderNet(); }).catch(()=>{}); }
+  fetch('dados/empcnpj.json',{cache:'force-cache'}).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(j=>{ EC.L=j.L||{}; EC.ref=j.ref||''; EC.ok=true; window.__renderNet&&window.__renderNet(); }).catch(()=>{ EC.ok=true; });
+  function carregar(){ fetch('dados/pncp.json',{cache:'force-cache'}).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(j=>{ Object.assign(PN,{B:j.B||{},O:j.O||[],M:j.M||[],ref:j.ref||'',n:j.n||{},Z:new Set(j.Z||[])}); RV=null; PN.ok=true; window.__renderNet&&window.__renderNet(); }).catch(()=>{}); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',carregar); else carregar();
 })();
 
