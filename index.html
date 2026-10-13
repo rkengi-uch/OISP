@@ -912,6 +912,9 @@ table.hm{min-width:0; border-collapse:separate; border-spacing:2px;}
 :root[data-theme="dark"] .in-alto{background:#5a2a2a; color:#f4cccc;} :root[data-theme="dark"] .in-médio{background:#5a4a1a; color:#f5e1a8;} :root[data-theme="dark"] .in-baixo{background:#1f4a36; color:#c7ead8;}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]) .in-alto{background:#5a2a2a; color:#f4cccc;} :root:not([data-theme="light"]) .in-médio{background:#5a4a1a; color:#f5e1a8;} :root:not([data-theme="light"]) .in-baixo{background:#1f4a36; color:#c7ead8;} }
 @media (max-width:760px){ .in-risco thead{display:none;} .in-risco tr{display:block; padding:10px 0; border-bottom:1px solid var(--border);} .in-risco td{display:block; border:0; padding:2px 0; width:auto !important;} }
+.in-dlg[open]{display:flex; flex-direction:column;} .in-corpo{flex:1 1 auto; min-height:0; max-height:none; overflow:hidden;} .in-txt{min-height:0;}
+.in-fim{display:flex; justify-content:flex-end; margin:14px 0 8px; padding-top:12px; border-top:1px solid var(--border);}
+@media (max-width:760px){ .in-corpo{display:flex; flex-direction:column;} .in-txt{flex:1 1 auto; overflow-y:auto;} }
 /* ===== Página inicial do OISP (camada sobre o painel) =====
    Layout: barra com a marca; abertura em duas colunas (logo + texto e busca); faixa de números;
    grade de módulos = abas do painel, cada um com os atalhos das suas seções; fontes; rodapé.
@@ -4691,10 +4694,10 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   ];
   const IDX=Object.fromEntries(P.map(p=>[p[0],p]));
   const dlg=document.createElement('dialog'); dlg.className='in-dlg'; dlg.setAttribute('aria-labelledby','in-t');
-  dlg.innerHTML=`<div class="in-head"><h2 id="in-t">Institucional</h2><button type="button" class="in-x" aria-label="Fechar">×</button></div><div class="in-corpo"><nav class="in-nav" aria-label="Páginas institucionais">${P.map(p=>`<button type="button" data-in="${p[0]}">${p[1]}</button>`).join('')}</nav><article class="in-txt" id="in-txt" tabindex="-1"></article></div><div class="in-foot"><button type="button" class="fi-btn in-ok">OK</button></div>`;
+  dlg.innerHTML=`<div class="in-head"><h2 id="in-t">Institucional</h2><button type="button" class="in-x" aria-label="Fechar">×</button></div><div class="in-corpo"><nav class="in-nav" aria-label="Páginas institucionais">${P.map(p=>`<button type="button" data-in="${p[0]}">${p[1]}</button>`).join('')}</nav><article class="in-txt" id="in-txt" tabindex="-1"></article></div>`;
   document.body.appendChild(dlg);
   function abrir(id){ const p=IDX[id]||P[0]; dlg.querySelector('#in-t').textContent=p[1];
-    dlg.querySelector('#in-txt').innerHTML=p[2]()+`<p class="in-data">Observatório da Integridade – SP · última revisão: ${ATUALIZADO}</p>`;
+    dlg.querySelector('#in-txt').innerHTML=p[2]()+`<p class="in-data">Observatório da Integridade – SP · última revisão: ${ATUALIZADO}</p><div class="in-fim"><button type="button" class="fi-btn in-ok">OK</button></div>`;
     dlg.querySelectorAll('.in-nav button').forEach(b=>b.classList.toggle('on',b.dataset.in===p[0]));
     if(!dlg.open) dlg.showModal(); dlg.querySelector('#in-txt').scrollTop=0; dlg.querySelector('#in-txt').focus({preventScroll:true}); }
   window.__institucional=abrir;
