@@ -4685,7 +4685,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   const TIPOS={emp:'Empresa',ent:'Entidade ou OS',soc:'Sócio ou dirigente',ele:'Eleito(a) em 2024',ag:'Agente político ou servidor',tce:'Responsável (TCE-SP)',op:'Operação',mun:'Município',orgp:'Órgão público',org:'Órgão estadual'};
   function quadro(){ if(card) return card; card=document.createElement('section'); card.className='pq-card pq-ficha'; card.setAttribute('role','dialog'); card.setAttribute('aria-label','Ficha do nó da rede'); card.hidden=true;
     card.innerHTML='<div class="pq-top"><div><span class="pq-k" id="pq-k">Ficha</span><h3 class="pq-t" id="pq-t"></h3><p class="pq-s" id="pq-s"></p></div><button type="button" class="pq-x" aria-label="Fechar ficha">×</button></div>'+
-      '<div class="pq-body" id="pq-body"><div class="pq-acoes" id="pq-acoes"></div><div class="pq-sec" id="pq-rfb"></div><div class="pq-sec" id="pq-pncp"></div><div class="pq-sec" id="pq-base"></div><div class="pq-sec pq-painel" id="pq-painel"></div></div>'+
+      '<div class="pq-body" id="pq-body"><div class="pq-acoes" id="pq-acoes"></div><div class="pq-sec" id="pq-rfb"></div><div class="pq-sec" id="pq-soc2"></div><div class="pq-sec" id="pq-pncp"></div><div class="pq-sec" id="pq-base"></div><div class="pq-sec pq-painel" id="pq-painel"></div></div>'+
       '<div class="pq-foot"><span class="fi-rel"><span class="fi-rel-t">Relatório completo:</span><button type="button" class="fi-btn ghost" data-rel="pdf">PDF</button><button type="button" class="fi-btn ghost" data-rel="docx">Word (.docx)</button></span><button type="button" class="fi-btn fi-ok" data-pq-ok>OK</button></div>';
     document.body.appendChild(card);
     const fechar=()=>{ card.hidden=true; };
@@ -4705,6 +4705,9 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     let html=String(F.html||'').replace(/<p class="fi-nota"><button[^>]*data-ver-rede[\s\S]*?<\/p>/,'');
     // empresa: o cadastro da Receita aparece uma vez só, na seção "Receita Federal" do topo
     if(semReceita) html=html.replace(/<h3 class="fi-h">(?:Quadro societário na Receita|Cadastro na Receita Federal)[\s\S]*?(?=<h3 |<div class="fi-grid"|$)/g,'');
+    // e as empresas dos sócios vêm logo depois da Receita, em seção própria
+    if(semReceita){ let soc2=''; html=html.replace(/<h3 class="fi-h">Outras empresas dos sócios \(2ª camada\)[\s\S]*?(?=<h3 |<div class="fi-grid"|$)/,m=>{ soc2=m.replace(/^<h3 class="fi-h">Outras empresas dos sócios \(2ª camada\) <span>(\d+)<\/span><\/h3>/,'<p class="pq-res"><b>$1</b> vínculo(s) dos sócios com outras empresas</p>'); return ''; });
+      sec('pq-soc2','Empresas dos sócios (base da Receita)',soc2||'<p class="pq-nota">Nenhuma outra empresa dos sócios na base da Receita do painel.</p>'); }
     sec('pq-painel',h,html); window.__fichaAtual=o; return F; }
   // base do painel: em que camadas aparece o termo (empresa e cada sócio)
   function naBase(termo){ const L=(window.__camadasTermo&&window.__camadasTermo(termo))||[]; return L.filter(x=>x[1]>0); }
@@ -4716,7 +4719,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   function blocoPncp(r,erro){ if(erro&&!r) return `<p class="pq-nota">${esc(erro)}</p>`; if(!r||!r.G.length) return `<p class="pq-nota">Nenhum contrato com órgão municipal ou estadual de SP encontrado no PNCP${r&&r.vivo?' (consulta em tempo real)':PN.ok?' (carga de '+esc(PN.ref)+')':''}.</p>`;
     const tot=r.G.reduce((a,g)=>a+g.n,0), v=r.G.reduce((a,g)=>a+g.v,0), x=r.G.reduce((a,g)=>a+(g.x||0),0);
     return `<p class="pq-res"><b>${fmt(tot)}</b> contrato(s) com <b>${r.G.length}</b> órgão(s) · ${brl(v)}${x?` <small>(${x} acima de R$ 1 bilhão fora da soma: provável erro de registro)</small>`:''}</p><ul class="pq-list">${r.G.map(g=>`<li><b>${esc(orgLab(g.o,munP(g.m),g.e))}</b><span class="pq-cam">${g.n} contrato(s) · ${brl(g.v)} · ${esc(br(g.d1))}${g.d2&&g.d2!==g.d1?' a '+esc(br(g.d2)):''}${links(g)}</span></li>`).join('')}</ul><p class="pq-nota">A rede mostra os 5 órgãos de maior valor; aqui estão todos. ${r.vivo?'Consulta em tempo real ao PNCP ('+esc(br(r.em))+').':'Carga do PNCP de '+esc(r.em)+(LIBERADO?'':' (a consulta em tempo real funciona no site público)')+'.'} Ter contrato público não é irregular.</p>`; }
-  function limpar(){ ['pq-acoes','pq-rfb','pq-pncp','pq-base','pq-painel'].forEach(id=>{ const el=$(id); if(el){ el.innerHTML=''; el.hidden=true; } }); }
+  function limpar(){ ['pq-acoes','pq-rfb','pq-soc2','pq-pncp','pq-base','pq-painel'].forEach(id=>{ const el=$(id); if(el){ el.innerHTML=''; el.hidden=true; } }); }
   function abrir(kick,titulo,sub){ const q=quadro(); limpar(); q.hidden=false; $('pq-k').textContent=kick; $('pq-t').textContent=titulo; $('pq-s').textContent=sub||''; $('pq-body').scrollTop=0; return q; }
   function cnpjNo(d){ const f=so(d.ficha||''); if(f.length===14) return f;
     if(String(d.id).startsWith('c:')){ const x=so(d.id.slice(2)); if(x.length===14) return x; if(x.length>=8){ const R=window.__rfb; const e=R&&R.C[x.slice(0,8)]; if(e&&e[9]) return e[9]; const p=PN.B[x.slice(0,8)]; return p?p[1]:x; } }
