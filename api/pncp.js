@@ -47,6 +47,6 @@ module.exports = async (req, res) => {
     res.status(200).json({ cnpj, grupos, contratos: grupos.reduce((a, g) => a + g.n, 0), parcial: lidos < total, em: new Date().toISOString().slice(0, 10) });
   } catch (e) {
     res.setHeader('Cache-Control', 'no-store');
-    res.status(502).json({ erro: 'PNCP indisponível agora', motivo: String(e && (e.name === 'AbortError' ? 'tempo esgotado' : e.message) || '').slice(0, 120) });
+    res.status(502).json({ erro: 'PNCP indisponível agora', motivo: String(e && (e.name === 'AbortError' ? 'tempo esgotado' : (e.message + (e.cause ? ' ' + (e.cause.code || e.cause.message || '') : ''))) || '').slice(0, 160) });
   }
 };
