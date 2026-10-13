@@ -39,18 +39,19 @@ module.exports = async (req, res) => {
         const esf = ESF[x.esfera_id];
         const mun = esf === 'Estadual' ? 'Governo do Estado de SP' : (x.municipio_nome || '');
         const k = (x.orgao_nome || '') + '|' + mun + '|' + esf;
-        const g = G.get(k) || { o: x.orgao_nome || '', m: mun, e: esf, n: 0, v: 0, d1: '', d2: '', l: '', obj: '', x: 0 };
+        const g = G.get(k) || { o: x.orgao_nome || '', m: mun, e: esf, n: 0, v: 0, d1: '', d2: '', l: '', obj: '', x: 0, k: [] };
         const dt = String(x.data_assinatura || '').slice(0, 10);
         let vv = Number(x.valor_global || 0);
         if (vv > 1e9) { g.x++; vv = 0; } // acima de R$ 1 bilhão num só contrato: provável erro de registro, fora da soma
         g.n++; g.v += vv;
         if (dt && (!g.d1 || dt < g.d1)) g.d1 = dt;
         if (dt && (!g.d2 || dt >= g.d2)) { g.d2 = dt; g.l = 'https://pncp.gov.br/app' + (x.item_url || ''); g.obj = String(x.description || '').slice(0, 200); }
+        g.k.push([dt, Math.round(Number(x.valor_global || 0) * 100) / 100, String(x.description || '').slice(0, 110), String(x.item_url || '').replace(/^\/contratos\//, '')]);
         G.set(k, g);
       }
       if (its.length < 100) break;
     }
-    const grupos = [...G.values()].map(g => Object.assign(g, { v: Math.round(g.v * 100) / 100 })).sort((a, b) => b.v - a.v || b.n - a.n);
+    const grupos = [...G.values()].map(g => Object.assign(g, { v: Math.round(g.v * 100) / 100, k: g.n > 1 ? g.k.sort((a, b) => (b[0] > a[0] ? 1 : -1)).slice(0, 12) : [] })).sort((a, b) => b.v - a.v || b.n - a.n);
     res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=604800');
     res.status(200).json({ cnpj, grupos, contratos: grupos.reduce((a, g) => a + g.n, 0), parcial: lidos < total, em: new Date().toISOString().slice(0, 10) });
   } catch (e) {
