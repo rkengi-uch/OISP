@@ -4475,7 +4475,9 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       cn:j.cnae_fiscal_descricao||'',nj:j.natureza_juridica||'',cap:+j.capital_social||0,ab:j.data_inicio_atividade?String(j.data_inicio_atividade).slice(0,10).split('-').reverse().join('/'):'',q,fonte,em:hoje()}; }
   async function busca(url,ms){ const ac=new AbortController(); const t=setTimeout(()=>ac.abort(),ms||12000);
     try{ const r=await fetch(url,{signal:ac.signal,headers:{Accept:'application/json'}}); if(r.status===404) return {nf:true}; if(!r.ok) return null; return {j:await r.json()}; }catch(e){ return null; } finally{ clearTimeout(t); } }
-  async function consultar(c){ c=so(c); if(VIVO[c]) return VIVO[c];
+  const VOO={}; // consulta em andamento: quem pedir o mesmo CNPJ espera a mesma resposta
+  function consultar(c){ c=so(c); if(VIVO[c]) return Promise.resolve(VIVO[c]); if(VOO[c]) return VOO[c]; VOO[c]=consultar1(c).finally(()=>{ delete VOO[c]; }); return VOO[c]; }
+  async function consultar1(c){
     try{ const s=JSON.parse(sessionStorage.getItem('oisp-cnpj-'+c)||'null'); if(s){ VIVO[c]=s; return s; } }catch(e){}
     let r=await busca('https://brasilapi.com.br/api/cnpj/v1/'+c), fonte='BrasilAPI';
     if(!r||(!r.j&&!r.nf)){ r=await busca('https://minhareceita.org/'+c); fonte='Minha Receita'; }
@@ -4564,6 +4566,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
 // 2) Duplo clique numa empresa da rede: ao mesmo tempo (a) cadastro na Receita (cnpjvivo.js), (b) busca geral na base do
 //    painel pela empresa e pelos sócios e (c) contratos no PNCP consultados na hora (site público, via /api/pncp).
 //    Resultado num quadro ao lado da rede; o grafo mostra até 5 órgãos contratantes e a ficha mostra todos.
+// 3) Órgão aberto na rede: até 12 empresas da base contratadas por ele, só as que têm motivo explícito para estar no painel.
 (function(){
   const $=id=>document.getElementById(id);
   const A=window.__ab||{}; const esc=A.esc||(t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])));
@@ -4619,7 +4622,15 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
           add(oid,lb,'orgp',{cargo:g.e==='Estadual'?'órgão do Governo do Estado de SP':'órgão de '+mun,mun:g.e==='Estadual'?'':mun});
           if(g.e==='Municipal'&&mun){ const mid=add('m:'+mun,mun,'mun'); lk(oid,mid,'sede',`órgão do município¦${lb} é órgão de ${mun}`); } }
         if(foco) lk(id,oid,'pncp',labAresta(n.label,lb,g,r.vivo,r.em)); else (FILA[oid]=FILA[oid]||[]).push([g.v,id,labAresta(n.label,lb,g,r.vivo,r.em)]); }); });
-    Object.entries(FILA).forEach(([oid,L])=>L.sort((a,b)=>b[0]-a[0]).slice(0,POR_ORGAO).forEach(([,id,lab])=>lk(id,oid,'pncp',lab))); }
+    Object.entries(FILA).forEach(([oid,L])=>L.sort((a,b)=>b[0]-a[0]).slice(0,POR_ORGAO).forEach(([,id,lab])=>lk(id,oid,'pncp',lab)));
+    // órgão aberto na rede: empresas da base contratadas por ele (as de maior valor, só as que têm motivo explícito no painel)
+    if(PN.ok) EXP.forEach(oid=>{ if(!String(oid).startsWith('og:')||!nodes.has(oid)) return; const L=reverso()[oid]; if(!L) return; let k=0;
+      L.forEach(([v,b,g])=>{ if(k>=POR_ORGAO) return; const e=PN.B[b]; if(!e||!e[3]) return; const c=e[1]; const ja=EMP.find(x=>x[2]===b); k++;
+        const id=ja?ja[0]:add('c:'+c,tit(e[0]),/^(associa|instituto|funda|irmandade|santa casa|organiza|sociedade benef|centro de)/i.test(chave(e[0]))?'ent':'emp',{cargo:`CNPJ ${fmtC(c)} · no painel: ${e[3]}`,ficha:c});
+        lk(id,oid,'pncp',labAresta(tit(e[0]),nodes.get(oid).label,g,false,PN.ref)); }); }); }
+  let RV=null; // índice órgão -> empresas da carga, por valor
+  function reverso(){ if(RV) return RV; RV={}; Object.entries(PN.B).forEach(([b,e])=>e[2].forEach(r=>{ const g={o:PN.O[r[0]],m:PN.M[r[1]],e:r[2]?'Estadual':'Municipal',n:r[3],v:r[4],d1:r[5],d2:r[6],l:r[7],obj:r[8],x:r[9]||0};
+      const oid='og:'+chave(orgLab(g.o,munP(g.m),g.e)); (RV[oid]=RV[oid]||[]).push([g.v,b,g]); })); Object.values(RV).forEach(L=>L.sort((a,b)=>b[0]-a[0])); return RV; }
 
   // ---------- ficha da empresa: todos os órgãos contratantes
   (window.__fichaExtra=window.__fichaExtra||[]).push(CX=>{ if(CX.tipo!=='pessoa') return; const bs=new Set();
@@ -4663,14 +4674,13 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   function blocoPncp(r,erro){ if(erro&&!r) return `<p class="pq-nota">${esc(erro)}</p>`; if(!r||!r.G.length) return `<p class="pq-nota">Nenhum contrato com órgão municipal ou estadual de SP encontrado no PNCP${r&&r.vivo?' (consulta em tempo real)':PN.ok?' (carga de '+esc(PN.ref)+')':''}.</p>`;
     const tot=r.G.reduce((a,g)=>a+g.n,0), v=r.G.reduce((a,g)=>a+g.v,0), x=r.G.reduce((a,g)=>a+(g.x||0),0);
     return `<p class="pq-res"><b>${fmt(tot)}</b> contrato(s) com <b>${r.G.length}</b> órgão(s) · ${brl(v)}${x?` <small>(${x} acima de R$ 1 bilhão fora da soma: provável erro de registro)</small>`:''}</p><ul class="pq-list">${r.G.slice(0,8).map(g=>`<li><b>${esc(orgLab(g.o,munP(g.m),g.e))}</b><span class="pq-cam">${g.n} contrato(s) · ${brl(g.v)} · ${esc(br(g.d1))}${g.d2&&g.d2!==g.d1?' a '+esc(br(g.d2)):''}${/^http/.test(g.l||'')?` · <a href="${esc(g.l)}" target="_blank" rel="noopener">PNCP ↗</a>`:''}</span></li>`).join('')}</ul><p class="pq-nota">${r.G.length>8?`E mais ${r.G.length-8} órgão(s) na ficha da empresa. `:''}A rede mostra os 5 órgãos de maior valor; a ficha mostra todos. ${r.vivo?'Consulta em tempo real ao PNCP ('+esc(br(r.em))+').':'Carga do PNCP de '+esc(r.em)+(LIBERADO?'':' (a consulta em tempo real funciona no site público)')+'.'} Ter contrato público não é irregular.</p>`; }
-  async function esperar(f,ms){ const t0=Date.now(); while(Date.now()-t0<ms){ const v=f(); if(v) return v; await new Promise(r=>setTimeout(r,250)); } return null; }
   async function consultaTripla(c,label){ const q=quadro(); q.hidden=false; const b=c.slice(0,8);
     $('pq-t').textContent=label||fmtC(c); $('pq-s').textContent=c.length===14?'CNPJ '+fmtC(c):'CNPJ básico '+b;
     sec('pq-rfb','Receita Federal',carregando); sec('pq-base','Outras relações na base do painel',carregando); sec('pq-pncp','Contratos no PNCP (órgãos de SP)',carregando);
     const t0=performance.now();
-    // (a) Receita: o duplo clique já disparou a consulta (cnpjvivo.js); aqui só esperamos o resultado
+    // (a) Receita: o duplo clique já disparou a consulta (cnpjvivo.js); aqui esperamos a mesma resposta
     const pRfb=(async()=>{ let d=null, fonte='';
-      if(LIBERADO&&c.length===14){ d=await esperar(()=>(window.__cnpjVivo||{})[c],9000); if(d) fonte=`tempo real (${d.fonte}, ${d.em})`; }
+      if(LIBERADO&&c.length===14&&window.__consultarCNPJ){ try{ d=await window.__consultarCNPJ(c); fonte=`tempo real (${d.fonte}, ${d.em})`; }catch(e){ d=null; } }
       if(!d){ const R=window.__rfb; if(R&&R.ok&&R.C[b]){ const x=R.C[b]; const soc=R.V.filter(v=>v[0]===b&&v[1][0]!=='c').map(v=>({n:tit((R.P[v[1]]||[])[0]||''),q:v[2]})).filter(s=>s.n);
           d={r:x[0]||label,s:x[2]||'',m:x[4]||'',uf:x[3]||'',q:soc}; fonte='base mensal da Receita do painel ('+(R.ref||'')+')'; } }
       if(!d){ sec('pq-rfb','Receita Federal','<p class="pq-nota">Cadastro indisponível agora.</p>'); return []; }
@@ -4695,7 +4705,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       if(c.length>=8){ consultaTripla(c,d.label); return true; } } return r; };
 
   // ---------- carga
-  function carregar(){ fetch('dados/pncp.json',{cache:'force-cache'}).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(j=>{ Object.assign(PN,{B:j.B||{},O:j.O||[],M:j.M||[],ref:j.ref||'',n:j.n||{}}); PN.ok=true; window.__renderNet&&window.__renderNet(); }).catch(()=>{}); }
+  function carregar(){ fetch('dados/pncp.json',{cache:'force-cache'}).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(j=>{ Object.assign(PN,{B:j.B||{},O:j.O||[],M:j.M||[],ref:j.ref||'',n:j.n||{}}); RV=null; PN.ok=true; window.__renderNet&&window.__renderNet(); }).catch(()=>{}); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',carregar); else carregar();
 })();
 
