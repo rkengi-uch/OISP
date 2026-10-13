@@ -3,7 +3,15 @@
 // consulta direta de outro site pelo navegador. Não guarda nada; resposta em cache por 1 dia.
 const ESF = { M: 'Municipal', E: 'Estadual' };
 
+// o PNCP às vezes derruba a conexão (ECONNRESET): até 3 tentativas por página
 async function pagina(cnpj, pag) {
+  let erro;
+  for (let t = 0; t < 3; t++) {
+    try { return await pagina1(cnpj, pag); } catch (e) { erro = e; await new Promise(r => setTimeout(r, 350 * (t + 1))); }
+  }
+  throw erro;
+}
+async function pagina1(cnpj, pag) {
   const u = 'https://pncp.gov.br/api/search/?' + new URLSearchParams({
     q: '"' + cnpj + '"', tipos_documento: 'contrato', ufs: 'SP',
     pagina: String(pag), tam_pagina: '100', ordenacao: '-data'
