@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
+<head><script>window.__BUILD="20261013204446";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -939,6 +939,15 @@ table.hm{min-width:0; border-collapse:separate; border-spacing:2px;}
 .pq-ficha .nm-link{cursor:pointer; text-decoration:underline; text-decoration-color:var(--border); text-underline-offset:2px;}
 @media (max-width:760px){ .pq-card.pq-ficha{top:auto; bottom:calc(64px + env(safe-area-inset-bottom,0px)); height:min(78vh,720px);} }
 .pq-painel .fi-col:has(> .fi-vazio){display:none;} .pq-painel .fi-col{margin-bottom:0;}
+/* botão discreto de atualizar a página */
+.at-wrap{display:inline-flex; align-items:center;}
+.at-btn{position:relative; display:inline-grid; place-items:center; width:32px; height:32px; padding:0; border-radius:50%; border:1px solid transparent; background:transparent; color:var(--text-muted); cursor:pointer; flex:none; opacity:.75;}
+.at-btn:hover,.at-btn:focus-visible{opacity:1; border-color:var(--border); color:var(--text);}
+.at-btn.at-ini{color:inherit; opacity:.6;} .at-btn.at-ini:hover{opacity:1; border-color:currentColor;}
+.at-dot{position:absolute; top:5px; right:5px; width:7px; height:7px; border-radius:50%; background:#d4a017; box-shadow:0 0 0 2px var(--card); display:none;}
+.at-btn.tem-nova{opacity:1;} .at-btn.tem-nova .at-dot{display:block;}
+.at-btn.girando svg{animation:pqgira .8s linear infinite;}
+@media (prefers-reduced-motion:reduce){ .at-btn.girando svg{animation:none;} }
 /* ===== Página inicial do OISP (camada sobre o painel) =====
    Layout: barra com a marca; abertura em duas colunas (logo + texto e busca); faixa de números;
    grade de módulos = abas do painel, cada um com os atalhos das suas seções; fontes; rodapé.
@@ -3721,7 +3730,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
 
   // ===================== CARGA DAS CAMADAS PESADAS (depois da primeira exibição) =====================
   (function(){
-    const pega=u=>fetch(u,{cache:'force-cache'}).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); });
+    const pega=u=>fetch(u+(u.includes('?')?'&':'?')+'v='+(window.__BUILD||''),{cache:'force-cache'}).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); });
     let txtP=null; window.__parTxt=proc=>{ if(!D.PAR_TXT) return Promise.reject(new Error('sem arquivo')); txtP=txtP||pega(D.PAR_TXT).catch(e=>{ txtP=null; throw e; }); return txtP.then(m=>m[proc]||''); };
     const tarefas=[];
     if(D.TCU&&D.TCU.lazy&&!D.TCU._ok) tarefas.push(pega(D.TCU.lazy).then(a=>{ D.TCU.itens.push(...a); D.TCU._ok=true; }).catch(()=>{ D.TCU._erro=true; }));
@@ -4221,7 +4230,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     [['imp-body','imp'],['ic-body','icon'],['qs-body','qsa'],['fl-body','fl'],['dc-body','doa'],['fc-body','forn'],['bn-body','bens']].forEach(([id,k])=>{ const tb=$(id); const h=tb&&tb.closest('.panel')&&tb.closest('.panel').querySelector('.panel-head'); if(h) h.appendChild(barra(k)); }); }
 
   // ===================== CARGA SOB DEMANDA =====================
-  const pega=u=>fetch(u,{cache:'force-cache'}).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); });
+  const pega=u=>fetch(u+(u.includes('?')?'&':'?')+'v='+(window.__BUILD||''),{cache:'force-cache'}).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); });
   const tarefas=[];
   if(IMP.lazy&&!pronto.imp) tarefas.push(()=>pega(IMP.lazy).then(d=>{ IMP.itens.push(...(d.itens||[])); IMP.con.push(...(d.con||[])); pronto.imp=true; }).catch(()=>{ erro.imp=true; }));
   if(QSA.lazy&&!pronto.qsa) tarefas.push(()=>pega(QSA.lazy).then(d=>{ Object.assign(QSA.emp,d.emp||{}); Object.assign(QSA.soc,d.soc||{}); pronto.qsa=true; }).catch(()=>{ erro.qsa=true; }));
@@ -4258,7 +4267,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       if(ks.size<2) return; const obj={n,k:[...ks],ap:[],va:(a||[]).slice(0,8),m:[],h:false,ent:t};
       ks.forEach(k=>{ if(!PESK[k]) PESK[k]=obj; else if(PESK[k].ent) PESK[k].k=[...new Set(PESK[k].k.concat(obj.k))]; }); }); }
   function carregar(){ if(CARGA) return CARGA; ENT=ENT||prep(basico());
-    CARGA=fetch('dados/entidades.json').then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(j=>{ ENT=prep(j.L||[]); estender(j.L||[]); window.__entIdx=ENT; })
+    CARGA=fetch('dados/entidades.json'+'?v='+(window.__BUILD||'')).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(j=>{ ENT=prep(j.L||[]); estender(j.L||[]); window.__entIdx=ENT; })
       .catch(()=>{}); return CARGA; }
   window.__entCarregar=carregar;
   function buscarEnt(q,tipos,lim){ if(!ENT) ENT=prep(basico()); const qq=pal(q), dig=String(q||'').replace(/\D/g,''); if(qq.length<2&&dig.length<4) return [];
@@ -4466,7 +4475,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     L.push(['Empresas de envolvidos com contratos (Receita × PNCP)','empresas',RF.K.filter(k=>has([nomeE(k[0]),k[2],k[3],(k[1]||[]).map(nomeP).join(' ')].join(' '))).length,()=>{ local('rk-q',v); irPara('empresas','risco-envolvidos'); }]);
     L.push(['Base CNPJ da Receita (2 camadas)','empresas',RF.V.filter(x=>has(socNome(x[1])+' '+nomeE(x[0]))).length,()=>{ local('rf-q',v); irPara('empresas','receita-cnpj'); }]); });
   // ---------- carga
-  function carregar(){ fetch('dados/receita.json',{cache:'force-cache'}).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(d=>{ const T=d.TB; if(T){ Object.values(d.C).forEach(e=>{ e[6]=T.cn[e[6]]||''; e[7]=T.nj[e[7]]||''; e[10]=(e[10]||[]).map(i=>T.o[i]); }); d.V.forEach(v=>{ v[2]=T.q[v[2]]||''; }); Object.values(d.P).forEach(x=>{ x[1]=(x[1]||[]).map(i=>T.o[i]); x[3]=!!x[3]; }); }
+  function carregar(){ fetch('dados/receita.json'+'?v='+(window.__BUILD||''),{cache:'force-cache'}).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(d=>{ const T=d.TB; if(T){ Object.values(d.C).forEach(e=>{ e[6]=T.cn[e[6]]||''; e[7]=T.nj[e[7]]||''; e[10]=(e[10]||[]).map(i=>T.o[i]); }); d.V.forEach(v=>{ v[2]=T.q[v[2]]||''; }); Object.values(d.P).forEach(x=>{ x[1]=(x[1]||[]).map(i=>T.o[i]); x[3]=!!x[3]; }); }
       Object.assign(RF,d); RF.ok=true; indexar();
       (window.__posCarga||[]).forEach(f=>{ try{ f(); }catch(e){} }); rkRender(); rfRender(); window.__renderNet&&window.__renderNet(); })
     .catch(()=>{ const b=$('rk-body'); if(b) b.innerHTML='<tr><td colspan="5" class="empty-msg">Não foi possível carregar a base do CNPJ agora.</td></tr>'; }); }
@@ -4800,8 +4809,8 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       if(!r){ const N=window.__NET; if(N){ N.all=false; N.expanded.add(d.id); } window.__renderNet&&window.__renderNet(); } }
     fichaRede(d); return true; };
   // ---------- carga
-  fetch('dados/empcnpj.json',{cache:'force-cache'}).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(j=>{ EC.L=j.L||{}; EC.ref=j.ref||''; EC.ok=true; window.__renderNet&&window.__renderNet(); }).catch(()=>{ EC.ok=true; });
-  function carregar(){ fetch('dados/pncp.json',{cache:'force-cache'}).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(j=>{ Object.assign(PN,{B:j.B||{},O:j.O||[],M:j.M||[],ref:j.ref||'',n:j.n||{},Z:new Set(j.Z||[])}); RV=null; PN.ok=true; window.__renderNet&&window.__renderNet(); }).catch(()=>{}); }
+  fetch('dados/empcnpj.json'+'?v='+(window.__BUILD||''),{cache:'force-cache'}).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(j=>{ EC.L=j.L||{}; EC.ref=j.ref||''; EC.ok=true; window.__renderNet&&window.__renderNet(); }).catch(()=>{ EC.ok=true; });
+  function carregar(){ fetch('dados/pncp.json'+'?v='+(window.__BUILD||''),{cache:'force-cache'}).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(j=>{ Object.assign(PN,{B:j.B||{},O:j.O||[],M:j.M||[],ref:j.ref||'',n:j.n||{},Z:new Set(j.Z||[])}); RV=null; PN.ok=true; window.__renderNet&&window.__renderNet(); }).catch(()=>{}); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',carregar); else carregar();
 })();
 
@@ -5494,8 +5503,10 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
 </script>
 <script>
 // ===================== ATUALIZAÇÃO DA PÁGINA =====================
-// Atualização automática (sem botão): verifica versão nova a cada 5 minutos e ao voltar para a aba;
-// recarrega ao voltar para a aba ou após 1 min sem interação. Ao recarregar, a aba, os filtros e a posição são mantidos.
+// Atualização automática: verifica versão nova a cada 5 minutos, ao voltar para a aba e ao reabrir a página
+// (celular); recarrega ao voltar para a aba ou após 1 min sem interação. Botão discreto ⟳ na barra para forçar.
+// O recarregamento pede a página sem cache (?r=…, removido em seguida) e os dados vêm com ?v=<compilação>.
+// Ao recarregar, a aba, os filtros e a posição são mantidos.
 (function(){
   const CH='oisp-estado';
   const DIMS=['mun','txt','op','niv','cargo','tip','org','med','est','ano'];
@@ -5510,7 +5521,12 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       if(s.aba&&window.__mostrarAba) window.__mostrarAba(s.aba);
       setTimeout(()=>window.scrollTo(0,s.y||0),400);
       document.dispatchEvent(new Event('oisp-filtros')); }catch(e){} }
-  function recarregar(){ salvar(); try{ const ini=$('inicio'); const ab=document.querySelector('section.aba:not([hidden])'); if(!(ini&&!ini.hidden)&&ab) history.replaceState(null,'','#aba-'+ab.dataset.aba); }catch(e){} location.reload(); }
+  function recarregar(){ salvar(); try{ const ini=$('inicio'); const ab=document.querySelector('section.aba:not([hidden])'); if(!(ini&&!ini.hidden)&&ab) history.replaceState(null,'','#aba-'+ab.dataset.aba); }catch(e){}
+    // fora do claude.ai, pede a página sem cache (o celular às vezes devolve a cópia guardada)
+    if(!/claude\.ai$|claudeusercontent|anthropic/i.test(location.hostname)){ try{ const u=new URL(location.href); u.searchParams.set('r',Date.now().toString(36)); location.replace(u.toString()); return; }catch(e){} }
+    location.reload(); }
+  // tira o ?r= da barra de endereço depois de carregar
+  try{ const u=new URL(location.href); if(u.searchParams.has('r')){ u.searchParams.delete('r'); history.replaceState(null,'',u.pathname+(u.search||'')+u.hash); } }catch(e){}
   window.__oispRecarregar=recarregar;
   let base=null, nova=false, ultimaAcao=Date.now(), espera=null;
   ['pointerdown','keydown','scroll','input'].forEach(e=>window.addEventListener(e,()=>{ ultimaAcao=Date.now(); },{passive:true,capture:true}));
@@ -5520,13 +5536,25 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     return null; }
   const ocupado=()=>!!document.querySelector('dialog[open]')||(document.activeElement&&/INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName))||document.body.classList.contains('f-open');
   async function verificar(){ const s=await assinatura(); if(!s) return; if(base==null){ base=s; return; } if(s===base) return;
-    nova=true;
+    nova=true; marcar();
     // aba escondida: recarrega ao voltar; aberta: espera a pessoa ficar parada
     if(document.hidden) return;
     agendar(); }
   // versão nova com a página aberta: recarrega assim que a pessoa ficar 1 min sem interagir e sem janela/campo aberto
   function agendar(){ if(espera) return; espera=setInterval(()=>{ if(!nova||document.hidden) return; if(Date.now()-ultimaAcao>60*1000&&!ocupado()){ clearInterval(espera); espera=null; recarregar(); } },15*1000); }
   window.__oispVerificar=verificar;
+  // ---------- botão discreto ⟳ (barra do painel e topo da página inicial)
+  const BTN=[];
+  function botao(onde,cls){ if(!onde) return; const b=document.createElement('button'); b.type='button'; b.className='at-btn '+(cls||''); b.setAttribute('aria-label','Atualizar a página'); b.title='Atualizar a página (baixa a versão mais recente do painel)';
+    b.innerHTML='<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M20 4v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="at-dot" aria-hidden="true"></span>';
+    b.addEventListener('click',()=>{ b.classList.add('girando'); recarregar(); }); onde.appendChild(b); BTN.push(b); }
+  function marcar(){ BTN.forEach(b=>{ b.classList.add('tem-nova'); b.title='Há uma versão mais nova do painel: toque para atualizar'; b.setAttribute('aria-label','Atualizar a página: há versão mais nova'); }); }
+  function montarBotoes(){ const bb=$('busca-abrir'); if(bb&&!bb.parentNode.querySelector('.at-btn')){ const w=document.createElement('span'); w.className='at-wrap'; bb.after(w); botao(w,'at-bar'); }
+    const nav=document.querySelector('#inicio .oi-top nav'); if(nav&&!nav.querySelector('.at-btn')) botao(nav,'at-ini'); if(nova) marcar(); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(montarBotoes,0)); else setTimeout(montarBotoes,0);
+  setTimeout(montarBotoes,1500);
+  window.addEventListener('pageshow',e=>{ if(e.persisted) verificar(); });
+  window.addEventListener('focus',()=>verificar());
   document.addEventListener('visibilitychange',()=>{ if(document.hidden) return; if(nova&&!ocupado()){ recarregar(); return; } verificar(); });
   setInterval(()=>{ if(!document.hidden) verificar(); else if(!nova) verificar(); },5*60*1000);
   if(document.readyState==='complete') setTimeout(()=>{ restaurar(); verificar(); },900); else window.addEventListener('load',()=>setTimeout(()=>{ restaurar(); verificar(); },900));
