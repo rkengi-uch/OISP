@@ -877,6 +877,10 @@ table.hm{min-width:0; border-collapse:separate; border-spacing:2px;}
 .rg-ac input{width:100%; box-sizing:border-box; padding:8px 10px; font:14px var(--sans); border:1px solid var(--border); border-radius:4px; background:var(--card); color:var(--text);}
 .rg-sug{max-height:360px;}
 .fi-ok{min-width:96px;}
+.nov-d summary{cursor:pointer; padding:6px 0; display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 10px; font-size:13.5px; list-style-position:inside;}
+.nov-d summary b{font-family:var(--serif); font-size:15px;} .nov-d summary small{font-size:12px; color:var(--text-muted);}
+.nov-t{color:var(--text); font-size:13px;} .nov-d[open] summary{margin-bottom:4px;}
+.nov-tog{margin:0 0 6px;}
 /* ===== Página inicial do OISP (camada sobre o painel) =====
    Layout: barra com a marca; abertura em duas colunas (logo + texto e busca); faixa de números;
    grade de módulos = abas do painel, cada um com os atalhos das suas seções; fontes; rodapé.
@@ -3425,7 +3429,12 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       if(va.length) it.push(`<li>${va.length} registro${va.length>1?'s':''} validado${va.length>1?'s':''}</li>`);
       if(ou.length) it.push(`<li>${ou.length} outra${ou.length>1?'s':''} alteraç${ou.length>1?'ões':'ão'} (${esc([...new Set(ou.map(l=>l.acao))].join('; '))})</li>`);
       if(nn) it.push(`<li><button type="button" class="nov-news" data-dt="${esc(dt)}">${nn} notícia${nn>1?'s':''} publicada${nn>1?'s':''} nesse dia ›</button></li>`);
-      return `<section class="nov-d"><h3>${esc(dt)} <small>${dias<=0?'hoje':dias===1?'ontem':'há '+dias+' dias'}</small></h3><ul>${it.join('')}</ul></section>`; }).join('')||'<p class="empty-msg">Nenhuma atualização registrada.</p>';
+      // título da atualização: resumo em uma linha; o detalhe fica recolhido
+      const tt=[inc.length?`${inc.length} registro${inc.length>1?'s':''} incluído${inc.length>1?'s':''}`:'',at.length?`${at.length} atualizaç${at.length>1?'ões':'ão'}`:'',nc.length?`${nc.length} nova${nc.length>1?'s':''} camada${nc.length>1?'s':''}`:'',va.length?`${va.length} validado${va.length>1?'s':''}`:'',nn?`${nn} notícia${nn>1?'s':''}`:'',ou.length&&!inc.length&&!at.length?`${ou.length} outra${ou.length>1?'s':''} alteraç${ou.length>1?'ões':'ão'}`:''].filter(Boolean).join(' · ')||'atualização';
+      return `<details class="nov-d"><summary><b>${esc(dt)}</b> <small>${dias<=0?'hoje':dias===1?'ontem':'há '+dias+' dias'}</small><span class="nov-t">${esc(tt)}</span></summary><ul>${it.join('')}</ul></details>`; }).join('')||'<p class="empty-msg">Nenhuma atualização registrada.</p>';
+    if(datas.length){ const bt=document.createElement('button'); bt.type='button'; bt.className='nov-tog op-filter'; bt.textContent='Expandir tudo'; el.prepend(bt);
+      bt.addEventListener('click',()=>{ const ds=[...el.querySelectorAll('details.nov-d')]; const abrir=!ds.every(d=>d.open); ds.forEach(d=>d.open=abrir); bt.textContent=abrir?'Recolher tudo':'Expandir tudo'; });
+      el.addEventListener('toggle',()=>{ const ds=[...el.querySelectorAll('details.nov-d')]; bt.textContent=ds.every(d=>d.open)?'Recolher tudo':'Expandir tudo'; },true); }
     el.addEventListener('click',e=>{ const b=e.target.closest('.nov-news'); if(!b) return; const q=$('rc-q'); window.__mostrarAba&&window.__mostrarAba('noticias',{topo:true}); if(q){ q.value=b.dataset.dt; q.dispatchEvent(new Event('input')); } const s=$('recentes'); if(s) setTimeout(()=>s.scrollIntoView({behavior:'smooth'}),80); });
   })();
 
