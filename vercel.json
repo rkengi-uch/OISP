@@ -26,5 +26,10 @@
   ],
   "regions": [
     "gru1"
-  ]
+  ],
+  "functions": {
+    "api/pncp.js": {
+      "maxDuration": 30
+    }
+  }
 }

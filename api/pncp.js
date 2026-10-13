@@ -3,11 +3,11 @@
 // consulta direta de outro site pelo navegador. Não guarda nada; resposta em cache por 1 dia.
 const ESF = { M: 'Municipal', E: 'Estadual' };
 
-// o PNCP às vezes derruba a conexão (ECONNRESET): até 3 tentativas por página
+// o PNCP às vezes derruba a conexão (ECONNRESET): até 6 tentativas por página
 async function pagina(cnpj, pag) {
   let erro;
-  for (let t = 0; t < 3; t++) {
-    try { return await pagina1(cnpj, pag); } catch (e) { erro = e; await new Promise(r => setTimeout(r, 350 * (t + 1))); }
+  for (let t = 0; t < 6; t++) {
+    try { return await pagina1(cnpj, pag); } catch (e) { erro = e; await new Promise(r => setTimeout(r, 250 + 250 * t)); }
   }
   throw erro;
 }
@@ -18,7 +18,7 @@ async function pagina1(cnpj, pag) {
   });
   const ac = new AbortController(); const t = setTimeout(() => ac.abort(), 9000);
   try {
-    const r = await fetch(u, { signal: ac.signal, headers: { Accept: 'application/json', 'User-Agent': 'OISP/1.0 (oisp.vercel.app)' } });
+    const r = await fetch(u, { signal: ac.signal, headers: { Accept: 'application/json', 'User-Agent': 'OISP/1.0 (oisp.vercel.app)', Connection: 'close' } });
     if (!r.ok) throw new Error('PNCP ' + r.status);
     return await r.json();
   } finally { clearTimeout(t); }
