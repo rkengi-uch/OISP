@@ -4701,8 +4701,10 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   const carregando='<p class="pq-load"><span class="pq-spin" aria-hidden="true"></span>consultando…</p>';
   // todos os dados do painel sobre o nó (mesmo motor da ficha da busca, sem cortes e sem duplicar o que a ficha da rede já mostra)
   function dadosPainel(o){ if(!window.__fichaDados) return null; window.__fichaRede=true; try{ return window.__fichaDados(o); }catch(e){ console.error(e); return null; } finally{ window.__fichaRede=false; } }
-  function painel(o,h){ const F=dadosPainel(o); if(!F){ sec('pq-painel',h,'<p class="pq-nota">Dados do painel indisponíveis.</p>'); return null; }
-    const html=String(F.html||'').replace(/<p class="fi-nota"><button[^>]*data-ver-rede[\s\S]*?<\/p>/,'');
+  function painel(o,h,semReceita){ const F=dadosPainel(o); if(!F){ sec('pq-painel',h,'<p class="pq-nota">Dados do painel indisponíveis.</p>'); return null; }
+    let html=String(F.html||'').replace(/<p class="fi-nota"><button[^>]*data-ver-rede[\s\S]*?<\/p>/,'');
+    // empresa: o cadastro da Receita aparece uma vez só, na seção "Receita Federal" do topo
+    if(semReceita) html=html.replace(/<h3 class="fi-h">(?:Quadro societário na Receita|Cadastro na Receita Federal)[\s\S]*?(?=<h3 |<div class="fi-grid"|$)/g,'');
     sec('pq-painel',h,html); window.__fichaAtual=o; return F; }
   // base do painel: em que camadas aparece o termo (empresa e cada sócio)
   function naBase(termo){ const L=(window.__camadasTermo&&window.__camadasTermo(termo))||[]; return L.filter(x=>x[1]>0); }
@@ -4728,7 +4730,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   async function fichaEmpresa(d,c){ const b=c.slice(0,8); const label=d.label||fmtC(c); const nb=naBaseEmp(c,d);
     abrir(TIPOS[d.type]||'Empresa',label,c.length===14?'CNPJ '+fmtC(c):'CNPJ básico '+b);
     sec('pq-rfb','Receita Federal',carregando); sec('pq-pncp','Contratos no PNCP (órgãos de SP)',carregando); sec('pq-base','Sócios e dirigentes em outras camadas do painel',carregando);
-    painel({tipo:'pessoa',nome:nb||label,cnpj:c.length===14?c:''},nb?'Dados do painel sobre a empresa':'Dados do painel');
+    painel({tipo:'pessoa',nome:nb||label,cnpj:c.length===14?c:''},nb?'Dados do painel sobre a empresa':'Dados do painel',true);
     const t0=performance.now();
     const pRfb=(async()=>{ let x=null, fonte='';
       if(LIBERADO&&c.length===14&&window.__consultarCNPJ){ try{ x=await window.__consultarCNPJ(c); fonte=`tempo real (${x.fonte}, ${x.em})`; }catch(e){ x=null; } }
