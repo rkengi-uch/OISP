@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261014142934";</script>
+<head><script>window.__BUILD="20261014145714";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -1075,6 +1075,28 @@ html.oi-aberto, html.oi-aberto body{overflow:hidden;}
 .cd-x>summary:hover{color:var(--text);}
 .cd-x>summary small{font-size:11px;}
 .cd-x .op-filter{margin-top:8px;}
+.ce-box{margin:6px 0 18px; border-left:4px solid var(--gold);}
+.ce-in{position:relative; display:flex; gap:8px; flex-wrap:wrap; max-width:760px;}
+.ce-in input{flex:1 1 300px; min-width:0; font:14px var(--sans); padding:9px 12px; border:1px solid var(--border); border-radius:4px; background:var(--card); color:var(--text);}
+.ce-in input:focus-visible{outline:2px solid var(--gold); outline-offset:1px;}
+.ce-in .op-filter{margin:0;}
+.ce-res{position:absolute; left:0; right:0; top:100%; margin-top:4px; z-index:60;}
+#ce-msg{margin:8px 0 0; font-size:13px;}
+.desp-anos{display:flex; align-items:flex-end; gap:3px; height:52px; margin:6px 0 8px;}
+.desp-anos span{display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:2px; flex:1 1 0; min-width:0;}
+.desp-anos i{display:block; width:100%; max-width:18px; background:var(--gold); border-radius:2px 2px 0 0;}
+.desp-anos small{font-size:9.5px; color:var(--text-muted); font-variant-numeric:tabular-nums;}
+.emp-links li{font-size:12.5px;} .emp-links small{color:var(--text-muted);}
+.ag-mais{margin-top:4px;}
+.ag-mais>summary{cursor:pointer; font-size:12px; color:var(--text-muted); list-style:none; display:inline-flex; align-items:center; gap:5px;}
+.ag-mais>summary::-webkit-details-marker{display:none;}
+.ag-mais>summary::before{content:'▸'; color:var(--gold); display:inline-block; transition:transform .15s;}
+.ag-mais[open]>summary::before{transform:rotate(90deg);}
+.ag-mais>summary:hover{color:var(--text);}
+.ag-mais[open]>summary{margin-bottom:4px;}
+.sec-label.co-sec-h{font-family:var(--serif); font-size:22px; letter-spacing:0; text-transform:none; color:var(--text); font-weight:700; text-wrap:balance; border-bottom:0; border-left:5px solid rgba(var(--co-rgb),.9); padding:2px 0 2px 12px; margin:34px 0 10px;}
+.sec-desc.co-sec-d{font-size:14px; line-height:1.55; color:var(--text); margin:0 0 16px; padding:10px 14px; max-width:980px; background:rgba(var(--co-rgb),.08); border-radius:4px;}
+.sec-desc.co-sec-d b{color:rgba(var(--co-rgb),1);}
 :root{--co-rgb:161,61,61; --co-fg:#fff;}
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --co-rgb:201,90,90; --co-fg:#11151d; } }
 :root[data-theme="dark"]{ --co-rgb:201,90,90; --co-fg:#11151d; }
@@ -1275,8 +1297,8 @@ html.oi-aberto, html.oi-aberto body{overflow:hidden;}
   <p class="sec-desc" style="margin:4px 0 0;">Consultas diretas pelo nome do agente político/servidor, número do processo ou nome da operação. As notas da PF e da CGU nem sempre são indexadas pelos buscadores; nesses casos, pesquise pelo nome da operação no próprio portal.</p>
   <div class="portais" id="portais"></div>
 
-  <div class="sec-label">Crime organizado no setor público</div>
-  <p class="sec-desc">Tipologia específica da presença do crime organizado (PCC e outras facções) na administração municipal, por setor: transporte; saúde; coleta de lixo e limpeza urbana; terceirização e zeladoria; combustíveis; educação e merenda; obras e contratos gerais; nomeações e cargos públicos; lavagem e financiamento político. Reúne a base curada, as operações pesquisadas (como Munditia, Soldi Sporchi e a investigação sobre o PCC em Guarujá) e as notícias. No mapa, a camada “Crime organizado” mostra todas as evidências por município. <b id="co-count"></b></p>
+  <div class="sec-label co-sec-h" id="crime-organizado">Crime organizado no setor público</div>
+  <p class="sec-desc co-sec-d">Tipologia específica da presença do crime organizado (PCC e outras facções) na administração municipal, por setor: transporte; saúde; coleta de lixo e limpeza urbana; terceirização e zeladoria; combustíveis; educação e merenda; obras e contratos gerais; nomeações e cargos públicos; lavagem e financiamento político. Reúne a base curada, as operações pesquisadas (como Munditia, Soldi Sporchi e a investigação sobre o PCC em Guarujá) e as notícias. No mapa, a camada “Crime organizado” mostra todas as evidências por município. <b id="co-count"></b></p>
   <div id="co-filtro" class="co-filtro" aria-live="polite"></div>
   <div class="cd-bar"><button type="button" class="cd-tog" data-alvo="co-cards" aria-controls="co-cards">Expandir todos</button></div>
   <div class="ops" id="co-cards" style="margin-bottom:18px;"></div>
@@ -3587,12 +3609,17 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     const prox=L.filter(a=>a.dt>=hoje||a.st!=='previsto'&&a.dt>=new Date(hoje-30*864e5)).sort((a,b)=>a.dt-b.dt);
     const pas=L.filter(a=>a.dt<hoje&&a.st==='previsto').sort((a,b)=>b.dt-a.dt).slice(0,5);
     const item=a=>{ const dias=Math.round((a.dt-hoje)/864e5);
-      return `<li class="ag-i"><div class="ag-dt"><b>${a.dt.getDate()}</b><span>${MES[a.dt.getMonth()]}</span></div><div class="ag-tx"><div class="ag-top"><span class="esf-tag-c e-${esc(a.esf)}">${esc(ESF_NOME[a.esf]||a.esf||'')}</span>${(a.muns||[]).map(m=>`<a class="clk ag-mun" data-mun="${esc(m)}">${esc(m)}</a>`).join('<span class="ag-sep">·</span>')}${a.p==='estimada'?'<span class="ag-est">data estimada</span>':''}${a.st&&a.st!=='previsto'?`<span class="ag-st">${esc(a.st)}</span>`:''}<span class="ag-fal">${dias===0?'hoje':dias>0?'em '+dias+' dia'+(dias>1?'s':''):'há '+(-dias)+' dia'+(dias<-1?'s':'')}</span></div><b class="ag-t">${esc(a.t)}${a.muns.length>1?` <small class="ag-n">(${a.muns.length} municípios)</small>`:''}</b>${new Set(a.descs.map(x=>x[1])).size<=1?`<p>${esc(a.desc)}</p>`:`<details class="ag-det"><summary>Detalhes por município</summary><ul>${a.descs.map(([m,d])=>`<li><b>${esc(m||'')}</b>: ${esc(d)}</li>`).join('')}</ul></details>`}${a.fontes.map(([l,f])=>l?`<a class="ag-f" href="${esc(l)}" target="_blank" rel="noopener">Fonte: ${esc(f)} ↗</a>`:`<span class="ag-f">${esc(f)}</span>`).join(' ')}</div></li>`; };
+      return `<li class="ag-i"><div class="ag-dt"><b>${a.dt.getDate()}</b><span>${MES[a.dt.getMonth()]}</span></div><div class="ag-tx"><div class="ag-top"><span class="esf-tag-c e-${esc(a.esf)}">${esc(ESF_NOME[a.esf]||a.esf||'')}</span>${(a.muns||[]).map(m=>`<a class="clk ag-mun" data-mun="${esc(m)}">${esc(m)}</a>`).join('<span class="ag-sep">·</span>')}${a.p==='estimada'?'<span class="ag-est">data estimada</span>':''}${a.st&&a.st!=='previsto'?`<span class="ag-st">${esc(a.st)}</span>`:''}<span class="ag-fal">${dias===0?'hoje':dias>0?'em '+dias+' dia'+(dias>1?'s':''):'há '+(-dias)+' dia'+(dias<-1?'s':'')}</span></div><b class="ag-t">${esc(a.t)}${a.muns.length>1?` <small class="ag-n">(${a.muns.length} municípios)</small>`:''}</b><details class="ag-mais"><summary>Detalhes e fonte</summary>${new Set(a.descs.map(x=>x[1])).size<=1?`<p>${esc(a.desc)}</p>`:`<details class="ag-det"><summary>Detalhes por município</summary><ul>${a.descs.map(([m,d])=>`<li><b>${esc(m||'')}</b>: ${esc(d)}</li>`).join('')}</ul></details>`}${a.fontes.map(([l,f])=>l?`<a class="ag-f" href="${esc(l)}" target="_blank" rel="noopener">Fonte: ${esc(f)} ↗</a>`:`<span class="ag-f">${esc(f)}</span>`).join(' ')}</details></div></li>`; };
     let html='', mes='';
     prox.forEach(a=>{ const m=MESX[a.dt.getMonth()]+' de '+a.dt.getFullYear(); if(m!==mes){ html+=(mes?'</ul>':'')+`<h3 class="ag-mes">${m}</h3><ul class="ag-l">`; mes=m; } html+=item(a); });
     if(mes) html+='</ul>';
     if(pas.length) html+=`<details class="ag-pas"><summary>Eventos passados sem confirmação do resultado (${pas.length})</summary><ul class="ag-l">${pas.map(item).join('')}</ul></details>`;
     el.innerHTML=html||'<p class="empty-msg">Nenhum evento previsto na agenda.</p>';
+    // eventos recolhidos: data, esfera, município e título à vista; descrição e fonte em "Detalhes e fonte"
+    if(html){ const bt=document.createElement('button'); bt.type='button'; bt.className='nov-tog op-filter'; bt.textContent='Expandir todos'; el.prepend(bt);
+      const ds=()=>[...el.querySelectorAll('details.ag-mais')];
+      bt.addEventListener('click',()=>{ const ab=!ds().every(d=>d.open); ds().forEach(d=>d.open=ab); const p=el.querySelector('details.ag-pas'); if(ab&&p) p.open=true; bt.textContent=ab?'Recolher todos':'Expandir todos'; });
+      el.addEventListener('toggle',e=>{ if(e.target.classList&&e.target.classList.contains('ag-mais')) bt.textContent=ds().every(d=>d.open)?'Recolher todos':'Expandir todos'; },true); }
     el.addEventListener('click',e=>{ const a=e.target.closest('.ag-mun'); if(a){ e.preventDefault(); ficha({tipo:'mun',nome:a.dataset.mun}); } });
   })();
 
@@ -4561,7 +4588,10 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   function normal(j,fonte){ const q=(j.qsa||[]).map(s=>{ const pj=String(s.identificador_de_socio)==='1'||s.identificador_de_socio==='PESSOA JURÍDICA'; const doc=so(s.cnpj_cpf_do_socio);
       return {n:tit(s.nome_socio||s.nome||''),q:s.qualificacao_socio||s.qualificacao||'sócio',de:s.data_entrada_sociedade?String(s.data_entrada_sociedade).slice(0,10).split('-').reverse().join('/'):'',pj,c:pj&&doc.length===14?doc:''}; });
     return {c:so(j.cnpj),r:j.razao_social||'',f:j.nome_fantasia||'',s:j.descricao_situacao_cadastral||j.situacao_cadastral||'',m:tit(j.municipio||''),uf:j.uf||'',
-      cn:j.cnae_fiscal_descricao||'',nj:j.natureza_juridica||'',cap:+j.capital_social||0,ab:j.data_inicio_atividade?String(j.data_inicio_atividade).slice(0,10).split('-').reverse().join('/'):'',q,fonte,em:hoje()}; }
+      cn:j.cnae_fiscal_descricao||'',dom:dominio(j.email),nj:j.natureza_juridica||'',cap:+j.capital_social||0,ab:j.data_inicio_atividade?String(j.data_inicio_atividade).slice(0,10).split('-').reverse().join('/'):'',q,fonte,em:hoje()}; }
+  // site provável: só o domínio do e-mail cadastrado na Receita, quando não é de provedor gratuito (o e-mail em si não é guardado)
+  const LIVRE=/^(gmail|hotmail|outlook|live|yahoo|ymail|bol|uol|terra|ig|globo|globomail|msn|icloud|me|aol|r7|zipmail|oi|protonmail|proton|gmx|mail|email|yandex|tutanota)\./i;
+  function dominio(e){ const d=String(e||'').toLowerCase().trim().split('@')[1]||''; if(!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(d)||LIVRE.test(d)||/contab|contador|escritorio/.test(d)) return ''; return d; }
   async function busca(url,ms){ const ac=new AbortController(); const t=setTimeout(()=>ac.abort(),ms||12000);
     try{ const r=await fetch(url,{signal:ac.signal,headers:{Accept:'application/json'}}); if(r.status===404) return {nf:true}; if(!r.ok) return null; return {j:await r.json()}; }catch(e){ return null; } finally{ clearTimeout(t); } }
   const VOO={}; // consulta em andamento: quem pedir o mesmo CNPJ espera a mesma resposta
@@ -4577,7 +4607,11 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   // ---------- rede: empresa consultada, sócios e pessoas jurídicas sócias
   const prev=window.__netExtra;
   window.__netExtra=o=>{ if(prev) prev(o); try{ rede(o); }catch(err){ console.error('consulta em tempo real',err); } };
-  function rede({add,lk,nodes}){ const ks=Object.keys(VIVO); if(!ks.length) return;
+  function rede({add,lk,nodes}){
+    // empresa escolhida pelo CNPJ que não está em nenhuma camada do painel: entra na rede como nó próprio
+    (window.__netSel||[]).forEach(x=>{ const c=so(x.cnpj); if(c.length!==14) return; const b=c.slice(0,8); let tem=false; nodes.forEach((n,id)=>{ if(!tem&&(String(id).startsWith('c:'+b)||so(n.ficha).slice(0,8)===b)) tem=true; });
+      if(!tem) add('c:'+c,x.label||fmtC(c),'emp',{cargo:'CNPJ '+fmtC(c)+' · consultada pelo CNPJ (não consta nas camadas do painel)',ficha:c}); });
+    const ks=Object.keys(VIVO); if(!ks.length) return;
     const PN={}; nodes.forEach((n,id)=>{ if(['ag','tce','soc','ele'].includes(n.type)) (PN[chave(n.label)]=PN[chave(n.label)]||[]).push(id); });
     const noC=(c,nome,info)=>{ const id='c:'+c; if(!nodes.has(id)) add(id,nome||fmtC(c),'emp',{cargo:'CNPJ '+fmtC(c)+(info?' · '+info:''),ficha:c}); else { const n=nodes.get(id); if(/^\d/.test(n.label)&&nome) n.label=nome; } return id; };
     ks.forEach(c=>{ const d=VIVO[c]; const id='c:'+c; if(!nodes.has(id)&&!d.raiz&&!d.exp) return;
@@ -4765,7 +4799,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   const TIPOS={emp:'Empresa',ent:'Entidade ou OS',soc:'Sócio ou dirigente',ele:'Eleito(a) em 2024',ag:'Agente político ou servidor',tce:'Responsável (TCE-SP)',op:'Operação',mun:'Município',orgp:'Órgão público',org:'Órgão estadual'};
   function quadro(){ if(card) return card; card=document.createElement('section'); card.className='pq-card pq-ficha'; card.setAttribute('role','dialog'); card.setAttribute('aria-label','Ficha do nó da rede'); card.hidden=true;
     card.innerHTML='<div class="pq-top"><div><span class="pq-k" id="pq-k">Ficha</span><h3 class="pq-t" id="pq-t"></h3><p class="pq-s" id="pq-s"></p></div><button type="button" class="pq-x" aria-label="Fechar ficha">×</button></div>'+
-      '<div class="pq-body" id="pq-body"><div class="pq-acoes" id="pq-acoes"></div><div class="pq-sec" id="pq-rfb"></div><div class="pq-sec" id="pq-soc2"></div><div class="pq-sec" id="pq-est"></div><div class="pq-sec" id="pq-pncp"></div><div class="pq-sec" id="pq-base"></div><div class="pq-sec pq-painel" id="pq-painel"></div></div>'+
+      '<div class="pq-body" id="pq-body"><div class="pq-acoes" id="pq-acoes"></div><div class="pq-sec" id="pq-rfb"></div><div class="pq-sec" id="pq-soc2"></div><div class="pq-sec" id="pq-est"></div><div class="pq-sec" id="pq-pncp"></div><div class="pq-sec" id="pq-desp"></div><div class="pq-sec" id="pq-links"></div><div class="pq-sec" id="pq-base"></div><div class="pq-sec pq-painel" id="pq-painel"></div></div>'+
       '<div class="pq-foot"><span class="fi-rel"><span class="fi-rel-t">Relatório completo:</span><button type="button" class="fi-btn ghost" data-rel="pdf">PDF</button><button type="button" class="fi-btn ghost" data-rel="docx">Word (.docx)</button></span><button type="button" class="fi-btn fi-ok" data-pq-ok>OK</button></div>';
     document.body.appendChild(card);
     const fechar=()=>{ card.hidden=true; };
@@ -4800,7 +4834,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     const tot=r.G.reduce((a,g)=>a+g.n,0), v=r.G.reduce((a,g)=>a+g.v,0), x=r.G.reduce((a,g)=>a+(g.x||0),0);
     const est=r.est&&r.est.length>1?` · ${r.est.length} estabelecimentos (matriz e filiais)`:'';
     return `<p class="pq-res"><b>${fmt(tot)}</b> contrato(s) com <b>${r.G.length}</b> órgão(s) · ${brl(v)}${est}${x?` <small>(${x} acima de R$ 1 bilhão fora da soma: provável erro de registro)</small>`:''}</p><ul class="pq-list">${r.G.map(g=>`<li><b>${esc(orgLab(g.o,munP(g.m),g.e))}</b><span class="pq-cam">${g.n} contrato(s) · ${brl(g.v)} · ${esc(br(g.d1))}${g.d2&&g.d2!==g.d1?' a '+esc(br(g.d2)):''}${links(g)}</span></li>`).join('')}</ul><p class="pq-nota">Busca pela raiz do CNPJ: matriz e todas as filiais. A rede mostra os 5 órgãos de maior valor; aqui estão todos. ${r.vivo?'Consulta em tempo real ao PNCP ('+esc(br(r.em))+').':'Carga do PNCP de '+esc(r.em)+(LIBERADO?'':' (a consulta em tempo real funciona no site público)')+'.'} Ter contrato público não é irregular.</p>`; }
-  function limpar(){ ['pq-acoes','pq-rfb','pq-soc2','pq-est','pq-pncp','pq-base','pq-painel'].forEach(id=>{ const el=$(id); if(el){ el.innerHTML=''; el.hidden=true; } }); }
+  function limpar(){ ['pq-acoes','pq-rfb','pq-soc2','pq-est','pq-pncp','pq-desp','pq-links','pq-base','pq-painel'].forEach(id=>{ const el=$(id); if(el){ el.innerHTML=''; el.hidden=true; } }); }
   function abrir(kick,titulo,sub){ const q=quadro(); limpar(); q.hidden=false; $('pq-k').textContent=kick; $('pq-t').textContent=titulo; $('pq-s').textContent=sub||''; $('pq-body').scrollTop=0; return q; }
   function cnpjNo(d){ const f=so(d.ficha||''); if(f.length===14) return f;
     if(String(d.id).startsWith('c:')){ const x=so(d.id.slice(2)); if(x.length===14) return x; if(x.length>=8){ const R=window.__rfb; const e=R&&R.C[x.slice(0,8)]; if(e&&e[9]) return e[9]; const p=PN.B[x.slice(0,8)]; return p?p[1]:x; } }
@@ -4816,6 +4850,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     abrir(TIPOS[d.type]||'Empresa',label,(c.length===14?'CNPJ '+fmtC(c):'CNPJ básico '+b)+(ecOk?' · identificado pelo nome na base completa da Receita: '+ec.crit:''));
     sec('pq-rfb','Receita Federal',carregando); sec('pq-pncp','Contratos no PNCP (órgãos de SP)',carregando); sec('pq-base','Sócios e dirigentes em outras camadas do painel',carregando);
     { const eb=window.__estabBloco&&window.__estabBloco(b); if(eb) sec('pq-est','Matriz e filiais (mesmo CNPJ raiz)',eb); }
+    if(window.__fichaEmpExtra) try{ window.__fichaEmpExtra({c,b,label,sec}); }catch(e){ console.error(e); }
     painel({tipo:'pessoa',nome:nb||label,cnpj:c.length===14?c:''},nb?'Dados do painel sobre a empresa':'Dados do painel',true);
     const t0=performance.now();
     const pRfb=(async()=>{ let x=null, fonte='';
@@ -4984,6 +5019,122 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     const S=L.slice().sort((x,y)=>(y.mf==='1')-(x.mf==='1')||(nCt(y.c)>0)-(nCt(x.c)>0)||(y.uf==='SP')-(x.uf==='SP')||(y.sit==='ativa')-(x.sit==='ativa')||x.od.localeCompare(y.od));
     const tot=Math.max(EST.N[b]||L.length,L.length);
     return `<p class="fi-nota">${tot} estabelecimento(s) com a raiz ${fmtR(b)}${tot>L.length?` (lista com ${L.length}: matriz, filiais em SP e as demais ativas)`:''} · ${EST.ref?'base CNPJ da Receita, '+esc(EST.ref):'base CNPJ da Receita'}. Sanções, sócios e processos são da pessoa jurídica (todos os estabelecimentos).</p><ul class="fi-list">${S.map(x=>`<li><b>${esc(fmtC(x.c))}</b> · ${x.mf==='1'?'matriz':'filial'}${x.sit?' · '+esc(x.sit):''}${x.mun?' · '+esc(x.mun)+(x.uf?'/'+esc(x.uf):''):''}${x.fan?' · '+esc(x.fan):''}${nCt(x.c)?` · <b>${nCt(x.c)} contrato(s) no PNCP</b>`:''}</li>`).join('')}</ul>`; };
+})();
+
+</script>
+<script>
+// ===================== EMPRESA: DESPESAS MUNICIPAIS (TCE-SP), LINKS DE CONSULTA E BUSCA POR CNPJ =====================
+// 1) Despesas municipais pagas à empresa: Portal da Transparência Municipal do TCE-SP (despesas por fornecedor),
+//    consultado na hora pelo site público (/api/despesas) e sempre com o link do portal.
+// 2) Links de consulta da empresa (Receita, PNCP, TCE-SP, CGU) e site provável (domínio do e-mail cadastrado na Receita).
+// 3) Aba Empresas e contratos: campo de consulta por CNPJ (ou raiz). Mesmo fora das camadas do painel, abre o cartão da
+//    empresa, filtra o painel pelo nome e põe a empresa na rede de relações.
+(function(){
+  const $=id=>document.getElementById(id);
+  const A=window.__ab||{}; const esc=A.esc||(t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])));
+  const chave=A.chave||(t=>String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9 ]+/g,' ').replace(/\s+/g,' ').trim());
+  const so=t=>String(t||'').replace(/\D/g,'');
+  const fmtC=c=>c.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5');
+  const fmtR=b=>b.replace(/^(\d{2})(\d{3})(\d{3})$/,'$1.$2.$3');
+  const brl=v=>Number(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL',maximumFractionDigits:0});
+  const fmt=n=>Number(n||0).toLocaleString('pt-BR');
+  const tit=t=>/[a-zà-ú]/.test(t||'')?t:String(t||'').toLowerCase().replace(/(^|\s)\S/g,m=>m.toUpperCase()).replace(/\s(Da|De|Do|Das|Dos|E|Em)\s/g,m=>m.toLowerCase());
+  const LIBERADO=!/(^|\.)claude\.ai$|claudeusercontent|anthropic/i.test(location.hostname);
+  const avisar=t=>{ try{ (A.aviso||console.log)(t); }catch(e){} };
+  function valido(c){ if(!/^\d{14}$/.test(c)||/^(\d)\1+$/.test(c)) return false; const d=(b,p)=>{ let s=0; for(let i=0;i<p.length;i++) s+=+b[i]*p[i]; const r=s%11; return r<2?0:11-r; };
+    return d(c,[5,4,3,2,9,8,7,6,5,4,3,2])===+c[12]&&d(c,[6,5,4,3,2,9,8,7,6,5,4,3,2])===+c[13]; }
+
+  // ---------- links
+  const L={
+    tce:(c,mun)=>'https://transparencia.tce.sp.gov.br/despesas-fornecedor?'+new URLSearchParams({nr_identificador_despesa:c,exercicio:'All',mes:'All',evento:'All',municipio:mun||'All'}).toString(),
+    rfb:c=>'https://solucoes.receita.fazenda.gov.br/Servicos/cnpjreva/Cnpjreva_Solicitacao.asp?cnpj='+c,
+    pncp:c=>'https://pncp.gov.br/app/contratos?q='+encodeURIComponent(fmtR(c.slice(0,8))),
+    cgu:c=>'https://portaldatransparencia.gov.br/busca?termo='+c,
+    google:(nome,c)=>'https://www.google.com/search?q='+encodeURIComponent(`"${nome}" ${fmtC(c)} site oficial`)
+  };
+  window.__linkTCEDespesas=L.tce;
+  const a=(u,t)=>`<a href="${esc(u)}" target="_blank" rel="noopener">${t} ↗</a>`;
+  function blocoLinks(c,nome){ const v=(window.__cnpjVivo||{})[c]; const dom=v&&v.dom;
+    return `<ul class="pq-list emp-links">
+      <li>${a(L.rfb(c),'Receita Federal: comprovante de inscrição')} <small>(pede verificação “não sou robô”)</small></li>
+      <li>${a(L.pncp(c),'PNCP: contratos pela raiz '+fmtR(c.slice(0,8)))}</li>
+      <li>${a(L.tce(c),'TCE-SP: despesas municipais pagas a este CNPJ')}</li>
+      <li>${a(L.cgu(c),'Portal da Transparência (CGU): sanções, contratos e recebimentos federais')}</li>
+      <li>${dom?`${a('https://'+dom,'Site provável: '+esc(dom))} <small>(domínio do e-mail cadastrado na Receita; confira antes de usar)</small>`:a(L.google(nome||fmtC(c),c),'Buscar o site da empresa')}${dom?' · '+a(L.google(nome||fmtC(c),c),'buscar'):''}</li></ul>`; }
+
+  // ---------- despesas pagas (TCE-SP), consulta na hora
+  const DESP={}, PEND={};
+  function despesas(c){ if(!LIBERADO) return Promise.reject(new Error('bloqueado')); if(DESP[c]) return Promise.resolve(DESP[c]); if(PEND[c]) return PEND[c];
+    try{ const s=JSON.parse(sessionStorage.getItem('oisp-desp-'+c)||'null'); if(s){ DESP[c]=s; return Promise.resolve(s); } }catch(e){}
+    const ac=new AbortController(); const t=setTimeout(()=>ac.abort(),35000);
+    PEND[c]=fetch('/api/despesas?cnpj='+c,{signal:ac.signal}).then(r=>{ if(!r.ok) throw new Error('indisponível'); return r.json(); })
+      .then(j=>{ DESP[c]=j; if(!j.falhas) try{ sessionStorage.setItem('oisp-desp-'+c,JSON.stringify(j)); }catch(e){} return j; })
+      .finally(()=>{ clearTimeout(t); delete PEND[c]; });
+    return PEND[c]; }
+  window.__despesas=despesas;
+  const NOTA='Valores pagos (evento “pagamento”) que os municípios paulistas informam ao TCE-SP (sistema Audesp), de 2014 ao último exercício fechado. A capital tem tribunal próprio (TCMSP) e não aparece. Pagamentos a filiais com CNPJ próprio aparecem na ficha de cada filial. Receber pagamento público não é irregular; o quadro serve para verificação.';
+  function blocoDesp(c,j,full){ if(!j||!j.pagamentos) return `<p class="pq-res">Nenhum pagamento municipal a este CNPJ no Portal da Transparência do TCE-SP${j&&j.anos&&!j.anos.length?' (2014 ao último exercício fechado)':''}.</p><p class="pq-nota">${NOTA}</p><p class="pq-nota">${a(L.tce(c),'Abrir a consulta no portal do TCE-SP')}</p>`;
+    const G=full?j.grupos:j.grupos.slice(0,12); const a1=j.anos[0][0], a2=j.anos[j.anos.length-1][0];
+    const mx=Math.max(...j.anos.map(x=>x[1]),1);
+    return `<p class="pq-res"><b>${brl(j.total)}</b> pagos em ${fmt(j.pagamentos)} pagamento(s) · ${j.municipios} município(s) · ${esc(a1)}${a2!==a1?'–'+esc(a2):''}${j.parcial?' · <b>parcial</b> (algum ano passou do limite de 10 mil linhas da exportação)':''}${j.falhas?` · ${j.falhas} ano(s) sem resposta do portal agora`:''}</p>
+      <div class="desp-anos" role="img" aria-label="Valores pagos por ano">${j.anos.map(([y,v])=>`<span title="${esc(y)}: ${esc(brl(v))}"><i style="height:${Math.max(2,Math.round(v/mx*34))}px"></i><small>${esc(String(y).slice(2))}</small></span>`).join('')}</div>
+      <ul class="pq-list">${G.map(g=>`<li><b>${esc(tit(g.o))}</b> · ${esc(g.m)}<span class="fi-m">${brl(g.v)} · ${fmt(g.n)} pagamento(s) · ${esc(g.a1)}${g.a2!==g.a1?'–'+esc(g.a2):''}${g.f&&g.f.length?' · '+esc(g.f.map(x=>tit(x)).join(', ')):''} · ${a(L.tce(c,g.m),'ver no TCE-SP')}</span></li>`).join('')}</ul>
+      ${j.grupos.length>G.length?`<p class="pq-nota">E mais ${j.grupos.length-G.length} órgão(s); o relatório completo e o portal trazem todos.</p>`:''}
+      <p class="pq-nota">${NOTA} Consulta em tempo real ao portal em ${esc(String(j.em||'').split('-').reverse().join('/'))}. ${a(L.tce(c),'Abrir no portal do TCE-SP')}</p>`; }
+
+  // ficha da rede (pncp.js chama com a seção de cada parte)
+  window.__fichaEmpExtra=({c,label,sec})=>{ if(!c||c.length!==14) return; const nome=label;
+    sec('pq-links','Links para consulta',blocoLinks(c,nome));
+    if(window.__consultarCNPJ&&LIBERADO) window.__consultarCNPJ(c).then(()=>{ const el=$('pq-links'); if(el&&el.dataset.c===c) sec('pq-links','Links para consulta',blocoLinks(c,nome)); }).catch(()=>{});
+    const t='Despesas municipais pagas (Portal da Transparência do TCE-SP)';
+    ['pq-desp','pq-links'].forEach(id=>{ const el=$(id); if(el) el.dataset.c=c; });
+    if(!LIBERADO){ sec('pq-desp',t,`<p class="pq-nota">A consulta em tempo real funciona no site público do Observatório da Integridade (oisp.vercel.app). ${a(L.tce(c),'Abrir a consulta no portal do TCE-SP')}</p>`); return; }
+    sec('pq-desp',t,'<p class="pq-nota">consultando o portal do TCE-SP (13 exercícios)…</p>');
+    despesas(c).then(j=>{ const el=$('pq-desp'); if(el&&el.dataset.c===c) sec('pq-desp',t,blocoDesp(c,j,!!window.__fichaFull)); })
+      .catch(()=>{ const el=$('pq-desp'); if(el&&el.dataset.c===c) sec('pq-desp',t,`<p class="pq-nota">Portal do TCE-SP indisponível agora. ${a(L.tce(c),'Abrir a consulta no portal')}</p>`); }); };
+
+  // ficha da busca (modal): links e botão de consulta das despesas
+  (window.__fichaExtra=window.__fichaExtra||[]).push(CX=>{ if(CX.tipo!=='pessoa'||window.__fichaRede) return; const c=so(CX.dig||''); if(c.length!==14||!valido(c)) return;
+    CX.XB.push(`<h3 class="fi-h">Despesas municipais pagas <span>TCE-SP</span></h3><div class="desp-ficha" data-c="${c}">${DESP[c]?blocoDesp(c,DESP[c],!!window.__fichaFull):LIBERADO?`<button type="button" class="op-filter desp-ok" data-c="${c}">Consultar pagamentos no Portal da Transparência do TCE-SP</button>`:''}<p class="fi-nota">${a(L.tce(c),'Abrir a consulta no portal do TCE-SP')}</p></div><h3 class="fi-h">Links para consulta</h3>${blocoLinks(c,CX.nome)}`); });
+  document.addEventListener('click',e=>{ const b=e.target.closest('.desp-ok'); if(!b) return; const box=b.closest('.desp-ficha'); b.disabled=true; b.textContent='Consultando o portal do TCE-SP…';
+    despesas(b.dataset.c).then(j=>{ box.innerHTML=blocoDesp(b.dataset.c,j,false); }).catch(()=>{ b.textContent='Portal indisponível agora; tente de novo'; b.disabled=false; }); });
+
+  // ---------- aba Empresas e contratos: consulta por CNPJ
+  function nomeBase(c){ const b=c.slice(0,8); const ix=window.__entIdx||[]; const e=ix.find(x=>x.t==='e'&&so(x.k)===c)||ix.find(x=>x.t==='e'&&so(x.k).slice(0,8)===b); if(e) return tit(e.n);
+    const PN=window.__pncp||{}; if(PN.B&&PN.B[b]) return tit(PN.B[b][0]); const R=window.__rfb; if(R&&R.C&&R.C[b]) return tit(R.C[b][0]); return ''; }
+  async function abrirEmpresa(c,nome){ c=so(c); if(c.length===8&&window.__cnpjMatriz) c=window.__cnpjMatriz(c);
+    if(!valido(c)){ msg('Digite um CNPJ válido (14 dígitos) ou a raiz (8 dígitos).'); return; }
+    msg('Abrindo '+fmtC(c)+'…'); nome=nome||nomeBase(c);
+    if(!nome&&LIBERADO&&window.__consultarCNPJ){ try{ const d=await Promise.race([window.__consultarCNPJ(c),new Promise((_,r)=>setTimeout(()=>r(0),9000))]); d.raiz=true; nome=tit(d.r); }catch(e){} }
+    nome=nome||('CNPJ '+fmtC(c));
+    const naBase=!!nomeBase(c);
+    { const q=$('ce-q'); if(q) q.value=''; }
+    window.__netAdd&&window.__netAdd({cnpj:c,label:nome,tipo:'Empresa'}); // filtra o painel pelo nome e põe na rede
+    window.__fichaRedeAbrir&&window.__fichaRedeAbrir({id:'c:'+c,type:'emp',label:nome,ficha:c});
+    msg(`<b>${esc(nome)}</b> · CNPJ ${esc(fmtC(c))} · ${naBase?'consta em camadas do painel: painel filtrado por este nome':'não consta nas camadas do painel; o cartão traz as consultas na Receita, no PNCP e no TCE-SP'} · <a href="#rede" class="ce-rede">ver na rede de relações</a>`); }
+  window.__abrirEmpresaCNPJ=abrirEmpresa;
+  let msg=()=>{};
+  function montar(){ const sec=$('aba-empresas'); if(!sec||$('ce-box')) return;
+    const box=document.createElement('div'); box.className='panel ce-box'; box.id='ce-box';
+    box.innerHTML=`<div class="panel-head"><div><h2>Consultar empresa por CNPJ</h2><p>Funciona também para empresas que não estão em nenhuma camada do painel. Abre o cartão da empresa com o cadastro na Receita Federal, os contratos no PNCP (matriz e filiais), as despesas municipais pagas (Portal da Transparência do TCE-SP), links de consulta e o site provável; filtra o painel pelo nome da empresa e a põe na rede de relações.</p></div></div>
+      <div class="panel-body"><div class="ce-in"><input id="ce-q" type="search" inputmode="search" autocomplete="off" placeholder="CNPJ (00.000.000/0000-00), raiz (00.000.000) ou nome da empresa" aria-label="CNPJ ou nome da empresa" role="combobox" aria-expanded="false" aria-controls="ce-res"><button type="button" id="ce-ok" class="op-filter">Consultar</button><div id="ce-res" class="net-res ce-res" role="listbox" hidden></div></div><p class="cv-msg" id="ce-msg" role="status"></p></div>`;
+    sec.prepend(box);
+    const q=$('ce-q'), res=$('ce-res'); let itens=[], at=-1; msg=h=>{ $('ce-msg').innerHTML=h; };
+    function sugerir(){ const t=q.value.trim(), dig=so(t), k=chave(t); itens=[]; at=-1;
+      if(dig.length===14||dig.length===8) itens.push({c:dig,n:'',lab:dig.length===14?'Consultar o CNPJ '+fmtC(dig):'Consultar a raiz '+fmtR(dig)+' (matriz)',sub:dig.length===14&&!valido(dig)?'dígitos verificadores não conferem':'Receita, PNCP, TCE-SP e dados do painel'});
+      if(k.length>=3||dig.length>=5){ const ix=window.__entIdx||[]; ix.filter(x=>x.t==='e'&&so(x.k).length===14&&((dig.length>=5&&so(x.k).includes(dig))||(k.length>=3&&x.s.includes(' '+k)))).slice(0,10).forEach(x=>itens.push({c:so(x.k),n:tit(x.n),lab:tit(x.n),sub:'CNPJ '+fmtC(so(x.k))+' · no painel'})); }
+      res.innerHTML=itens.length?itens.map((x,i)=>`<button type="button" role="option" class="net-ri" data-i="${i}"><b>${esc(x.lab)}</b><span>${esc(x.sub)}</span></button>`).join(''):(t.length>=3?'<p class="net-rv">Nada no painel com esse nome. Digite o CNPJ para consultar a Receita.</p>':'');
+      res.hidden=!res.innerHTML; q.setAttribute('aria-expanded',res.hidden?'false':'true'); }
+    const ir=x=>{ res.hidden=true; q.setAttribute('aria-expanded','false'); if(x) abrirEmpresa(x.c,x.n); else { const d=so(q.value); if(d.length===14||d.length===8) abrirEmpresa(d,''); else if(itens.length) abrirEmpresa(itens[0].c,itens[0].n); else msg('Digite um CNPJ (14 dígitos), a raiz (8 dígitos) ou parte do nome de uma empresa do painel.'); } };
+    q.addEventListener('input',sugerir);
+    q.addEventListener('keydown',e=>{ const bs=[...res.querySelectorAll('.net-ri')]; if(e.key==='ArrowDown'||e.key==='ArrowUp'){ e.preventDefault(); if(!bs.length) return; at=(at+(e.key==='ArrowDown'?1:-1)+bs.length)%bs.length; bs.forEach((b,i)=>b.classList.toggle('ativo',i===at)); }
+      else if(e.key==='Enter'){ e.preventDefault(); ir(at>=0?itens[at]:null); } else if(e.key==='Escape') res.hidden=true; });
+    res.addEventListener('click',e=>{ const b=e.target.closest('.net-ri'); if(b) ir(itens[+b.dataset.i]); });
+    $('ce-ok').addEventListener('click',()=>ir(null));
+    document.addEventListener('click',e=>{ if(!box.contains(e.target)) res.hidden=true; });
+    box.addEventListener('click',e=>{ if(e.target.closest('.ce-rede')){ e.preventDefault(); window.__mostrarAba&&window.__mostrarAba('casos'); const n=$('net-svg'); if(n) setTimeout(()=>n.scrollIntoView({behavior:'smooth',block:'center'}),80); } }); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(montar,0)); else setTimeout(montar,0);
+  setTimeout(montar,1500);
 })();
 
 </script>
@@ -5386,7 +5537,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   const abaAtual=()=>{ const s=document.querySelector('section.aba:not([hidden])'); return s?s.dataset.aba:''; };
   // controles que não são filtro (exibição do mapa, matriz, linha do tempo, rede de relações)
   const IGN=new Set(['map-fam','lens-on','ano-r','mx-ord','mx-n','tl-op','net-q','m-nav']);
-  const ctrls=sec=>[...sec.querySelectorAll('input,select')].filter(e=>e.id&&!IGN.has(e.id)&&!['range','radio','button','submit','hidden'].includes(e.type)&&!e.closest('.net-ctl,.net-tools,#net-wrap,#inicio'));
+  const ctrls=sec=>[...sec.querySelectorAll('input,select')].filter(e=>e.id&&!IGN.has(e.id)&&!['range','radio','button','submit','hidden'].includes(e.type)&&!e.closest('.net-ctl,.net-tools,#net-wrap,#inicio,.ce-box'));
   const val=e=>e.type==='checkbox'?e.checked:String(e.value);
   const DEF=new Map(); const instantaneo=()=>document.querySelectorAll('section.aba').forEach(s=>ctrls(s).forEach(e=>{ if(!DEF.has(e.id)) DEF.set(e.id,val(e)); }));
   const ativo=e=>{ const d=DEF.has(e.id)?DEF.get(e.id):(e.type==='checkbox'?false:''); const v=val(e); if(v===d) return false; return e.type==='checkbox'?true:String(v).trim()!==''||d!==''; };
