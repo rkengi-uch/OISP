@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261013204446";</script>
+<head><script>window.__BUILD="20261013212453";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -5431,8 +5431,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
         <h1 class="oi-h1">${assinatura({completa:true,escuro:true,rot:'OISP – Observatório da Integridade SP'})}</h1>
         <p class="oi-lema">OISP · Observar, vigiar, verificar</p></div>
       <div class="oi-hero-txt"><p class="oi-lead">O OISP cruza fontes oficiais de polícia, Ministério Público, Justiça, tribunais de contas, CGU, Receita e TSE sobre agentes políticos, servidores, empresas e entidades. Cada fato fica na sua esfera: investigação não é condenação.</p>
-        <form class="oi-busca" id="oi-busca" role="search"><label for="oi-q" class="sr-only" style="position:absolute;left:-9999px">Buscar</label><input id="oi-q" type="search" autocomplete="off" placeholder="Pessoa, município, empresa, CNPJ, operação ou processo"><button type="submit" class="oi-btn prim">Buscar</button></form>
-        <p class="oi-dica">A busca percorre todas as camadas e abre a ficha por esfera, o município ou a aba certa.</p></div>
+</div>
     </section>
     <div class="oi-nums" id="oi-nums"></div>
     <div class="oi-sec"><h2>Por onde começar</h2><p>Cada bloco é uma aba do painel. Clique no nome para abrir a aba, ou num atalho para ir direto à seção.</p></div>
@@ -5481,8 +5480,6 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     if(e.target.closest('[data-oi-bol]')){ const x=$('bol-abrir'); x&&x.click(); return; }
     if(e.target.closest('[data-oi-esf]')){ const x=$('esf-abrir')||$('esf-abrir2'); x&&x.click(); return; }
     if(e.target.closest('[data-oi-topo]')){ raiz.scrollTo({top:0,behavior:'smooth'}); } });
-  $('oi-busca').addEventListener('submit',e=>{ e.preventDefault(); const v=$('oi-q').value.trim(); const bb=$('busca-abrir'); if(!bb) return; bb.click();
-    const q=$('bu-q'); if(q){ q.value=v; q.dispatchEvent(new Event('input',{bubbles:true})); } });
 
   // quando a navegação parte de um diálogo (busca, ficha), a página inicial sai da frente
   const obs=new MutationObserver(()=>{ if(aberto) fechar(); });
