@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261014131512";</script>
+<head><script>window.__BUILD="20261014135254";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -1050,6 +1050,32 @@ html.oi-aberto, html.oi-aberto body{overflow:hidden;}
 /* abrangência do painel no topo: municípios paulistas e Governo do Estado de SP */
 .hero .lema-esc{font-style:normal; font-family:var(--sans); font-size:.8em; font-weight:600; letter-spacing:.08em; white-space:normal;}
 @media (max-width:640px){ .hero .lema-esc{display:block; margin-top:4px;} .hero .lema-sep{display:none;} }
+
+/* cartões da página inicial: título, número e descrição do número à vista; o texto e os atalhos ficam recolhidos */
+.oi-mais{margin-top:auto;}
+.oi-mais>summary{cursor:pointer; font:12px var(--sans); color:var(--oi-muted); list-style:none; display:inline-flex; align-items:center; gap:6px; padding:2px 0;}
+.oi-mais>summary::-webkit-details-marker{display:none;}
+.oi-mais>summary::before{content:'▸'; color:var(--oi-teal); transition:transform .15s;}
+.oi-mais[open]>summary::before{transform:rotate(90deg);}
+.oi-mais>summary:hover{color:var(--oi-teal);}
+.oi-mais>summary:focus-visible{outline:2px solid var(--oi-teal); outline-offset:2px; border-radius:3px;}
+.oi-mais[open]>summary{margin-bottom:8px;}
+.oi-mais .oi-ops{margin-top:10px;}
+.oi-mods-tog{all:unset; cursor:pointer; font:12px var(--sans); color:var(--oi-muted); margin-left:auto;}
+.oi-mods-tog:hover{color:var(--oi-teal);}
+.oi-mods-tog:focus-visible{outline:2px solid var(--oi-teal); outline-offset:2px;}
+.cd-bar{display:flex; justify-content:flex-end; margin:-4px 0 6px;}
+.cd-tog{font:12px var(--sans); background:none; border:1px solid var(--border); border-radius:4px; padding:4px 10px; color:var(--text-muted); cursor:pointer;}
+.cd-tog:hover{border-color:var(--gold); color:var(--text);}
+.cd-x{margin-top:8px; border-top:1px dashed var(--border); padding-top:6px;}
+.cd-x>summary{cursor:pointer; font-size:12px; color:var(--text-muted); list-style:none; display:flex; align-items:baseline; gap:6px;}
+.cd-x>summary::-webkit-details-marker{display:none;}
+.cd-x>summary::before{content:'▸'; color:var(--gold); display:inline-block; transition:transform .15s;}
+.cd-x[open]>summary::before{transform:rotate(90deg);}
+.cd-x>summary:hover{color:var(--text);}
+.cd-x>summary small{font-size:11px;}
+.cd-x .op-filter{margin-top:8px;}
+@media (max-width:560px){ .mbar{flex-wrap:wrap; row-gap:6px;} } /* com filtro ativo, o botão Limpar não empurra a barra para fora da tela */
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&family=IBM+Plex+Mono:wght@500&display=swap">
 </head>
@@ -1233,6 +1259,7 @@ html.oi-aberto, html.oi-aberto body{overflow:hidden;}
   </div>
   <div class="sec-label">Operações mapeadas</div>
   <p class="sec-desc">Cada cartão reúne os agentes políticos/servidores registrados por operação ou processo e as fontes de referência para pesquisa, com as <b>fontes oficiais</b> (notas da Polícia Federal, CGU, MPSP, TJSP e câmaras municipais) listadas antes da imprensa. Os atalhos "Buscar" abrem a pesquisa já restrita a sites oficiais (gov.br, mp.br, jus.br) ou ao Google Notícias. Use "Filtrar por esta operação" para aplicar o filtro ao painel.</p>
+  <div class="cd-bar"><button type="button" class="cd-tog" data-alvo="ops" aria-controls="ops">Expandir todos</button></div>
   <div class="ops" id="ops"></div>
   <h3 style="font-family:var(--serif); font-size:14.5px; margin:22px 0 0;">Portais oficiais para aprofundar a pesquisa</h3>
   <p class="sec-desc" style="margin:4px 0 0;">Consultas diretas pelo nome do agente político/servidor, número do processo ou nome da operação. As notas da PF e da CGU nem sempre são indexadas pelos buscadores; nesses casos, pesquise pelo nome da operação no próprio portal.</p>
@@ -1249,10 +1276,12 @@ html.oi-aberto, html.oi-aberto body{overflow:hidden;}
 
   <div class="sec-label">Entidades com atuação em vários municípios</div>
   <p class="sec-desc">Organizações sociais e empresas investigadas cuja atuação se estende por vários municípios. Cada município onde a entidade atuou entra no mapa (camada "Entidades") e na base, ainda que ali não haja agente político/servidor investigado. Clique num município para filtrar o painel.</p>
+  <div class="cd-bar"><button type="button" class="cd-tog" data-alvo="ents" aria-controls="ents">Expandir todos</button></div>
   <div class="ops" id="ents" style="margin-bottom:18px;"></div>
 
   <div class="sec-label">Governo do Estado de São Paulo</div>
   <p class="sec-desc">Ocorrências da administração estadual (Secretaria da Fazenda e créditos de ICMS, Metrô, CPTM, Dersa/DER, Detran-SP, Educação/FDE, Casa Civil, Agricultura e Alesp), representadas no mapa no polígono do município de São Paulo, junto com os casos da Prefeitura e da Câmara da Capital (incluídos desde 02/10/2026). Use o filtro “Esfera de governo” no topo para ver só o Estado ou só os municípios. <b id="ge-count"></b></p>
+  <div class="cd-bar"><button type="button" class="cd-tog" data-alvo="ge-cards" aria-controls="ge-cards">Expandir todos</button></div>
   <div class="ops" id="ge-cards" style="margin-bottom:18px;"></div>
 
   <div class="sec-label">Rede de relações</div>
@@ -1947,7 +1976,7 @@ function renderOps(rs){
   const arr=Object.entries(m).sort((a,b)=>b[1].reduce((s,x)=>s+x.w,0)-a[1].reduce((s,x)=>s+x.w,0));
   $('ops').innerHTML=arr.length?arr.map(([op,xs])=>{ const anos=[...new Set(xs.map(x=>x.ano).filter(Boolean))].sort(); const ag=xs.reduce((s,x)=>s+x.w,0);
     const nOf=(DATA.OPLINKS[op]||[]).filter(l=>l.tipo==='Oficial').length;
-    return `<div class="op-card${fxVals('op').includes(op)?' active':''}"><h3>${esc(op)}</h3><div class="meta">${anos.join(', ')||'s/d'} · ${esc([...new Set(xs.flatMap(x=>x.orgs))].join(', '))}</div><div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-top:8px;"><div class="meta">${esc([...new Set(xs.map(x=>x.mun))].join(', '))}</div><div class="n" title="agentes políticos/servidores alcançados na base">${ag||'—'}</div></div><div class="meta" style="margin-top:8px;"><b>Fontes para pesquisa</b> <a href="#legenda-fontes" style="font-size:11px;">(legenda)</a> (${nOf} oficial${nOf===1?'':'is'})</div>${linkList(op)}${(()=>{ const nl=newsRows(true).filter(n=>n[6]===op).sort((a,b)=>nwData(b)-nwData(a)); return nl.length?`<div class="meta" style="margin-top:8px;"><b>Notícias</b> (${nl.length})</div><ul class="nw-list nw-op">${nl.slice(0,3).map(n=>nwItem(n,{mun:1})).join('')}</ul>`:''; })()}<div class="meta" style="margin-top:4px;">Buscar: <a href="${esc(qOfic(OPQ[op]||('"'+op.split(' / ')[0]+'" São Paulo')))}" target="_blank" rel="noopener">em sites oficiais</a> · <a href="${esc(qImp(OPQ[op]||('"'+op.split(' / ')[0]+'"')))}" target="_blank" rel="noopener">no Google Notícias</a></div><button class="op-filter" data-op="${esc(op)}">${fxVals('op').includes(op)?'Remover filtro':'Filtrar por esta operação'}</button></div>`; }).join(''):'<div class="empty-msg">Nenhuma operação no filtro atual.</div>';
+    return `<div class="op-card${fxVals('op').includes(op)?' active':''}"><h3>${esc(op)}</h3><div class="meta">${anos.join(', ')||'s/d'} · ${esc([...new Set(xs.flatMap(x=>x.orgs))].join(', '))}</div><div style="display:flex;justify-content:space-between;align-items:flex-end;gap:10px;margin-top:8px;"><div class="meta">${esc([...new Set(xs.map(x=>x.mun))].join(', '))}</div><div class="n" title="agentes políticos/servidores alcançados na base">${ag||'—'}</div></div><details class="cd-x"${fxVals('op').includes(op)?' open':''}><summary>Fontes, notícias e filtro <small>(${(DATA.OPLINKS[op]||[]).length} fonte${(DATA.OPLINKS[op]||[]).length===1?'':'s'})</small></summary><div class="meta" style="margin-top:8px;"><b>Fontes para pesquisa</b> <a href="#legenda-fontes" style="font-size:11px;">(legenda)</a> (${nOf} oficial${nOf===1?'':'is'})</div>${linkList(op)}${(()=>{ const nl=newsRows(true).filter(n=>n[6]===op).sort((a,b)=>nwData(b)-nwData(a)); return nl.length?`<div class="meta" style="margin-top:8px;"><b>Notícias</b> (${nl.length})</div><ul class="nw-list nw-op">${nl.slice(0,3).map(n=>nwItem(n,{mun:1})).join('')}</ul>`:''; })()}<div class="meta" style="margin-top:4px;">Buscar: <a href="${esc(qOfic(OPQ[op]||('"'+op.split(' / ')[0]+'" São Paulo')))}" target="_blank" rel="noopener">em sites oficiais</a> · <a href="${esc(qImp(OPQ[op]||('"'+op.split(' / ')[0]+'"')))}" target="_blank" rel="noopener">no Google Notícias</a></div><button class="op-filter" data-op="${esc(op)}">${fxVals('op').includes(op)?'Remover filtro':'Filtrar por esta operação'}</button></details></div>`; }).join(''):'<div class="empty-msg">Nenhuma operação no filtro atual.</div>';
 }
 $('ops').addEventListener('click',e=>{ const c=e.target.closest('.op-filter'); if(c) setF('op',c.dataset.op); });
 function renderPortais(){ const el=$('portais'); if(!el) return; el.innerHTML=(DATA.PORTAIS||[]).map(p=>`<a href="${esc(p.url)}" target="_blank" rel="noopener"><b>${esc(p.nome)}</b><span>${esc(p.desc)}</span></a>`).join(''); }
@@ -2168,7 +2197,7 @@ function perfilNews(){ const el=$('perfil-news'); if(!el||!F.mun) return; const 
 // ---------- entidades
 function renderEnts(){
   const by={}; entRows().forEach(e=>{ (by[e.ent]=by[e.ent]||[]).push(e); });
-  $('ents').innerHTML=Object.entries(by).sort((a,b)=>b[1].length-a[1].length).map(([ent,es])=>`<div class="op-card"><h3>${esc(ent)}</h3><div class="meta">${es.length} municípios</div><ul class="op-links">${es.map(e=>`<li><a class="clk" data-mun="${esc(e.mun)}"><b>${esc(e.mun)}</b></a>: ${esc(e.papel)} <a href="${esc(e.url)}" target="_blank" rel="noopener">[fonte]</a></li>`).join('')}</ul></div>`).join('')||'<div class="empty-msg">Nenhuma entidade no filtro atual.</div>';
+  $('ents').innerHTML=Object.entries(by).sort((a,b)=>b[1].length-a[1].length).map(([ent,es])=>`<div class="op-card"><h3>${esc(ent)}</h3><div class="meta">${es.length} municípios</div><details class="cd-x"><summary>Ver municípios e papéis</summary><ul class="op-links">${es.map(e=>`<li><a class="clk" data-mun="${esc(e.mun)}"><b>${esc(e.mun)}</b></a>: ${esc(e.papel)} <a href="${esc(e.url)}" target="_blank" rel="noopener">[fonte]</a></li>`).join('')}</ul></details></div>`).join('')||'<div class="empty-msg">Nenhuma entidade no filtro atual.</div>';
 }
 $('perfil-news-more').addEventListener('click',()=>{ pnLim+=12; perfilNews(); });
 $('perfil-news').addEventListener('click',e=>{ const a=e.target.closest('a.clk'); if(a){ e.preventDefault(); setF('mun',a.dataset.mun); } });
@@ -2179,7 +2208,7 @@ function renderGE(){
   const rs=rows().filter(x=>x.nivel==='Estadual'), cs=citRows().filter(c=>c.nivel==='Estadual');
   const by={}; rs.forEach(x=>{ const k=x.orgest||'Outros'; (by[k]=by[k]||{r:[],c:[]}).r.push(x); }); cs.forEach(c=>{ const k=c.orgest||'Outros'; (by[k]=by[k]||{r:[],c:[]}).c.push(c); });
   $('ge-count').textContent=`${rs.reduce((s,x)=>s+x.w,0)} agentes públicos estaduais e ${cs.length} operações ou apontamentos sem agente nominado no filtro atual.`;
-  $('ge-cards').innerHTML=Object.entries(by).sort((a,b)=>(b[1].r.length+b[1].c.length)-(a[1].r.length+a[1].c.length)).map(([k,v])=>{ const op0=[...v.r,...v.c][0].op; return `<div class="op-card"><h3>${esc(k)}</h3><div class="meta">${[...new Set(v.r.map(x=>x.op).concat(v.c.map(c=>c.op)))].map(esc).join(' · ')}</div><ul class="op-links">${v.r.map(x=>`<li><b>${esc(x.nome)}</b> <span class="src">(${esc(x.cargo)}, ${x.ano||'s/d'})</span>: ${esc(x.medida)} · ${x.est==='Condenado'?'<span class="badge b-cond">Condenado</span>':esc(x.est)} ${/^http/.test(x.link)?`<a href="${esc(x.link)}" target="_blank" rel="noopener">[fonte]</a>`:''}</li>`).join('')}${v.c.map(c=>`<li><i>${esc(c.op)} (${c.ano})</i>: ${esc(c.obs.slice(0,180))}${c.obs.length>180?'…':''} <a href="${esc(c.link)}" target="_blank" rel="noopener">[fonte]</a></li>`).join('')}</ul><button class="op-filter" data-op="${esc(op0)}">Filtrar por ${esc(op0)}</button></div>`; }).join('')||'<div class="empty-msg">Nenhuma ocorrência estadual no filtro atual.</div>';
+  $('ge-cards').innerHTML=Object.entries(by).sort((a,b)=>(b[1].r.length+b[1].c.length)-(a[1].r.length+a[1].c.length)).map(([k,v])=>{ const op0=[...v.r,...v.c][0].op; return `<div class="op-card"><h3>${esc(k)}</h3><div class="meta">${[...new Set(v.r.map(x=>x.op).concat(v.c.map(c=>c.op)))].map(esc).join(' · ')}</div><details class="cd-x"><summary>Ver casos e fontes <small>(${v.r.length+v.c.length})</small></summary><ul class="op-links">${v.r.map(x=>`<li><b>${esc(x.nome)}</b> <span class="src">(${esc(x.cargo)}, ${x.ano||'s/d'})</span>: ${esc(x.medida)} · ${x.est==='Condenado'?'<span class="badge b-cond">Condenado</span>':esc(x.est)} ${/^http/.test(x.link)?`<a href="${esc(x.link)}" target="_blank" rel="noopener">[fonte]</a>`:''}</li>`).join('')}${v.c.map(c=>`<li><i>${esc(c.op)} (${c.ano})</i>: ${esc(c.obs.slice(0,180))}${c.obs.length>180?'…':''} <a href="${esc(c.link)}" target="_blank" rel="noopener">[fonte]</a></li>`).join('')}</ul><button class="op-filter" data-op="${esc(op0)}">Filtrar por ${esc(op0)}</button></details></div>`; }).join('')||'<div class="empty-msg">Nenhuma ocorrência estadual no filtro atual.</div>';
 }
 $('ge-cards').addEventListener('click',e=>{ const b=e.target.closest('.op-filter'); if(b) setF('op',b.dataset.op); });
 // ---------- notícias recentes (recorte móvel)
@@ -3470,6 +3499,19 @@ syncInputs(); render();
     T.tcu={t:'TCU: listas oficiais (responsáveis com cadastro em SP)',f:'tcu_listas',get:()=>window.__exp.tcu?window.__exp.tcu():[],cols:[['Responsável',x=>x.nome,1],['Tipo',x=>x.tipo,1],['CNPJ',x=>x.cnpj],['Lista',x=>TCU_L[x.l],1],['Município do cadastro',x=>x.mun||x.munr,1],['Processo',x=>x.proc,1],['Acórdão(s)',x=>x.ac,1],['Data do acórdão',x=>x.dac],['Trânsito em julgado',x=>x.tj,1],['Vigência até',x=>x.fim,1],['Registros na base',x=>x.base,1],['Link do processo',x=>x.lproc,1,'url'],['Link dos acórdãos',x=>x.lac,0,'url']]};
     const barra=k=>{ const d=document.createElement('div'); d.className='exp-bar'; d.dataset.k=k; d.innerHTML=`<span class="exp-lbl">Baixar (filtros atuais):</span><button type="button" data-exp="${k}" data-fmt="csv" title="Baixar em CSV (abre no Excel)">⬇ CSV</button><button type="button" data-exp="${k}" data-fmt="pdf" title="Baixar em PDF">⬇ PDF</button>`; return d; };
     [['tj2-body','tj2'],['cn-body','cnia'],['sc-body','sanc'],['tcu-body','tcu']].forEach(([id,k])=>{ const tb=$(id); const h=tb&&tb.closest('.panel')&&tb.closest('.panel').querySelector('.panel-head'); if(h) h.appendChild(barra(k)); }); }
+})();
+
+// cartões recolhíveis (operações, entidades, Governo do Estado): "Expandir todos / Recolher todos"; o estado vale também depois que o filtro redesenha os cartões
+(function(){
+  const EST={};
+  const ds=id=>{ const c=document.getElementById(id); return c?[...c.querySelectorAll('details.cd-x')]:[]; };
+  const rot=id=>{ const b=document.querySelector('.cd-tog[data-alvo="'+id+'"]'); if(!b) return; const L=ds(id); b.hidden=!L.length; b.textContent=L.length&&L.every(d=>d.open)?'Recolher todos':'Expandir todos'; };
+  document.addEventListener('click',e=>{ const b=e.target.closest('.cd-tog'); if(!b) return; const id=b.dataset.alvo, L=ds(id); const ab=!L.every(d=>d.open); EST[id]=ab; L.forEach(d=>d.open=ab); rot(id); });
+  function liga(){ document.querySelectorAll('.cd-tog').forEach(b=>{ const id=b.dataset.alvo, c=document.getElementById(id); if(!c||c.__cd) return; c.__cd=1;
+    c.addEventListener('toggle',()=>rot(id),true);
+    new MutationObserver(()=>{ if(EST[id]) ds(id).forEach(d=>{ if(!d.open) d.open=true; }); rot(id); }).observe(c,{childList:true});
+    rot(id); }); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',liga); else liga();
 })();
 
 </script>
@@ -5436,7 +5478,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
 </div>
     </section>
     <div class="oi-nums" id="oi-nums"></div>
-    <div class="oi-sec"><h2>Por onde começar</h2><p>Cada bloco é uma aba do painel. Clique no nome para abrir a aba, ou num atalho para ir direto à seção.</p></div>
+    <div class="oi-sec"><h2>Por onde começar</h2><p>Cada bloco é uma aba do painel. Clique no nome para abrir a aba, ou em “Ver descrição e atalhos” para ir direto a uma seção.</p><button type="button" class="oi-mods-tog" id="oi-mods-tog">Expandir todos</button></div>
     <div class="oi-mods" id="oi-mods"></div>
     <div class="oi-sec"><h2>Fontes cruzadas</h2><p>Só fontes oficiais e imprensa verificada, com data de consulta na aba Metodologia.</p></div>
     <div class="oi-fontes">${FONTES.map(f=>`<span class="oi-fonte"><i>${esc(f[0])}</i> ${esc(f[1])}</span>`).join('')}</div>
@@ -5458,7 +5500,10 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     const FIG={geral:[muns.size,'municípios no mapa'],casos:[ops.size,'operações'],justica:[tj,'processos e condenações'],contas:[ct,'decisões e registros'],empresas:[con,'contratos durante a pena'],
       eleicoes:[fl,'candidaturas barradas'],noticias:[N.length,'notícias'],metodo:[ (D.META&&Object.keys(D.META).length)||16,'camadas descritas']};
     $('oi-mods').innerHTML=MODS.map(m=>{ const f=FIG[m.k]||[]; return `<article class="oi-mod"><div class="oi-mod-top"><h3><button type="button" data-oi-aba="${m.k}">${esc(m.t)}</button></h3>${f[0]?`<div class="oi-fig"><b>${fmt(f[0])}</b><small>${esc(f[1])}</small></div>`:''}</div>
-      <p>${esc(m.d)}</p><div class="oi-ops">${m.o.map(o=>`<button type="button" class="oi-op" data-oi-aba="${m.k}" data-oi-alvo="${esc(o[1])}"${o[2]?` data-oi-modo="${o[2]}"`:''}>${esc(o[0])}</button>`).join('')}</div></article>`; }).join('');
+      <details class="oi-mais"><summary>Ver descrição e atalhos</summary><p>${esc(m.d)}</p><div class="oi-ops">${m.o.map(o=>`<button type="button" class="oi-op" data-oi-aba="${m.k}" data-oi-alvo="${esc(o[1])}"${o[2]?` data-oi-modo="${o[2]}"`:''}>${esc(o[0])}</button>`).join('')}</div></details></article>`; }).join('');
+    (()=>{ const g=$('oi-mods'), bt=$('oi-mods-tog'); if(!g||!bt||bt.__ok) return; bt.__ok=1; const ds=()=>[...g.querySelectorAll('details.oi-mais')];
+      bt.addEventListener('click',()=>{ const ab=!ds().every(d=>d.open); ds().forEach(d=>d.open=ab); bt.textContent=ab?'Recolher todos':'Expandir todos'; });
+      g.addEventListener('toggle',()=>{ bt.textContent=ds().every(d=>d.open)?'Recolher todos':'Expandir todos'; },true); })();
     const db=(document.querySelector('.hero-id')||{}).textContent||''; const m=db.match(/DATA-BASE\s+(\d{2}\/\d{2}\/\d{4})/); $('oi-db').textContent=m?'Dados de '+m[1]+'.':''; }
   numeros(); (window.__aoRenderizar=window.__aoRenderizar||[]).push(numeros);
 
