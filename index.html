@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261014153809";</script>
+<head><script>window.__BUILD="20261014160104";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -4154,7 +4154,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     const PN={}; nodes.forEach((n,id)=>{ if(n.type==='ag'||n.type==='tce') (PN[chave(n.label)]=PN[chave(n.label)]||[]).push(id); });
     // empresas citadas na base com CNPJ: reaproveita o nó já existente
     const EB={}; QSA.base.forEach(b=>b.como.forEach(n=>{ const id='e:'+limpaEmp(n); if(nodes.has(id)) EB[b.c]=id; }));
-    const nomeEmp=c=>{ const e=QSA.emp[c]; if(e&&e[0]) return e[0]; const rf=window.__rfb&&window.__rfb.ok&&window.__rfb.C[String(c).slice(0,8)]; if(rf&&rf[0]) return tit(rf[0]); const s=SEm.find(x=>x.cnpj===c); if(s) return s.nome; const i=IMP.itens.find(x=>x.c===c); return i?nomeImp(i.n):c; };
+    const nomeEmp=c=>{ const e=QSA.emp[c]; if(e&&e[0]) return e[0]; const rf=window.__rfb&&window.__rfb.ok&&window.__rfb.C[String(c).slice(0,8)]; if(rf&&rf[0]) return tit(rf[0]); const s=SEm.find(x=>x.cnpj===c); if(s) return s.nome; const i=IMP.itens.find(x=>x.c===c); if(i) return nomeImp(i.n); const v=(window.__cnpjVivo||{})[c]; if(v&&v.r) return tit(v.r); const sl=(window.__netSel||[]).find(x=>x.cnpj===c); if(sl&&sl.label&&!/^CNPJ/.test(sl.label)) return sl.label; const en=window.__estabNome&&window.__estabNome(c); if(en) return en; if(sl&&sl.label) return sl.label; const pb=(window.__pncp||{}).B||{}; const p=pb[String(c).slice(0,8)]; if(p&&p[0]) return tit(p[0]); return /^\d{14}$/.test(c)?'CNPJ '+String(c).replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5'):c; };
     const empNo=(c,tipo,info)=>{ if(EB[c]) return EB[c]; const id='c:'+c; if(!nodes.has(id)) add(id,nomeEmp(c),tipo||'emp',{cargo:'CNPJ '+c+(info?' · '+info:''),ficha:c}); return id; };
     // ===== empresas e entidades ligadas aos órgãos de ocorrência (sanção, impedimento, contratação, TCU, Justiça)
     const FOC=[...new Set(focoCNPJ(f.txt).concat(NSEL.filter(x=>x.cnpj).map(x=>x.cnpj)))]; window.__netFoc={cnpjs:FOC,k:chave(limpo(f.txt||'')),ids:[],cmap:{}};
@@ -4613,7 +4613,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       if(!tem) add('c:'+c,x.label||fmtC(c),'emp',{cargo:'CNPJ '+fmtC(c)+' · consultada pelo CNPJ (não consta nas camadas do painel)',ficha:c}); });
     const ks=Object.keys(VIVO); if(!ks.length) return;
     const PN={}; nodes.forEach((n,id)=>{ if(['ag','tce','soc','ele'].includes(n.type)) (PN[chave(n.label)]=PN[chave(n.label)]||[]).push(id); });
-    const noC=(c,nome,info)=>{ const id='c:'+c; if(!nodes.has(id)) add(id,nome||fmtC(c),'emp',{cargo:'CNPJ '+fmtC(c)+(info?' · '+info:''),ficha:c}); else { const n=nodes.get(id); if(/^\d/.test(n.label)&&nome) n.label=nome; } return id; };
+    const noC=(c,nome,info)=>{ const id='c:'+c; if(!nodes.has(id)) add(id,nome||fmtC(c),'emp',{cargo:'CNPJ '+fmtC(c)+(info?' · '+info:''),ficha:c}); else { const n=nodes.get(id); if((/^\d/.test(n.label)||/^CNPJ /.test(n.label))&&nome) n.label=nome; } return id; };
     ks.forEach(c=>{ const d=VIVO[c]; const id='c:'+c; if(!nodes.has(id)&&!d.raiz&&!d.exp) return;
       const e=noC(c,tit(d.r),`consulta em tempo real à Receita (${d.fonte}, ${d.em}) · ${d.s}${d.m?' · '+d.m+'/'+d.uf:''}`);
       d.q.forEach(s=>{ if(s.pj&&s.c){ const pj=noC(s.c,s.n,'pessoa jurídica sócia'); lk(e,pj,'soc',`${s.q} (PJ)¦${s.n} é ${String(s.q).toLowerCase()} de ${tit(d.r)}${s.de?' desde '+s.de:''} · consulta em tempo real à Receita (${d.fonte}, ${d.em})`); return; }
@@ -4942,6 +4942,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     return RZP[k]; }
   const rzDe=b=>{ const k=String(b).slice(0,2); return RZ[k]?RZ[k][b]||null:undefined; }; // undefined = ainda não carregado
   window.__estabCarregar=carregar;
+  window.__estabNome=b=>{ const r=rzDe(String(b).slice(0,8)); return r&&r[4]||''; };
   const avisar=t=>{ try{ (A.aviso||console.log)(t); }catch(e){} };
   // dígitos verificadores: raiz + 0001 -> CNPJ da matriz
   function dv(b12){ const d=(s,p)=>{ let t=0; for(let i=0;i<p.length;i++) t+=+s[i]*p[i]; const r=t%11; return r<2?0:11-r; };
@@ -5009,9 +5010,10 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     const mat=matrizDe(b); let nome='';
     const PN=window.__pncp||{}; const e=(PN.B||{})[b]; if(e) nome=e[0];
     const rf=window.__rfb&&window.__rfb.C&&window.__rfb.C[b]; if(!nome&&rf) nome=rf[0];
+    if(!nome){ const r=rzDe(b); if(r&&r[4]) nome=r[4]; }
     avisar(`Buscando a raiz ${fmtR(b)} na Receita${LIBERADO?' e no PNCP':''}…`);
     const tarefas=[];
-    if(LIBERADO&&window.__consultarCNPJ) tarefas.push(window.__consultarCNPJ(mat).then(d=>{ d.raiz=true; if(d.r) nome=d.r; }).catch(()=>{}));
+    if(LIBERADO&&window.__consultarCNPJ) tarefas.push(window.__consultarCNPJ(mat).then(d=>{ d.raiz=true; if(d.r) nome=d.r; if(window.__renderNet) setTimeout(window.__renderNet,0); }).catch(()=>{}));
     if(LIBERADO&&window.__pncpVivo) tarefas.push(window.__pncpVivo(mat).catch(()=>{}));
     tarefas.push(carregar(b).catch(()=>{}));
     await Promise.race([Promise.all(tarefas),new Promise(r=>setTimeout(r,9000))]); // serviço lento: segue com a base do painel (o resultado entra quando chegar)

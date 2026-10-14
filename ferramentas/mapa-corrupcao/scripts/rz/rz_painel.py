@@ -19,8 +19,12 @@ with zipfile.ZipFile(R+'zip/Municipios.zip') as z:
             p=[x.strip('"\n') for x in ln.split('";"')]
             if len(p)>=2 and p[0] in usados: MU[p[0]]=MN.get(nrm(p[1]), tit(p[1]))
 json.dump(MU,open(OUT+'/mun.json','w'),ensure_ascii=False,separators=(',',':'))
+NM=json.load(open(R+'rz/rz_nomes.json'))
+def nome(b):
+    t=re.sub(r'\b\d{3}\.?\d{3}\.?\d{3}-?\d{2}\b|\b\d{11}\b','',NM.get(b,'')).strip(' -')  # nunca CPF no nome
+    return tit(t)
 S={}
-for b,e in D.items(): S.setdefault(b[:2],{})[b]=[e[0],e[1],e[2],[[x[0],x[1],x[2],x[3],x[4]] if x[3]!='SP' else [x[0],x[1],x[2],'SP',x[4]] for x in sorted(e[3])]]
+for b,e in D.items(): S.setdefault(b[:2],{})[b]=[e[0],e[1],e[2],[[x[0],x[1],x[2],x[3],x[4]] if x[3]!='SP' else [x[0],x[1],x[2],'SP',x[4]] for x in sorted(e[3])],nome(b)]
 tam=0
 for k,v in S.items():
     s=json.dumps(v,separators=(',',':')); tam+=len(s); open(f'{OUT}/{k}.json','w').write(s)
