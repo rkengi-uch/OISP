@@ -3,6 +3,16 @@ name: "mapa-corrupcao"
 description: Regras, esquema de dados e fluxo de trabalho do projeto "Observatório da Integridade – SP" (OISP; antes "Observatório de Integridade Municipal – SP" e "Mapa da Corrupção nos Municípios Paulistas") (base de dados, painel interativo e relatório de inteligência / Estudo Técnico). Use SEMPRE que a tarefa envolver atualizar, pesquisar, revisar ou ampliar a base, o painel ou o relatório do Mapa da Corrupção; pesquisar operações, investigações, denúncias, afastamentos, cassações ou condenações de prefeitos, vice-prefeitos, secretários ou vereadores de municípios de São Paulo; ou executar a atualização diária/semanal agendada do projeto, mesmo que o pedido não cite a skill pelo nome.
 ---
 
+## Primeiro passo: use a cópia do repositório (desde 14/10/2026)
+
+A versão de referência desta skill (este SKILL.md, `references/` e `scripts/`) também fica no repositório do site, GitHub **rkengi-uch/OISP**, pasta `ferramentas/mapa-corrupcao/` (não publicada no site). Antes de qualquer ação do projeto:
+1. Garanta o repositório em `/home/claude/oisp` (`git pull --ff-only` se existir; senão `add_repo` com owner `rkengi-uch`, repo `OISP`, access `push`, clone raso, `register_repo_root` e `git remote set-url origin https://github.com/rkengi-uch/OISP`).
+2. Se `/home/claude/oisp/ferramentas/mapa-corrupcao/SKILL.md` for diferente deste arquivo, siga o do repositório e rode os scripts de lá: ele é o mais recente. Onde estiver escrito `<pasta da skill>`, use `/home/claude/oisp/ferramentas/mapa-corrupcao`.
+3. A camada ENT gerada pelo gerador atual (com os blocos ENT_REL já juntados) é a forma correta: publique-a.
+4. A fila do TJSP/CNIA (seções 6A e 6E) roda em toda execução; se faltar tempo, faça ao menos 30 nomes e informe quantos faltam.
+5. Na execução diária automática, não altere a pasta `ferramentas/` do repositório.
+
+
 # Observatório da Integridade – SP (OISP; antigo Mapa da Corrupção)
 
 Esta skill garante que toda execução, manual ou agendada, siga os mesmos critérios de escopo, fontes, classificação e redação. O projeto trata de pessoas reais e reputações. Por isso as regras de fonte, de deduplicação e de presunção de inocência têm prioridade sobre a quantidade de registros coletados. Um registro a menos é um problema pequeno; um registro errado publicado é um problema grave.
