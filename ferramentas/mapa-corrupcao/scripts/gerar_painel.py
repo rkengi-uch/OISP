@@ -70,7 +70,9 @@ def montar_data():
         CIT.append(o)
     D['CIT'] = CIT
     D['CO'] = [[x['gi'], x['municipio'], x['setores'] or [], x['origem'], x['vinculo'], x['operacao'],
-                x['descricao'], x['link'], x['ano'], x['cargos'],
+                # manchete de notícia vai como citação da imprensa, nunca como afirmação do Observatório
+                ('Manchete da imprensa: “' + (x['descricao'] or '').strip(' “”"') + '”') if str(x['origem'] or '').startswith('Notícia') and not str(x['descricao'] or '').startswith('Manchete') else x['descricao'],
+                x['link'], x['ano'], x['cargos'],
                 x['medidas'], x['orgao'], x['nivel']]
                for x in ler('crime_organizado', 'ordem.asc,id.asc')]
     OPL = {}
