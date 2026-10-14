@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261014135254";</script>
+<head><script>window.__BUILD="20261014140233";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -1268,6 +1268,7 @@ html.oi-aberto, html.oi-aberto body{overflow:hidden;}
   <div class="sec-label">Crime organizado no setor público</div>
   <p class="sec-desc">Tipologia específica da presença do crime organizado (PCC e outras facções) na administração municipal, por setor: transporte; saúde; coleta de lixo e limpeza urbana; terceirização e zeladoria; combustíveis; educação e merenda; obras e contratos gerais; nomeações e cargos públicos; lavagem e financiamento político. Reúne a base curada, as operações pesquisadas (como Munditia, Soldi Sporchi e a investigação sobre o PCC em Guarujá) e as notícias. No mapa, a camada “Crime organizado” mostra todas as evidências por município. <b id="co-count"></b></p>
   <div id="co-filtro" class="co-filtro" aria-live="polite"></div>
+  <div class="cd-bar"><button type="button" class="cd-tog" data-alvo="co-cards" aria-controls="co-cards">Expandir todos</button></div>
   <div class="ops" id="co-cards" style="margin-bottom:18px;"></div>
   <div class="panel" style="margin-bottom:18px;"><div class="panel-head"><div><h2>Crime organizado: setor × região</h2><p>Evidências de presença do crime organizado no setor público por setor e por região geográfica intermediária do IBGE. Uma evidência com vários setores conta em cada um deles.</p></div></div>
     <div class="panel-body"><div class="table-wrap"><table class="hm" id="co-hm"></table></div><p class="tj-foot">Regiões: divisão regional do IBGE (regiões geográficas intermediárias, 2017). Ocorrências do Governo do Estado ficam numa coluna própria. Respeita os filtros do topo.</p></div>
@@ -2150,9 +2151,9 @@ function renderCO(){
   { const nm=new Set(rowsF.map(c=>c[1])).size; $('co-count').textContent=`${rowsF.length} evidência${rowsF.length===1?'':'s'} em ${nm} município${nm===1?'':'s'}`; } if(window.__coBarra) window.__coBarra();
   $('co-cards').innerHTML=order.map(s=>{ const ms={}; bySet[s].forEach(c=>{ (ms[c[1]]=ms[c[1]]||[]).push(c); });
     const sl=COF.set===s, dm=COF.set&&!sl;
-    return `<div class="op-card co-card${sl?' co-sel':''}${dm?' co-dim':''}" data-set="${esc(s)}" role="button" tabindex="0" aria-pressed="${sl}" title="${sl?'Clique para remover o filtro deste setor':'Clique para filtrar o painel por este setor'}"><h3>${esc(s)}${sl?' <span class="co-tag">filtro ativo</span>':''}</h3><div class="meta">${bySet[s].length} evidências · ${Object.keys(ms).length} municípios</div><ul class="op-links">${Object.entries(ms).sort((a,b)=>b[1].length-a[1].length).map(([m,cs])=>`<li><a class="clk" data-mun="${esc(m)}"><b>${esc(m)}</b></a> (${cs.length}): ${cs.slice(0,2).map(c=>c[7]&&/^http/.test(c[7])?`<a href="${esc(c[7])}" target="_blank" rel="noopener">${esc(c[6].slice(0,80))}</a>`:esc(c[6].slice(0,80))).join(' · ')}${cs.some(c=>c[4]==='indireto')?' <span class="badge">indireto</span>':''}</li>`).join('')}</ul></div>`; }).join('')||'<div class="empty-msg">Nenhuma evidência no filtro atual.</div>';
+    return `<div class="op-card co-card${sl?' co-sel':''}${dm?' co-dim':''}" data-set="${esc(s)}" role="button" tabindex="0" aria-pressed="${sl}" title="${sl?'Clique para remover o filtro deste setor':'Clique para filtrar o painel por este setor'}"><h3>${esc(s)}${sl?' <span class="co-tag">filtro ativo</span>':''}</h3><div class="meta">${bySet[s].length} evidências · ${Object.keys(ms).length} municípios</div><details class="cd-x"><summary>Ver municípios e evidências</summary><ul class="op-links">${Object.entries(ms).sort((a,b)=>b[1].length-a[1].length).map(([m,cs])=>`<li><a class="clk" data-mun="${esc(m)}"><b>${esc(m)}</b></a> (${cs.length}): ${cs.slice(0,2).map(c=>c[7]&&/^http/.test(c[7])?`<a href="${esc(c[7])}" target="_blank" rel="noopener">${esc(c[6].slice(0,80))}</a>`:esc(c[6].slice(0,80))).join(' · ')}${cs.some(c=>c[4]==='indireto')?' <span class="badge">indireto</span>':''}</li>`).join('')}</ul></details></div>`; }).join('')||'<div class="empty-msg">Nenhuma evidência no filtro atual.</div>';
 }
-$('co-cards').addEventListener('click',e=>{ const a=e.target.closest('a.clk'); if(a){ e.preventDefault(); setF('mun',a.dataset.mun); return; } if(e.target.closest('a')) return; const cd=e.target.closest('.co-card'); if(cd){ const s=cd.dataset.set; window.coFiltro.set(COF.set===s?{reg:COF.reg,muns:COF.muns}:{set:s,reg:COF.reg,muns:COF.muns}); } });
+$('co-cards').addEventListener('click',e=>{ const a=e.target.closest('a.clk'); if(a){ e.preventDefault(); setF('mun',a.dataset.mun); return; } if(e.target.closest('a')||e.target.closest('details.cd-x')) return; const cd=e.target.closest('.co-card'); if(cd){ const s=cd.dataset.set; window.coFiltro.set(COF.set===s?{reg:COF.reg,muns:COF.muns}:{set:s,reg:COF.reg,muns:COF.muns}); } });
 $('co-cards').addEventListener('keydown',e=>{ if(e.key!=='Enter'&&e.key!==' ') return; const cd=e.target.closest('.co-card'); if(cd&&e.target===cd){ e.preventDefault(); cd.click(); } });
 // ---------- rastreador UI
 DATA.FAMS.forEach((f,i)=>{ const o=document.createElement('option'); o.value=i; o.textContent=f; $('map-fam').appendChild(o); if($('n-fam')){ const o2=o.cloneNode(true); $('n-fam').appendChild(o2); } });
