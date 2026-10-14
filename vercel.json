@@ -48,6 +48,9 @@
   "functions": {
     "api/pncp.js": {
       "maxDuration": 30
+    },
+    "api/despesas.js": {
+      "maxDuration": 30
     }
   }
 }
