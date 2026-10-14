@@ -1,11 +1,18 @@
 # Monta dados/pncp.json: contratos (PNCP) de TODAS as empresas e entidades da base do painel com
 # órgãos municipais e estaduais de SP, agrupados por empresa (CNPJ básico) e órgão contratante.
 # Contrato com valor acima de R$ 1 bilhão fica fora da soma (provável erro de registro) e é contado à parte.
+# Busca pela RAIZ do CNPJ (matriz e filiais); cada contrato guarda o CNPJ do estabelecimento (k[4]).
 # Uso: python3 pncp_painel.py <cnpjs_painel.json> <index.html> <saida.json>
 import json, sys, re, unicodedata, datetime
 R = '/home/claude/rfb/'
 LISTA, IDX, OUT = sys.argv[1], sys.argv[2], sys.argv[3]
-CA = json.load(open(R + 'pncp_cache.json'))
+CA = json.load(open(R + 'pncp_cache_raiz.json'))  # {raiz: contratos da matriz e de todas as filiais}
+# raiz que o PNCP não respondeu na busca em lote: usa a consulta anterior por CNPJ (só o estabelecimento consultado)
+try:
+    for c, its in json.load(open(R + 'pncp_cache.json')).items():
+        if c[:8] not in CA and its is not None: CA.setdefault('~' + c[:8], []).extend(dict(x, ni=x.get('ni') or c) for x in its)
+    for k in [k for k in CA if k[0] == '~']: CA[k[1:]] = CA.pop(k)
+except Exception: pass
 ALVO = json.load(open(LISTA))
 s = open(IDX, encoding='utf-8').read(); i = s.index('const DATA = ') + 13; D, _ = json.JSONDecoder().raw_decode(s[i:])
 def nrm(t):
@@ -38,23 +45,27 @@ for b, x in F['C'].items():
 PUB = re.compile(r'Empresa P[uú]blica|Economia Mista|An[oô]nima Aberta|Autarquia|Funda[cç][aã]o P[uú]blica|[OÓ]rg[aã]o P[uú]blico|Cons[oó]rcio P[uú]blico|Poder Executivo|Poder Legislativo|Munic[ií]pio|Estado ou do Distrito', re.I)
 PUBN = re.compile(r'^(PREFEITURA|MUNICIPIO|CAMARA MUNICIPAL|FUNDO MUNICIPAL|SECRETARIA|GOVERNO DO ESTADO|ESTADO DE|BANCO DO BRASIL|CAIXA ECONOMICA|COMPANHIA DE SANEAMENTO)', re.I)
 ESF = {'M': 'Municipal', 'E': 'Estadual'}
-G = {}; excl = 0
-for c in ALVO:
-    b = c[:8]
+G = {}; excl = 0; FEITAS = set()
+RZ = {}
+for c in ALVO: RZ.setdefault(c[:8], c if c[8:12] == '0001' else RZ.get(c[:8], c))
+for b, c in RZ.items():
     if PUB.search(NJ.get(b, '')) or PUBN.search(nrm(NOME.get(c, ''))): excl += 1; continue
-    for x in CA.get(c) or []:
-        if x.get('e') not in ESF or x.get('c'): continue
+    if b in CA: FEITAS.add(b)
+    for x in CA.get(b) or []:
+        ni = str(x.get('ni') or '')
+        if ni[:8] != b or x.get('e') not in ESF or x.get('c'): continue
         esf = ESF[x['e']]
         mun = 'Governo do Estado de SP' if esf == 'Estadual' else MP.get(nrm(x['m']), tit(x['m'] or ''))
         k = (x['o'] or '', mun, esf)
-        e = G.setdefault(b, {'c': c, 'g': {}})
+        e = G.setdefault(b, {'c': c, 'g': {}, 'est': set()})
+        e['est'].add(ni)
         g = e['g'].setdefault(k, {'n': 0, 'v': 0.0, 'd': [], 'l': '', 'obj': '', 'x': 0, 'k': []})
         vv = float(x['v'] or 0)
         if vv > 1e9: g['x'] += 1; vv = 0  # valor acima de R$ 1 bilhão num só contrato: provável erro de registro no PNCP
         g['n'] += 1; g['v'] += vv; g['d'].append(x['d'] or '')
         if (x['d'] or '') >= max(g['d']): g['l'] = x['l']; g['obj'] = (x['obj'] or '')[:200]
-        g['k'].append([x['d'] or '', round(float(x['v'] or 0), 2), (x['obj'] or '')[:110], (x['l'] or '').replace('https://pncp.gov.br/app/contratos/', '')])
-        if c[8:12] == '0001': e['c'] = c
+        g['k'].append([x['d'] or '', round(float(x['v'] or 0), 2), (x['obj'] or '')[:110], (x['l'] or '').replace('https://pncp.gov.br/app/contratos/', ''), ni])
+        if ni[8:12] == '0001' and e['c'][8:12] != '0001': e['c'] = ni
 # por que a empresa está na base do painel (vai para o nó da rede quando ela entra pela expansão de um órgão)
 OM = {'TCE-SP impedimento': 'impedida pelo TCE-SP', 'TCU': 'listada pelo TCU', 'CEIS/CNEP': 'sancionada no CEIS/CNEP', 'TSE doação': 'ligada a doação de campanha (TSE)',
       'TSE fornecedor': 'fornecedora de campanha (TSE)', 'Citada na base': 'citada na base de registros', 'Entidade ou empresa citada em operação': 'citada em operação'}
@@ -98,11 +109,11 @@ for b, e in G.items():
     gs = []
     for (o, m, esf), g in e['g'].items():
         ds = sorted(d for d in g['d'] if d)
-        gs.append([ix(O, OI, tit(o)), ix(M, MI, m), 1 if esf == 'Estadual' else 0, g['n'], round(g['v'], 2), ds[0] if ds else '', ds[-1] if ds else '', g['l'], g['obj'], g['x'], sorted(g['k'], reverse=True)[:12] if g['n'] > 1 else []])  # até 12 contratos mais recentes, cada um com link
+        gs.append([ix(O, OI, tit(o)), ix(M, MI, m), 1 if esf == 'Estadual' else 0, g['n'], round(g['v'], 2), ds[0] if ds else '', ds[-1] if ds else '', g['l'], g['obj'], g['x'], sorted(g['k'], reverse=True)[:12] if g['n'] > 1 else ([g['k'][0]] if g['k'][0][4][8:12] != '0001' else [])])  # até 12 contratos mais recentes, cada um com link
         nct += g['n']; ngr += 1
     gs.sort(key=lambda r: (-r[4], -r[3]))
-    B[b] = [NOME.get(e['c']) or e['c'], e['c'], gs, razao(b)]
-Z = sorted({c[:8] for c in ALVO if c in CA} - set(B))  # consultadas no PNCP e sem contrato com órgão paulista
+    B[b] = [NOME.get(e['c']) or e['c'], e['c'], gs, razao(b), sorted(e['est'])]
+Z = sorted(FEITAS - set(B))  # consultadas no PNCP e sem contrato com órgão paulista
 out = dict(ref=datetime.date.today().strftime('%d/%m/%Y'), n=dict(consultadas=len(ALVO), com_contrato=len(B), contratos=nct, grupos=ngr, excluidas_publicas=excl), O=O, M=M, B=B, Z=Z)
 json.dump(out, open(OUT, 'w'), ensure_ascii=False, separators=(',', ':'))
 print(out['n'], round(len(json.dumps(out, ensure_ascii=False, separators=(',', ':'))) / 1e6, 2), 'MB')
