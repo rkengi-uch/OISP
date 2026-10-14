@@ -48,6 +48,8 @@ module.exports = async (req, res) => {
         let vv = Number(x.valor_global || 0);
         if (vv > 1e9) { g.x++; vv = 0; } // acima de R$ 1 bilhão num só contrato: provável erro de registro, fora da soma
         g.n++; g.v += vv;
+        const es = (g.ee = g.ee || {})[ni] = g.ee[ni] || [0, 0, '', ''];
+        es[0]++; es[1] += vv; if (dt && (!es[2] || dt < es[2])) es[2] = dt; if (dt && dt > es[3]) es[3] = dt;
         if (dt && (!g.d1 || dt < g.d1)) g.d1 = dt;
         if (dt && (!g.d2 || dt >= g.d2)) { g.d2 = dt; g.l = 'https://pncp.gov.br/app' + (x.item_url || ''); g.obj = String(x.description || '').slice(0, 200); }
         g.k.push([dt, Math.round(Number(x.valor_global || 0) * 100) / 100, String(x.description || '').slice(0, 110), String(x.item_url || '').replace(/^\/contratos\//, ''), ni]);
@@ -55,7 +57,7 @@ module.exports = async (req, res) => {
       }
       if (its.length < 100) break;
     }
-    const grupos = [...G.values()].map(g => Object.assign(g, { v: Math.round(g.v * 100) / 100, k: g.n > 1 ? g.k.sort((a, b) => (b[0] > a[0] ? 1 : -1)).slice(0, 12) : (g.k[0] && g.k[0][4].slice(8, 12) !== '0001' ? g.k : []) })).sort((a, b) => b.v - a.v || b.n - a.n);
+    const grupos = [...G.values()].map(g => Object.assign(g, { est: (() => { const L = Object.entries(g.ee || {}).sort(); return L.length > 1 || (L[0] && L[0][0].slice(8, 12) !== '0001') ? L.map(([ni, v]) => [ni.slice(8), v[0], Math.round(v[1] * 100) / 100, v[2], v[3]]) : null; })(), ee: undefined, v: Math.round(g.v * 100) / 100, k: g.n > 1 ? g.k.sort((a, b) => (b[0] > a[0] ? 1 : -1)).slice(0, 12) : (g.k[0] && g.k[0][4].slice(8, 12) !== '0001' ? g.k : []) })).sort((a, b) => b.v - a.v || b.n - a.n);
     res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=604800');
     res.status(200).json({ cnpj, raiz, estabelecimentos: [...NI].sort(), grupos, contratos: grupos.reduce((a, g) => a + g.n, 0), parcial: lidos < total, em: new Date().toISOString().slice(0, 10) });
   } catch (e) {

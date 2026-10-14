@@ -64,6 +64,10 @@ for b, c in RZ.items():
         if vv > 1e9: g['x'] += 1; vv = 0  # valor acima de R$ 1 bilhão num só contrato: provável erro de registro no PNCP
         g['n'] += 1; g['v'] += vv; g['d'].append(x['d'] or '')
         if (x['d'] or '') >= max(g['d']): g['l'] = x['l']; g['obj'] = (x['obj'] or '')[:200]
+        es = g.setdefault('e', {}).setdefault(ni, [0, 0.0, '', ''])
+        es[0] += 1; es[1] += vv; dd = x['d'] or ''
+        if dd and (not es[2] or dd < es[2]): es[2] = dd
+        if dd and dd > es[3]: es[3] = dd
         g['k'].append([x['d'] or '', round(float(x['v'] or 0), 2), (x['obj'] or '')[:110], (x['l'] or '').replace('https://pncp.gov.br/app/contratos/', ''), ni])
         if ni[8:12] == '0001' and e['c'][8:12] != '0001': e['c'] = ni
 # por que a empresa está na base do painel (vai para o nó da rede quando ela entra pela expansão de um órgão)
@@ -109,7 +113,8 @@ for b, e in G.items():
     gs = []
     for (o, m, esf), g in e['g'].items():
         ds = sorted(d for d in g['d'] if d)
-        gs.append([ix(O, OI, tit(o)), ix(M, MI, m), 1 if esf == 'Estadual' else 0, g['n'], round(g['v'], 2), ds[0] if ds else '', ds[-1] if ds else '', g['l'], g['obj'], g['x'], sorted(g['k'], reverse=True)[:12] if g['n'] > 1 else ([g['k'][0]] if g['k'][0][4][8:12] != '0001' else [])])  # até 12 contratos mais recentes, cada um com link
+        gs.append([ix(O, OI, tit(o)), ix(M, MI, m), 1 if esf == 'Estadual' else 0, g['n'], round(g['v'], 2), ds[0] if ds else '', ds[-1] if ds else '', g['l'], g['obj'], g['x'], sorted(g['k'], reverse=True)[:12] if g['n'] > 1 else ([g['k'][0]] if g['k'][0][4][8:12] != '0001' else []),
+                   [[ni[8:], v[0], round(v[1], 2), v[2], v[3]] for ni, v in sorted(g['e'].items())] if (len(g['e']) > 1 or next(iter(g['e']))[8:12] != '0001') else 0])  # [11]: contratos por estabelecimento (ordem+DV, n, valor, 1º, último)  # até 12 contratos mais recentes, cada um com link
         nct += g['n']; ngr += 1
     gs.sort(key=lambda r: (-r[4], -r[3]))
     B[b] = [NOME.get(e['c']) or e['c'], e['c'], gs, razao(b), sorted(e['est'])]

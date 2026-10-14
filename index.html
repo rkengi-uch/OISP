@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261014140233";</script>
+<head><script>window.__BUILD="20261014142934";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -1075,6 +1075,16 @@ html.oi-aberto, html.oi-aberto body{overflow:hidden;}
 .cd-x>summary:hover{color:var(--text);}
 .cd-x>summary small{font-size:11px;}
 .cd-x .op-filter{margin-top:8px;}
+:root{--co-rgb:161,61,61; --co-fg:#fff;}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --co-rgb:201,90,90; --co-fg:#11151d; } }
+:root[data-theme="dark"]{ --co-rgb:201,90,90; --co-fg:#11151d; }
+.co-card{padding:0; overflow:hidden;}
+.co-card .co-hd{background:rgba(var(--co-rgb),var(--co-a)); padding:12px 14px 10px;}
+.co-card .co-hd h3{font-size:17px; font-weight:700; line-height:1.25; margin:0 0 4px; color:var(--text);}
+.co-card .co-hd .meta{color:var(--text);}
+.co-card .co-hd-esc h3,.co-card .co-hd-esc .meta{color:var(--co-fg);}
+.co-card .co-hd .co-tag{vertical-align:middle;} .co-card .co-hd-esc .co-tag{background:var(--card); color:var(--red);}
+.co-card>.cd-x{margin:0 14px 10px; border-top:0;}
 @media (max-width:560px){ .mbar{flex-wrap:wrap; row-gap:6px;} } /* com filtro ativo, o botão Limpar não empurra a barra para fora da tela */
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,500..800&family=IBM+Plex+Mono:wght@500&display=swap">
@@ -1286,7 +1296,7 @@ html.oi-aberto, html.oi-aberto body{overflow:hidden;}
   <div class="ops" id="ge-cards" style="margin-bottom:18px;"></div>
 
   <div class="sec-label">Rede de relações</div>
-  <p class="sec-desc">Grafo expansível que começa <b>vazio</b>. Use o campo <b>Adicionar à rede</b>, logo acima do grafo, para buscar uma operação, empresa, pessoa, órgão, entidade ou município (dá para adicionar vários), ou selecione algo no painel (filtros, mapa, cartões, matriz ou o botão da ficha): o que for selecionado aparece no grafo, já com as conexões abertas. A partir daí, <b>clique num nó</b> para expandir suas conexões e clique de novo para recolher: a operação abre os municípios; o município abre os agentes políticos/servidores e as <b>demais operações</b> que o alcançam (na base, em mandados/citações e em notícias), além das entidades; o agente político/servidor abre as empresas citadas. O município também abre as <b>empresas sancionadas ou impedidas</b> que assinaram contratos com seus órgãos durante a pena, as que ele próprio puniu (com filtro de município ativo) e as <b>organizações sociais e entidades</b> impedidas de receber repasses; cada empresa abre seus <b>sócios e dirigentes</b> (Receita) e, quando houver, os <b>eleitos de 2024</b> que receberam doação desses sócios ou contrataram a empresa na campanha (TSE). Sócio ligado a uma pessoa do painel só quando o CPF parcial ou o município coincidem; mesmo assim, confira homonímia. Use as caixas acima do grafo para ligar ou desligar essas camadas. Duplo clique numa empresa, entidade, sócio ou eleito abre a ficha. As empresas e entidades ficam ligadas aos <b>órgãos</b> de cada ocorrência: o órgão que aplicou a sanção ou o impedimento (com o tipo de pena e o período), o órgão que contratou durante a pena (com número de contratos e valor), o TCU e os foros e câmaras do TJSP onde há processo em nome da empresa; cada órgão se liga ao seu município. Duplo clique num órgão municipal filtra o painel pelo município. As arestas têm cor e rótulo conforme a relação (legenda abaixo do grafo; passe o mouse sobre a aresta para ver o detalhe); o número entre parênteses indica conexões ainda ocultas. <b>Duplo clique</b> numa operação ou num município aplica o filtro ao painel todo. As ocorrências do Governo do Estado aparecem ligadas ao órgão estadual (Sefaz-SP, Metrô e CPTM, Dersa, DER, Detran-SP, FDE, Educação, Agricultura, Casa Civil, Alesp, Polícia Civil).</p>
+  <p class="sec-desc">Grafo expansível que começa <b>vazio</b>. Use o campo <b>Adicionar à rede</b>, logo acima do grafo, para buscar uma operação, empresa, pessoa, órgão, entidade ou município (dá para adicionar vários), ou selecione algo no painel (filtros, mapa, cartões, matriz ou o botão da ficha): o que for selecionado aparece no grafo, já com as conexões abertas. Para uma empresa, dá para buscar também pela <b>raiz do CNPJ</b> (os 8 primeiros dígitos, como 61.699.567): a busca reúne a matriz e as filiais na base da Receita, no PNCP e nas demais bases do painel e já as abre no grafo. Clicar numa empresa mostra as <b>filiais</b> (mesmo CNPJ raiz); clicar numa filial mostra os contratos que ela própria assinou no PNCP. Sanções, sócios e processos são da pessoa jurídica e ficam no nó da matriz. A partir daí, <b>clique num nó</b> para expandir suas conexões e clique de novo para recolher: a operação abre os municípios; o município abre os agentes políticos/servidores e as <b>demais operações</b> que o alcançam (na base, em mandados/citações e em notícias), além das entidades; o agente político/servidor abre as empresas citadas. O município também abre as <b>empresas sancionadas ou impedidas</b> que assinaram contratos com seus órgãos durante a pena, as que ele próprio puniu (com filtro de município ativo) e as <b>organizações sociais e entidades</b> impedidas de receber repasses; cada empresa abre seus <b>sócios e dirigentes</b> (Receita) e, quando houver, os <b>eleitos de 2024</b> que receberam doação desses sócios ou contrataram a empresa na campanha (TSE). Sócio ligado a uma pessoa do painel só quando o CPF parcial ou o município coincidem; mesmo assim, confira homonímia. Use as caixas acima do grafo para ligar ou desligar essas camadas. Duplo clique numa empresa, entidade, sócio ou eleito abre a ficha. As empresas e entidades ficam ligadas aos <b>órgãos</b> de cada ocorrência: o órgão que aplicou a sanção ou o impedimento (com o tipo de pena e o período), o órgão que contratou durante a pena (com número de contratos e valor), o TCU e os foros e câmaras do TJSP onde há processo em nome da empresa; cada órgão se liga ao seu município. Duplo clique num órgão municipal filtra o painel pelo município. As arestas têm cor e rótulo conforme a relação (legenda abaixo do grafo; passe o mouse sobre a aresta para ver o detalhe); o número entre parênteses indica conexões ainda ocultas. <b>Duplo clique</b> numa operação ou num município aplica o filtro ao painel todo. As ocorrências do Governo do Estado aparecem ligadas ao órgão estadual (Sefaz-SP, Metrô e CPTM, Dersa, DER, Detran-SP, FDE, Educação, Agricultura, Casa Civil, Alesp, Polícia Civil).</p>
   <div class="panel" style="margin-bottom:18px;"><div class="panel-body">
     <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-bottom:8px;"><button class="op-filter" id="net-reset" style="margin:0;">Recolher tudo</button><button class="op-filter" id="net-all" style="margin:0;" hidden>Expandir tudo</button><span class="meta" id="net-info" style="font-size:12px;color:var(--text-muted);"></span></div>
     <svg id="net-svg" role="img" aria-label="Rede de relações entre operações, municípios, agentes políticos/servidores e empresas"></svg>
@@ -1989,7 +1999,7 @@ const NET={key:null, expanded:new Set(), pos:new Map(), all:false}; window.__NET
 const ETYPE={inv:{lab:'investigação com agente político/servidor',col:'#a13d3d',w:2.2,dash:null},cit:{lab:'mandado ou citação na operação',col:'#f07236',w:1.8,dash:'6,3'},news:{lab:'operação citada em notícia',col:'#3d7a6e',w:1.6,dash:'2,3'},
   cargo:{lab:'agente do município ou do órgão estadual',col:'#b8860b',w:1.6,dash:null},emp:{lab:'empresa citada',col:'#8c8c8c',w:1.2,dash:'4,3'},ent:{lab:'atuação da entidade',col:'#6b4c9a',w:1.6,dash:'5,3'},entop:{lab:'entidade investigada na operação',col:'#6b4c9a',w:1.2,dash:'1,3'}};
 ETYPE.tce={lab:'conta julgada irregular pelo TCE-SP',col:'#2f6f9f',w:1.4,dash:'3,2'};
-const EPRI={inv:5,cit:4,news:3,entop:2,ent:2,cargo:1,emp:1,tce:1,soc:1,ctr:2,pena:1,doa:2,forn:2,jud:2,sede:0}; ETYPE.soc={lab:'sócio ou dirigente (quadro societário da Receita)',col:'#b4457f',w:1.4,dash:'4,3'}; ETYPE.ctr={lab:'contratação pelo órgão durante a sanção ou o impedimento (PNCP)',col:'#c0392b',w:1.6,dash:'8,3'}; ETYPE.pena={lab:'sanção, impedimento ou lista aplicada pelo órgão (CEIS/CNEP, TCE-SP, TCU)',col:'#7a2a2a',w:1.3,dash:'2,2'}; ETYPE.jud={lab:'processo judicial em nome da empresa (TJSP)',col:'#5a5a8c',w:1.3,dash:'6,2'}; ETYPE.sede={lab:'órgão do município',col:'#8a94a6',w:1,dash:'1,2'}; ETYPE.doa={lab:'doação à campanha de eleito em 2024 (TSE)',col:'#4d7c2a',w:1.6,dash:null}; ETYPE.forn={lab:'fornecedor da campanha de eleito em 2024 (TSE)',col:'#4d7c2a',w:1.4,dash:'5,3'}; ETYPE.rep={lab:'impedida de receber repasses do órgão concessor (TCE-SP)',col:'#9a6a1f',w:1.4,dash:'3,3'}; ETYPE.rfb={lab:'sócio ou administrador (base CNPJ da Receita, 2 camadas)',col:'#8e44ad',w:1.3,dash:'2,4'}; ETYPE.ctrp={lab:'contrato público com empresa de envolvido (PNCP)',col:'#d35400',w:1.7,dash:null}; EPRI.rep=1; EPRI.rfb=1; EPRI.ctrp=2; ETYPE.pncp={lab:'contratos com órgão paulista publicados no PNCP (agrupados por órgão)',col:'#b9770e',w:1.4,dash:'9,2,1,2'}; EPRI.pncp=1; ETYPE.dec={lab:'ato da instância responsável: investigação, decisão, julgamento, registro ou publicação (TCE-SP, TCU, CGU, Justiça, MPSP, polícias, Justiça Eleitoral)',col:'#1f6f5c',w:1.5,dash:'7,2,2,2'}; EPRI.dec=2;
+const EPRI={inv:5,cit:4,news:3,entop:2,ent:2,cargo:1,emp:1,tce:1,soc:1,ctr:2,pena:1,doa:2,forn:2,jud:2,sede:0}; ETYPE.soc={lab:'sócio ou dirigente (quadro societário da Receita)',col:'#b4457f',w:1.4,dash:'4,3'}; ETYPE.ctr={lab:'contratação pelo órgão durante a sanção ou o impedimento (PNCP)',col:'#c0392b',w:1.6,dash:'8,3'}; ETYPE.pena={lab:'sanção, impedimento ou lista aplicada pelo órgão (CEIS/CNEP, TCE-SP, TCU)',col:'#7a2a2a',w:1.3,dash:'2,2'}; ETYPE.jud={lab:'processo judicial em nome da empresa (TJSP)',col:'#5a5a8c',w:1.3,dash:'6,2'}; ETYPE.sede={lab:'órgão do município',col:'#8a94a6',w:1,dash:'1,2'}; ETYPE.doa={lab:'doação à campanha de eleito em 2024 (TSE)',col:'#4d7c2a',w:1.6,dash:null}; ETYPE.forn={lab:'fornecedor da campanha de eleito em 2024 (TSE)',col:'#4d7c2a',w:1.4,dash:'5,3'}; ETYPE.rep={lab:'impedida de receber repasses do órgão concessor (TCE-SP)',col:'#9a6a1f',w:1.4,dash:'3,3'}; ETYPE.rfb={lab:'sócio ou administrador (base CNPJ da Receita, 2 camadas)',col:'#8e44ad',w:1.3,dash:'2,4'}; ETYPE.ctrp={lab:'contrato público com empresa de envolvido (PNCP)',col:'#d35400',w:1.7,dash:null}; EPRI.rep=1; EPRI.rfb=1; EPRI.ctrp=2; ETYPE.pncp={lab:'contratos com órgão paulista publicados no PNCP (agrupados por órgão)',col:'#b9770e',w:1.4,dash:'9,2,1,2'}; EPRI.pncp=1; ETYPE.est={lab:'matriz e filial da mesma pessoa jurídica (mesmo CNPJ raiz, base CNPJ da Receita)',col:'#5b6b82',w:1.3,dash:'1,3'}; EPRI.est=1; ETYPE.dec={lab:'ato da instância responsável: investigação, decisão, julgamento, registro ou publicação (TCE-SP, TCU, CGU, Justiça, MPSP, polícias, Justiça Eleitoral)',col:'#1f6f5c',w:1.5,dash:'7,2,2,2'}; EPRI.dec=2;
 function edgeLegend(){ const el=$('edge-legend'); if(!el) return; el.innerHTML='<b style="font-size:11.5px;">Arestas:</b> '+Object.values(ETYPE).map(e=>`<span><svg width="26" height="8" aria-hidden="true"><line x1="0" y1="4" x2="26" y2="4" stroke="${e.col}" stroke-width="${e.w+.4}" ${e.dash?`stroke-dasharray="${e.dash}"`:''}/></svg>${e.lab}</span>`).join(''); }
 // ---------- rede: um nó por pessoa, empresa ou órgão (junta nós repetidos criados por camadas diferentes)
 // empresa: mesmo CNPJ básico (matriz e filiais viram um nó); pessoa: mesmo nome normalizado, salvo dois agentes
@@ -2096,7 +2106,7 @@ function renderNet(rs){
   svg.call(d3.zoom().scaleExtent([.3,4]).on('zoom',ev=>g.attr('transform',ev.transform))).on('dblclick.zoom',null);
   const link=g.append('g').selectAll('line').data(L).join('line').attr('stroke',d=>ETYPE[d.type].col).attr('stroke-width',d=>ETYPE[d.type].w).attr('stroke-dasharray',d=>ETYPE[d.type].dash).attr('stroke-opacity',.8);
   link.append('title').text(d=>`${ETYPE[d.type].lab}${d.lab&&d.lab!==ETYPE[d.type].lab?'\n'+d.lab:''}`);
-  const SHORT={soc:'sócio',ctr:'contratação',pena:'sanção',doa:'doação',forn:'fornecedor',jud:'processo',sede:'órgão do município',inv:'investigação',cit:'citado na operação',news:'notícia',emp:'empresa citada',ent:'atuação',entop:'entidade na operação',tce:'contas irregulares',rep:'sem repasses',rfb:'sócio (Receita)',ctrp:'contrato público',pncp:'contratos (PNCP)',dec:'ato da instância',cargo:'cargo'};
+  const SHORT={soc:'sócio',ctr:'contratação',pena:'sanção',doa:'doação',forn:'fornecedor',jud:'processo',sede:'órgão do município',inv:'investigação',cit:'citado na operação',news:'notícia',emp:'empresa citada',ent:'atuação',entop:'entidade na operação',tce:'contas irregulares',rep:'sem repasses',rfb:'sócio (Receita)',ctrp:'contrato público',pncp:'contratos (PNCP)',est:'filial',dec:'ato da instância',cargo:'cargo'};
   const elab=g.append('g').selectAll('text').data(L).join('text').text(d=>d.short||(d.type==='cargo'?String(d.lab||'').split(' · ')[0]:SHORT[d.type])||ETYPE[d.type].lab.split(' (')[0])
     .attr('font-size',L.length>150?6.5:L.length>60?7.2:8).attr('fill',d=>ETYPE[d.type].col).attr('text-anchor','middle').attr('paint-order','stroke').attr('stroke',css('--card-head')).attr('stroke-width',3).style('pointer-events','none');
   const node=g.append('g').selectAll('g').data(N).join('g').style('cursor','pointer');
@@ -2149,9 +2159,10 @@ function renderCO(){
   const rowsC=coRows(COF.set||COF.muns?{noSet:true,noLens:true}:{noSet:true}), rowsF=coRows(); const bySet={}; rowsC.forEach(c=>c[2].forEach(s=>{ (bySet[s]=bySet[s]||[]).push(c); }));
   const order=DATA.COSET.filter(s=>bySet[s]);
   { const nm=new Set(rowsF.map(c=>c[1])).size; $('co-count').textContent=`${rowsF.length} evidência${rowsF.length===1?'':'s'} em ${nm} município${nm===1?'':'s'}`; } if(window.__coBarra) window.__coBarra();
+  const coMx=Math.max(1,...order.map(s=>bySet[s].length)), coA=v=>0.14+0.76*Math.pow(v/coMx,0.6);
   $('co-cards').innerHTML=order.map(s=>{ const ms={}; bySet[s].forEach(c=>{ (ms[c[1]]=ms[c[1]]||[]).push(c); });
     const sl=COF.set===s, dm=COF.set&&!sl;
-    return `<div class="op-card co-card${sl?' co-sel':''}${dm?' co-dim':''}" data-set="${esc(s)}" role="button" tabindex="0" aria-pressed="${sl}" title="${sl?'Clique para remover o filtro deste setor':'Clique para filtrar o painel por este setor'}"><h3>${esc(s)}${sl?' <span class="co-tag">filtro ativo</span>':''}</h3><div class="meta">${bySet[s].length} evidências · ${Object.keys(ms).length} municípios</div><details class="cd-x"><summary>Ver municípios e evidências</summary><ul class="op-links">${Object.entries(ms).sort((a,b)=>b[1].length-a[1].length).map(([m,cs])=>`<li><a class="clk" data-mun="${esc(m)}"><b>${esc(m)}</b></a> (${cs.length}): ${cs.slice(0,2).map(c=>c[7]&&/^http/.test(c[7])?`<a href="${esc(c[7])}" target="_blank" rel="noopener">${esc(c[6].slice(0,80))}</a>`:esc(c[6].slice(0,80))).join(' · ')}${cs.some(c=>c[4]==='indireto')?' <span class="badge">indireto</span>':''}</li>`).join('')}</ul></details></div>`; }).join('')||'<div class="empty-msg">Nenhuma evidência no filtro atual.</div>';
+    return `<div class="op-card co-card${sl?' co-sel':''}${dm?' co-dim':''}" data-set="${esc(s)}" role="button" tabindex="0" aria-pressed="${sl}" title="${sl?'Clique para remover o filtro deste setor':'Clique para filtrar o painel por este setor'}"><div class="co-hd${coA(bySet[s].length)>0.55?' co-hd-esc':''}" style="--co-a:${coA(bySet[s].length).toFixed(2)}"><h3>${esc(s)}${sl?' <span class="co-tag">filtro ativo</span>':''}</h3><div class="meta">${bySet[s].length} evidências · ${Object.keys(ms).length} municípios</div></div><details class="cd-x"><summary>Ver municípios e evidências</summary><ul class="op-links">${Object.entries(ms).sort((a,b)=>b[1].length-a[1].length).map(([m,cs])=>`<li><a class="clk" data-mun="${esc(m)}"><b>${esc(m)}</b></a> (${cs.length}): ${cs.slice(0,2).map(c=>c[7]&&/^http/.test(c[7])?`<a href="${esc(c[7])}" target="_blank" rel="noopener">${esc(c[6].slice(0,80))}</a>`:esc(c[6].slice(0,80))).join(' · ')}${cs.some(c=>c[4]==='indireto')?' <span class="badge">indireto</span>':''}</li>`).join('')}</ul></details></div>`; }).join('')||'<div class="empty-msg">Nenhuma evidência no filtro atual.</div>';
 }
 $('co-cards').addEventListener('click',e=>{ const a=e.target.closest('a.clk'); if(a){ e.preventDefault(); setF('mun',a.dataset.mun); return; } if(e.target.closest('a')||e.target.closest('details.cd-x')) return; const cd=e.target.closest('.co-card'); if(cd){ const s=cd.dataset.set; window.coFiltro.set(COF.set===s?{reg:COF.reg,muns:COF.muns}:{set:s,reg:COF.reg,muns:COF.muns}); } });
 $('co-cards').addEventListener('keydown',e=>{ if(e.key!=='Enter'&&e.key!==' ') return; const cd=e.target.closest('.co-card'); if(cd&&e.target===cd){ e.preventDefault(); cd.click(); } });
@@ -4058,7 +4069,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       [...nodes.values()].filter(nd=>TIP.includes(nd.type)&&ok(nd)).sort((x,y)=>TIP.indexOf(x.type)-TIP.indexOf(y.type)).slice(0,8).forEach(nd=>r.add(nd.id)); }
     return [...r]; };
   (function(){ const svg=$('net-svg'); if(!svg) return; const box=document.createElement('div'); box.className='net-pick'; box.id='net-pick';
-    box.innerHTML='<label for="net-q" class="net-pick-l">Adicionar à rede</label><div class="net-pick-in"><input id="net-q" type="search" autocomplete="off" placeholder="Operação, empresa, CNPJ, pessoa, órgão, entidade ou município…" aria-controls="net-res" aria-expanded="false"><div id="net-res" class="net-res" role="listbox" hidden></div></div><button type="button" id="net-limpar" class="op-filter">Limpar rede</button><div id="net-chips" class="net-chips"></div>';
+    box.innerHTML='<label for="net-q" class="net-pick-l">Adicionar à rede</label><div class="net-pick-in"><input id="net-q" type="search" autocomplete="off" placeholder="Operação, empresa, CNPJ ou raiz do CNPJ, pessoa, órgão, entidade ou município…" aria-controls="net-res" aria-expanded="false"><div id="net-res" class="net-res" role="listbox" hidden></div></div><button type="button" id="net-limpar" class="op-filter">Limpar rede</button><div id="net-chips" class="net-chips"></div>';
     const topo=$('net-reset')&&$('net-reset').parentNode; const ref=topo||$('net-cam')||svg; ref.parentNode.insertBefore(box,ref);
     const q=$('net-q'), res=$('net-res'), chips=$('net-chips'); let itens=[], ativo=-1;
     const TIPO={op:'Operação',mun:'Município',org:'Órgão estadual',orgp:'Órgão público',ag:'Agente político/servidor',tce:'Responsável (TCE-SP)',emp:'Empresa',ent:'Entidade ou OS',soc:'Sócio ou dirigente',ele:'Eleito(a) em 2024',grp:'Grupo'};
@@ -4073,9 +4084,11 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     let CAT=null; R_.push(()=>{ CAT=null; });
     function buscar(){ const t=q.value.trim(); const k=nrm(t).replace(/[^a-z0-9]+/g,' ').trim(), dig=t.replace(/\D/g,''); if(t.length<2){ res.hidden=true; q.setAttribute('aria-expanded','false'); return; }
       if(!CAT||(!CAT.rf&&window.__rfb&&window.__rfb.ok)){ CAT=catalogo(); CAT.rf=!!(window.__rfb&&window.__rfb.ok); } itens=CAT.filter(x=>(dig.length>=8&&x.cnpj&&x.cnpj.includes(dig))||(k&&x.k.includes(k))).sort((a,b)=>(a.k.startsWith(k)?0:1)-(b.k.startsWith(k)?0:1)||a.label.length-b.label.length).slice(0,14); ativo=-1;
+      // CNPJ raiz (8 dígitos, ou o CNPJ completo): matriz e filiais na Receita, no PNCP e nas demais bases do painel
+      if(window.__estabRaiz&&(dig.length===8||dig.length===14)&&dig.length===t.replace(/[\s.\/-]/g,'').length){ const b=dig.slice(0,8); itens.unshift({raiz:b,label:'CNPJ raiz '+b.replace(/^(\d{2})(\d{3})(\d{3})$/,'$1.$2.$3')+': matriz e todas as filiais',tipo:'Busca na Receita e nas bases do painel pela raiz, com matriz e filiais abertas na rede'}); }
       res.innerHTML=itens.length?itens.map((x,i)=>`<button type="button" role="option" class="net-ri" data-i="${i}"><b>${esc(x.label)}</b><span>${esc(x.tipo)}${x.cnpj?' · CNPJ '+esc(x.cnpj):''}</span></button>`).join(''):'<p class="net-rv">Nada encontrado.</p>'; res.hidden=false; q.setAttribute('aria-expanded','true'); }
     function chaveFiltro(x){ const t=x.tipo||''; if(t==='Operação') return ['op',x.label]; if(t==='Município') return ['mun',x.label]; return ['txt',x.label]; }
-    function escolher(x){ if(!x) return; const [fk,fv]=chaveFiltro(x);
+    function escolher(x){ if(!x) return; if(x.raiz){ q.value=''; res.hidden=true; window.__estabRaiz(x.raiz); return; } const [fk,fv]=chaveFiltro(x);
       if(!NSEL.some(y=>(x.id&&y.id===x.id)||(x.cnpj&&y.cnpj===x.cnpj))) NSEL.push({id:x.cnpj?null:x.id,cnpj:x.cnpj||null,label:x.label,tipo:x.tipo,fk,fv});
       q.value=''; res.hidden=true; selKey(); desenhar();
       // a seleção feita na rede é um filtro do painel como outro qualquer (uma só etiqueta no topo)
@@ -4577,12 +4590,12 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   // ---------- interface: quadro na rede e botão na ficha da empresa
   function montar(){ const pick=document.querySelector('.net-pick'); if(!pick||$('cv-box')) return;
     const box=document.createElement('div'); box.id='cv-box'; box.className='cv-box';
-    box.innerHTML=LIBERADO?`<label for="cv-q" class="net-pick-l">Consultar CNPJ na Receita em tempo real</label><div class="cv-in"><input id="cv-q" inputmode="numeric" autocomplete="off" placeholder="00.000.000/0000-00" aria-label="CNPJ para consultar"><button type="button" id="cv-ok" class="op-filter" style="margin:0">Consultar e pôr na rede</button></div><p class="cv-msg" id="cv-msg" role="status"></p><p class="cv-nota">Cadastro aberto da Receita Federal, consultado na hora (BrasilAPI; reserva: Minha Receita). Traz razão social, situação, endereço, atividade e quadro de sócios. Sócios pessoa física aparecem só pelo nome; CPF não é exibido nem guardado.</p>`
+    box.innerHTML=LIBERADO?`<label for="cv-q" class="net-pick-l">Consultar CNPJ ou raiz do CNPJ na Receita em tempo real</label><div class="cv-in"><input id="cv-q" inputmode="numeric" autocomplete="off" placeholder="00.000.000/0000-00 ou raiz 00.000.000" aria-label="CNPJ ou raiz do CNPJ para consultar"><button type="button" id="cv-ok" class="op-filter" style="margin:0">Consultar e pôr na rede</button></div><p class="cv-msg" id="cv-msg" role="status"></p><p class="cv-nota">Cadastro aberto da Receita Federal, consultado na hora (BrasilAPI; reserva: Minha Receita). Traz razão social, situação, endereço, atividade e quadro de sócios. Sócios pessoa física aparecem só pelo nome; CPF não é exibido nem guardado.</p>`
       :`<p class="cv-nota">A consulta de CNPJ em tempo real funciona no site público do Observatório da Integridade (oisp.vercel.app). Aqui, a rede usa a base da Receita já carregada no painel.</p>`;
     pick.after(box); if(!LIBERADO) return;
     const q=$('cv-q'), msg=$('cv-msg');
-    q.addEventListener('input',()=>{ const d=so(q.value).slice(0,14); q.value=d.length===14?fmtC(d):d; });
-    const ir=async()=>{ const c=so(q.value); if(!valido(c)){ msg.textContent='Digite um CNPJ válido, com 14 dígitos.'; return; }
+    q.addEventListener('input',()=>{ const d=so(q.value).slice(0,14); q.value=d.length===14?fmtC(d):d.length===8&&/\D/.test(q.value)?d.replace(/^(\d{2})(\d{3})(\d{3})$/,'$1.$2.$3'):d; });
+    const ir=async()=>{ const c=so(q.value); if(c.length===8&&window.__estabRaiz){ msg.textContent='Buscando matriz e filiais pela raiz '+c.replace(/^(\d{2})(\d{3})(\d{3})$/,'$1.$2.$3')+'…'; await window.__estabRaiz(c); msg.textContent=''; q.value=''; return; } if(!valido(c)){ msg.textContent='Digite um CNPJ válido (14 dígitos) ou a raiz (8 dígitos).'; return; }
       msg.textContent='Consultando a Receita…'; $('cv-ok').disabled=true;
       try{ const d=await consultar(c); d.raiz=true; msg.innerHTML=`<b>${esc(tit(d.r))}</b> · ${esc(d.s)} · ${esc(d.m)}/${esc(d.uf)} · ${d.q.length} sócio(s) · ${esc(d.fonte)}, ${esc(d.em)}`;
         window.__netAdd&&window.__netAdd({cnpj:c,label:tit(d.r),tipo:'Empresa'}); window.__renderNet&&window.__renderNet(); q.value=''; }
@@ -4662,7 +4675,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   const munP=m=>MUNS[chave(m)]||tit(m||'');
   // grupos de uma empresa (consulta na hora tem prioridade sobre a carga do painel)
   function grupos(b){ const v=Object.keys(PN.VIVO).find(c=>c.slice(0,8)===b); if(v&&PN.VIVO[v].grupos) return {vivo:true,em:PN.VIVO[v].em,c:v,nome:'',est:PN.VIVO[v].estabelecimentos||[],G:PN.VIVO[v].grupos};
-    const e=PN.B[b]; if(!e) return null; return {vivo:false,em:PN.ref,c:e[1],nome:e[0],est:e[4]||[],G:e[2].map(r=>({o:PN.O[r[0]],m:PN.M[r[1]],e:r[2]?'Estadual':'Municipal',n:r[3],v:r[4],d1:r[5],d2:r[6],l:r[7],obj:r[8],x:r[9]||0,k:r[10]||[]}))}; }
+    const e=PN.B[b]; if(!e) return null; return {vivo:false,em:PN.ref,c:e[1],nome:e[0],est:e[4]||[],G:e[2].map(r=>({o:PN.O[r[0]],m:PN.M[r[1]],e:r[2]?'Estadual':'Municipal',n:r[3],v:r[4],d1:r[5],d2:r[6],l:r[7],obj:r[8],x:r[9]||0,k:r[10]||[],est:r[11]||null}))}; }
   window.__pncpGrupos=grupos;
   // empresas citadas na base sem CNPJ: CNPJ procurado pelo nome nos arquivos completos da Receita (dados/empcnpj.json)
   const EC={L:{},ref:'',ok:false}; window.__empCnpj=EC;
@@ -4681,6 +4694,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   const vazio=g=>g.n+' contrato'+(g.n===1?'':'s');
   const labAresta=(nomeE,lb,g,vivo,em)=>`${vazio(g)}¦${nomeE} tem ${g.n} contrato${g.n===1?'':'s'} com ${lb} publicado${g.n===1?'':'s'} no PNCP · ${brl(g.v)}${g.x?` (${g.x} com valor acima de R$ 1 bilhão fora da soma: provável erro de registro)`:''} · ${br(g.d1)}${g.d2&&g.d2!==g.d1?' a '+br(g.d2):''}${g.obj?' · último objeto: '+String(g.obj).slice(0,120):''} · ${vivo?'consulta em tempo real ao PNCP, '+br(em):'carga do PNCP de '+em}. Ter contrato público não é irregular`;
 
+  window.__pncpRede={orgLab,munP,labAresta,basico:(id,n)=>basico(id,n),tit,chave,br,brl};
   // ---------- rede
   // tipo de aresta 'pncp' (ETYPE/EPRI/SHORT) é registrado pelo build.py no código da rede
   const MAXF=5; // empresa aberta na rede: só os 5 órgãos de maior valor (a ficha mostra todos)
@@ -4695,11 +4709,15 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     if(s.startsWith('n:')){ const e=(D.ENT||[]).find(x=>'n:'+x.ent===s); const d=so(e&&e.cnpj); if(d.length>=8) return d.slice(0,8); }
     const ec=ecDe(n.label); return ec&&ec.cnpj?ec.cnpj.slice(0,8):''; }
   function rede({add,lk,nodes}){ const N=window.__NET; const EXP=N&&N.expanded?N.expanded:new Set(); const SEL=window.__netSel||[];
-    const EMP=[]; nodes.forEach((n,id)=>{ if(!['emp','ent'].includes(n.type)) return; const b=basico(id,n); if(b) EMP.push([id,n,b]); });
+    const EMP=[]; nodes.forEach((n,id)=>{ if(!['emp','ent'].includes(n.type)||String(id).startsWith('f:')) return; const b=basico(id,n); if(b) EMP.push([id,n,b]); });
     const feito=new Set(), FILA={};
-    EMP.forEach(([id,n,b])=>{ if(feito.has(b)) return; feito.add(b); const r=grupos(b); if(!r||!r.G.length) return;
+    EMP.forEach(([id,n,b])=>{ if(feito.has(b)) return; feito.add(b); let r=grupos(b); if(!r||!r.G.length) return;
+      // filiais à mostra na rede: o nó da matriz fica só com os contratos da matriz (cada filial leva os seus)
+      const soMat=window.__estabAberto&&window.__estabAberto(b,EMP.filter(x=>x[2]===b).map(x=>x[0]));
+      if(soMat){ const G2=[]; r.G.forEach(g=>{ if(!g.est){ G2.push(g); return; } const m=g.est.find(e=>String(e[0]).startsWith('0001')); if(m) G2.push(Object.assign({},g,{n:m[1],v:m[2],d1:m[3],d2:m[4],k:(g.k||[]).filter(k=>String(k[4]||'').slice(8,12)==='0001'),_mat:1})); });
+        G2.sort((a,c)=>c.v-a.v); r=Object.assign({},r,{G:G2}); }
       const foco=EXP.has(id)||r.vivo||SEL.some(x=>x.cnpj&&x.cnpj.slice(0,8)===b);
-      const tot=r.G.reduce((a,g)=>a+g.n,0);
+      const tot=grupos(b).G.reduce((a,g)=>a+g.n,0);
       if(!String(n.cargo||'').includes('PNCP:')) n.cargo=(n.cargo?n.cargo+' · ':'')+`PNCP: ${fmt(tot)} contrato(s) com ${r.G.length} órgão(s) paulista(s)`;
       let novos=0, nf=0;
       r.G.forEach(g=>{ const lb=orgLab(g.o,munP(g.m),g.e); const oid='og:'+chave(lb); const ja=nodes.has(oid);
@@ -4707,7 +4725,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
         if(!ja){ novos++; const mun=g.e==='Estadual'?'Governo do Estado de SP':munP(g.m);
           add(oid,lb,'orgp',{cargo:g.e==='Estadual'?'órgão do Governo do Estado de SP':'órgão de '+mun,mun:g.e==='Estadual'?'':mun});
           if(g.e==='Municipal'&&mun){ const mid=add('m:'+mun,mun,'mun'); lk(oid,mid,'sede',`órgão do município¦${lb} é órgão de ${mun}`); } }
-        if(foco) lk(id,oid,'pncp',labAresta(n.label,lb,g,r.vivo,r.em)); else (FILA[oid]=FILA[oid]||[]).push([g.v,id,labAresta(n.label,lb,g,r.vivo,r.em)]); }); });
+        if(foco) lk(id,oid,'pncp',labAresta(soMat?n.label+' (matriz)':n.label,lb,g,r.vivo,r.em)); else (FILA[oid]=FILA[oid]||[]).push([g.v,id,labAresta(n.label,lb,g,r.vivo,r.em)]); }); });
     Object.entries(FILA).forEach(([oid,L])=>L.sort((a,b)=>b[0]-a[0]).slice(0,POR_ORGAO).forEach(([,id,lab])=>lk(id,oid,'pncp',lab)));
     // órgão aberto na rede: empresas da base contratadas por ele (as de maior valor, só as que têm motivo explícito no painel)
     if(PN.ok) EXP.forEach(oid=>{ if(!String(oid).startsWith('og:')||!nodes.has(oid)) return; const L=reverso()[oid]; if(!L) return; let k=0;
@@ -4747,7 +4765,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   const TIPOS={emp:'Empresa',ent:'Entidade ou OS',soc:'Sócio ou dirigente',ele:'Eleito(a) em 2024',ag:'Agente político ou servidor',tce:'Responsável (TCE-SP)',op:'Operação',mun:'Município',orgp:'Órgão público',org:'Órgão estadual'};
   function quadro(){ if(card) return card; card=document.createElement('section'); card.className='pq-card pq-ficha'; card.setAttribute('role','dialog'); card.setAttribute('aria-label','Ficha do nó da rede'); card.hidden=true;
     card.innerHTML='<div class="pq-top"><div><span class="pq-k" id="pq-k">Ficha</span><h3 class="pq-t" id="pq-t"></h3><p class="pq-s" id="pq-s"></p></div><button type="button" class="pq-x" aria-label="Fechar ficha">×</button></div>'+
-      '<div class="pq-body" id="pq-body"><div class="pq-acoes" id="pq-acoes"></div><div class="pq-sec" id="pq-rfb"></div><div class="pq-sec" id="pq-soc2"></div><div class="pq-sec" id="pq-pncp"></div><div class="pq-sec" id="pq-base"></div><div class="pq-sec pq-painel" id="pq-painel"></div></div>'+
+      '<div class="pq-body" id="pq-body"><div class="pq-acoes" id="pq-acoes"></div><div class="pq-sec" id="pq-rfb"></div><div class="pq-sec" id="pq-soc2"></div><div class="pq-sec" id="pq-est"></div><div class="pq-sec" id="pq-pncp"></div><div class="pq-sec" id="pq-base"></div><div class="pq-sec pq-painel" id="pq-painel"></div></div>'+
       '<div class="pq-foot"><span class="fi-rel"><span class="fi-rel-t">Relatório completo:</span><button type="button" class="fi-btn ghost" data-rel="pdf">PDF</button><button type="button" class="fi-btn ghost" data-rel="docx">Word (.docx)</button></span><button type="button" class="fi-btn fi-ok" data-pq-ok>OK</button></div>';
     document.body.appendChild(card);
     const fechar=()=>{ card.hidden=true; };
@@ -4782,7 +4800,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     const tot=r.G.reduce((a,g)=>a+g.n,0), v=r.G.reduce((a,g)=>a+g.v,0), x=r.G.reduce((a,g)=>a+(g.x||0),0);
     const est=r.est&&r.est.length>1?` · ${r.est.length} estabelecimentos (matriz e filiais)`:'';
     return `<p class="pq-res"><b>${fmt(tot)}</b> contrato(s) com <b>${r.G.length}</b> órgão(s) · ${brl(v)}${est}${x?` <small>(${x} acima de R$ 1 bilhão fora da soma: provável erro de registro)</small>`:''}</p><ul class="pq-list">${r.G.map(g=>`<li><b>${esc(orgLab(g.o,munP(g.m),g.e))}</b><span class="pq-cam">${g.n} contrato(s) · ${brl(g.v)} · ${esc(br(g.d1))}${g.d2&&g.d2!==g.d1?' a '+esc(br(g.d2)):''}${links(g)}</span></li>`).join('')}</ul><p class="pq-nota">Busca pela raiz do CNPJ: matriz e todas as filiais. A rede mostra os 5 órgãos de maior valor; aqui estão todos. ${r.vivo?'Consulta em tempo real ao PNCP ('+esc(br(r.em))+').':'Carga do PNCP de '+esc(r.em)+(LIBERADO?'':' (a consulta em tempo real funciona no site público)')+'.'} Ter contrato público não é irregular.</p>`; }
-  function limpar(){ ['pq-acoes','pq-rfb','pq-soc2','pq-pncp','pq-base','pq-painel'].forEach(id=>{ const el=$(id); if(el){ el.innerHTML=''; el.hidden=true; } }); }
+  function limpar(){ ['pq-acoes','pq-rfb','pq-soc2','pq-est','pq-pncp','pq-base','pq-painel'].forEach(id=>{ const el=$(id); if(el){ el.innerHTML=''; el.hidden=true; } }); }
   function abrir(kick,titulo,sub){ const q=quadro(); limpar(); q.hidden=false; $('pq-k').textContent=kick; $('pq-t').textContent=titulo; $('pq-s').textContent=sub||''; $('pq-body').scrollTop=0; return q; }
   function cnpjNo(d){ const f=so(d.ficha||''); if(f.length===14) return f;
     if(String(d.id).startsWith('c:')){ const x=so(d.id.slice(2)); if(x.length===14) return x; if(x.length>=8){ const R=window.__rfb; const e=R&&R.C[x.slice(0,8)]; if(e&&e[9]) return e[9]; const p=PN.B[x.slice(0,8)]; return p?p[1]:x; } }
@@ -4793,10 +4811,11 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     if(String(d.id).startsWith('n:')) return String(d.id).slice(2);
     if(PN.B[b]) return tit(PN.B[b][0]); const R=window.__rfb; if(R&&R.ok&&R.C[b]) return tit(R.C[b][0]||d.label);
     return null; }
-  async function fichaEmpresa(d,c){ const b=c.slice(0,8); const label=d.label||fmtC(c); const nb=naBaseEmp(c,d);
+  async function fichaEmpresa(d,c){ const b=c.slice(0,8); const label=(d.nomeEmp?d.nomeEmp+' · ':'')+(d.label||fmtC(c)); const nb=naBaseEmp(c,d);
     const ec=ecDe(label); const ecOk=ec&&ec.cnpj===c;
     abrir(TIPOS[d.type]||'Empresa',label,(c.length===14?'CNPJ '+fmtC(c):'CNPJ básico '+b)+(ecOk?' · identificado pelo nome na base completa da Receita: '+ec.crit:''));
     sec('pq-rfb','Receita Federal',carregando); sec('pq-pncp','Contratos no PNCP (órgãos de SP)',carregando); sec('pq-base','Sócios e dirigentes em outras camadas do painel',carregando);
+    { const eb=window.__estabBloco&&window.__estabBloco(b); if(eb) sec('pq-est','Matriz e filiais (mesmo CNPJ raiz)',eb); }
     painel({tipo:'pessoa',nome:nb||label,cnpj:c.length===14?c:''},nb?'Dados do painel sobre a empresa':'Dados do painel',true);
     const t0=performance.now();
     const pRfb=(async()=>{ let x=null, fonte='';
@@ -4857,6 +4876,114 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   fetch('dados/empcnpj.json'+'?v='+(window.__BUILD||''),{cache:'force-cache'}).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(j=>{ EC.L=j.L||{}; EC.ref=j.ref||''; EC.ok=true; window.__renderNet&&window.__renderNet(); }).catch(()=>{ EC.ok=true; });
   function carregar(){ fetch('dados/pncp.json'+'?v='+(window.__BUILD||''),{cache:'force-cache'}).then(r=>{ if(!r.ok) throw 0; return r.json(); }).then(j=>{ Object.assign(PN,{B:j.B||{},O:j.O||[],M:j.M||[],ref:j.ref||'',n:j.n||{},Z:new Set(j.Z||[])}); RV=null; PN.ok=true; window.__renderNet&&window.__renderNet(); }).catch(()=>{}); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',carregar); else carregar();
+})();
+
+</script>
+<script>
+// ===================== MATRIZ E FILIAIS (CNPJ RAIZ) NA REDE =====================
+// dados/estab.json: estabelecimentos (matriz e filiais) das empresas do painel, pela raiz do CNPJ (8 primeiros dígitos),
+// tirados dos arquivos abertos do CNPJ da Receita. Na rede, a empresa (nó da matriz) aberta com um clique mostra as filiais
+// (nós "f:"), cada uma com os contratos que ela própria assinou (PNCP). A busca pela raiz ("61.699.567") põe a matriz e as
+// filiais na rede já abertas. Sanções, sócios e processos são da pessoa jurídica (raiz) e ficam no nó da matriz.
+(function(){
+  const $=id=>document.getElementById(id);
+  const A=window.__ab||{}; const esc=A.esc||(t=>String(t||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])));
+  const so=t=>String(t||'').replace(/\D/g,'');
+  const fmtC=c=>c.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/,'$1.$2.$3/$4-$5');
+  const fmtR=b=>b.replace(/^(\d{2})(\d{3})(\d{3})$/,'$1.$2.$3');
+  const fmtO=od=>od.slice(0,4)+'-'+od.slice(4);
+  const LIBERADO=!/(^|\.)claude\.ai$|claudeusercontent|anthropic/i.test(location.hostname);
+  const SIT={'01':'nula','1':'nula','02':'ativa','2':'ativa','03':'suspensa','3':'suspensa','04':'inapta','4':'inapta','08':'baixada','8':'baixada'};
+  const EST=window.__estab={ok:false,L:{},N:{},ref:''};
+  const MAXF=25; // filiais mostradas por empresa aberta (a ficha mostra todas)
+  const avisar=t=>{ try{ (A.aviso||console.log)(t); }catch(e){} };
+  // dígitos verificadores: raiz + 0001 -> CNPJ da matriz
+  function dv(b12){ const d=(s,p)=>{ let t=0; for(let i=0;i<p.length;i++) t+=+s[i]*p[i]; const r=t%11; return r<2?0:11-r; };
+    const a=d(b12,[5,4,3,2,9,8,7,6,5,4,3,2]); const b=d(b12+a,[6,5,4,3,2,9,8,7,6,5,4,3,2]); return ''+a+b; }
+  const matrizDe=b=>{ const L=EST.L[b]; const m=L&&L.find(x=>x[1]==='1'); return b+(m?m[0]:'0001'+dv(b+'0001')); };
+  window.__cnpjMatriz=matrizDe;
+  fetch('dados/estab.json?v='+(window.__BUILD||''),{cache:'force-cache'}).then(r=>{ if(!r.ok) throw 0; return r.json(); })
+    .then(j=>{ Object.assign(EST,{ok:true,L:j.L||{},N:j.N||{},ref:j.ref||''}); const N=window.__NET; if(N&&N.expanded&&N.expanded.size&&window.__renderNet) window.__renderNet(); })
+    .catch(()=>{});
+
+  // estabelecimentos de uma raiz: base da Receita + os que aparecem na consulta ao PNCP feita na hora
+  function lista(b){ const M=new Map(); (EST.L[b]||[]).forEach(x=>M.set(b+x[0],{c:b+x[0],od:x[0],mf:x[1],fan:x[2]||'',sit:SIT[x[3]]||x[3]||'',uf:x[4]||'',mun:x[5]||'',src:'rfb'}));
+    const PN=window.__pncp; if(PN&&PN.VIVO) Object.values(PN.VIVO).forEach(v=>{ if(v&&v.raiz===b) (v.estabelecimentos||[]).forEach(c=>{ if(!M.has(c)) M.set(c,{c,od:c.slice(8),mf:c.slice(8,12)==='0001'?'1':'2',fan:'',sit:'',uf:'',mun:'',src:'pncp'}); }); });
+    return [...M.values()]; }
+  // contratos de cada estabelecimento com cada órgão (grupos do PNCP com o campo est)
+  function porEst(b){ const G=window.__pncpGrupos&&window.__pncpGrupos(b); const R={}; if(!G||!G.G) return R;
+    G.G.forEach(g=>{ (g.est||[]).forEach(([od,n,v,d1,d2])=>{ (R[b+od]=R[b+od]||[]).push(Object.assign({},g,{n,v,d1,d2,k:(g.k||[]).filter(k=>String(k[4]||'').slice(8)===od),obj:g.obj,_od:od})); }); });
+    return {R,vivo:G.vivo,em:G.em}; }
+  window.__estabLista=lista;
+
+  // raiz de um nó de empresa ou entidade
+  const ENTC={}; ((window.DATA||(typeof DATA!=='undefined'?DATA:{})).ENT||[]).forEach(e=>{ const d=so(e.cnpj); if(d.length>=8) ENTC['n:'+e.ent]=d.slice(0,8); });
+  function raizNo(id,n){ id=String(id); if(id.startsWith('f:')) return ''; const f=so(n&&n.ficha); if(f.length>=8) return f.slice(0,8);
+    if(id.startsWith('c:')){ const d=so(id.slice(2)); return d.length>=8?d.slice(0,8):''; } return ENTC[id]||''; }
+  const AUTO=new Set(); // raízes pedidas pela busca: matriz e filiais entram abertas
+  // raiz com as filiais à mostra (empresa aberta, filial aberta ou busca pela raiz): o PNCP do nó da matriz passa a contar só a matriz
+  function abertaRaiz(b,ids){ const N=window.__NET; const EXP=N&&N.expanded?N.expanded:new Set(); const AL=window.__netAlias||{};
+    if(AUTO.has(b)) return true; if([...EXP].some(x=>String(x).startsWith('f:'+b))) return true; return (ids||[]).some(id=>EXP.has(id)||EXP.has(AL[id])); }
+  window.__estabAberto=(b,ids)=>{ const L=lista(b); return L.some(x=>x.mf==='2')&&abertaRaiz(b,ids); };
+
+  const prev=window.__netExtra;
+  window.__netExtra=o=>{ if(prev) prev(o); try{ rede(o); }catch(err){ console.error('matriz e filiais na rede',err); } };
+  function rede({add,lk,nodes}){ const N=window.__NET; const EXP=N&&N.expanded?N.expanded:new Set(); const AL=window.__netAlias||{};
+    const ref=EST.ref?'base CNPJ da Receita, '+EST.ref:'base CNPJ da Receita';
+    const porRaiz={}; nodes.forEach((n,id)=>{ if(!['emp','ent'].includes(n.type)) return; const b=raizNo(id,n); if(b) (porRaiz[b]=porRaiz[b]||[]).push(id); });
+    const aberto=id=>EXP.has(id)||EXP.has(AL[id]);
+    const fExp=new Set([...EXP].filter(x=>String(x).startsWith('f:')).map(x=>x.slice(2,10)));
+    Object.entries(porRaiz).forEach(([b,ids])=>{ if(!abertaRaiz(b,ids)) return;
+      const L=lista(b); if(!L.length) return;
+      const mat=matrizDe(b); const n0=nodes.get(ids[0]);
+      // nó da matriz: o mesmo nó da empresa (a rede junta os CNPJs da mesma raiz no nó de CNPJ 0001)
+      let main='c:'+mat; if(!nodes.has(main)) add(main,n0.label,n0.type,{cargo:'CNPJ '+fmtC(mat)+' · matriz',ficha:mat});
+      const nm=String(n0.label||'').replace(/\s*\(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}\)$/,'');
+      const PE=porEst(b); const nCt=c=>((PE.R||{})[c]||[]).reduce((a,g)=>a+g.n,0);
+      const fil=L.filter(x=>x.mf==='2').sort((x,y)=>(nCt(y.c)>0)-(nCt(x.c)>0)||(y.uf==='SP')-(x.uf==='SP')||(y.sit==='ativa')-(x.sit==='ativa')||x.od.localeCompare(y.od));
+      const tot=Math.max(EST.N[b]||L.length,L.length);
+      const mn=nodes.get(main); if(mn&&!String(mn.cargo||'').includes('estabelecimento')) mn.cargo=(mn.cargo?mn.cargo+' · ':'')+`${tot} estabelecimento${tot===1?'':'s'} (matriz e filiais)${fil.length>MAXF?`; a rede mostra ${MAXF} filiais e a ficha lista as demais`:''}`;
+      fil.slice(0,MAXF).forEach(x=>{ const fid='f:'+x.c; const loc=[x.mun,x.uf].filter(Boolean).join('/');
+        add(fid,`Filial ${fmtO(x.od)}${x.mun?' · '+x.mun:''}`,n0.type==='ent'?'ent':'emp',{cargo:`${nm} · CNPJ ${fmtC(x.c)} · filial${x.sit?' · '+x.sit:''}${loc?' · '+loc:''}${x.fan?' · '+x.fan:''}${x.src==='pncp'?' (identificada no PNCP)':' ('+ref+')'}`,ficha:x.c,fil:b,nomeEmp:nm});
+        lk(main,fid,'est',`filial¦${fmtC(x.c)} é filial da mesma pessoa jurídica (CNPJ raiz ${fmtR(b)})${x.sit?'; situação '+x.sit:''}${loc?'; '+loc:''}${x.fan?'; nome fantasia '+x.fan:''} · ${x.src==='pncp'?'estabelecimento identificado nos contratos do PNCP':ref}`); });
+      // filial aberta: os contratos que ela própria assinou, ligados aos órgãos contratantes
+      const H=window.__pncpRede; if(!H) return;
+      fil.slice(0,MAXF).forEach(x=>{ const fid='f:'+x.c; if(!aberto(fid)&&!AUTO.has(b)) return;
+        ((PE.R||{})[x.c]||[]).sort((a,c)=>c.v-a.v).slice(0,5).forEach(g=>{ const mun=g.e==='Estadual'?'Governo do Estado de SP':H.munP(g.m); const lb=H.orgLab(g.o,mun,g.e); const oid='og:'+H.chave(lb);
+          if(!nodes.has(oid)){ add(oid,lb,'orgp',{cargo:g.e==='Estadual'?'órgão do Governo do Estado de SP':'órgão de '+mun,mun:g.e==='Estadual'?'':mun});
+            if(g.e==='Municipal'&&mun){ const mid=add('m:'+mun,mun,'mun'); lk(oid,mid,'sede',`órgão do município¦${lb} é órgão de ${mun}`); } }
+          lk(fid,oid,'pncp',H.labAresta(`${nm} (filial ${fmtO(x.od)})`,lb,g,PE.vivo,PE.em)); }); }); }); }
+
+  // ---------- busca pela raiz: matriz e filiais na rede, já abertas
+  async function porRaiz(b){ b=so(b).slice(0,8); if(b.length!==8){ avisar('Digite os 8 primeiros dígitos do CNPJ (raiz), como 61.699.567.'); return; }
+    const mat=matrizDe(b); let nome='';
+    const PN=window.__pncp||{}; const e=(PN.B||{})[b]; if(e) nome=e[0];
+    const rf=window.__rfb&&window.__rfb.C&&window.__rfb.C[b]; if(!nome&&rf) nome=rf[0];
+    avisar(`Buscando a raiz ${fmtR(b)} na Receita${LIBERADO?' e no PNCP':''}…`);
+    const tarefas=[];
+    if(LIBERADO&&window.__consultarCNPJ) tarefas.push(window.__consultarCNPJ(mat).then(d=>{ d.raiz=true; if(d.r) nome=d.r; }).catch(()=>{}));
+    if(LIBERADO&&window.__pncpVivo) tarefas.push(window.__pncpVivo(mat).catch(()=>{}));
+    await Promise.race([Promise.all(tarefas),new Promise(r=>setTimeout(r,9000))]); // serviço lento: segue com a base do painel (o resultado entra quando chegar)
+    const L=lista(b); const tit=t=>/[a-zà-ú]/.test(t||'')?t:String(t||'').toLowerCase().replace(/(^|\s)\S/g,m=>m.toUpperCase()).replace(/\s(Da|De|Do|Das|Dos|E|Em)\s/g,m=>m.toLowerCase());
+    if(!nome&&!L.length){ avisar(`Nenhuma empresa com a raiz ${fmtR(b)} na base do painel${LIBERADO?' nem na consulta em tempo real':''}.`); return; }
+    nome=tit(nome||('CNPJ raiz '+fmtR(b)));
+    AUTO.add(b);
+    window.__mostrarAba&&window.__mostrarAba('casos');
+    window.__netAdd&&window.__netAdd({cnpj:mat,label:nome,tipo:'Empresa (matriz e filiais)'});
+    // depois do desenho: abre a matriz e as filiais (os vizinhos de cada uma aparecem)
+    setTimeout(()=>{ const N=window.__NET; const nodes=window.__netNodes; if(!N||!nodes) return; const AL=window.__netAlias||{};
+      const ids=['c:'+mat].concat([...nodes.keys()].filter(id=>String(id).startsWith('f:'+b))).map(id=>AL[id]||id).filter(id=>nodes.has(id));
+      N.all=false; ids.forEach(id=>N.expanded.add(id)); AUTO.delete(b); window.__renderNet&&window.__renderNet();
+      const nf=ids.length-1, tot=Math.max(EST.N[b]||0,L.length);
+      avisar(`${nome}: matriz${nf?` e ${nf} filia${nf===1?'l':'is'}`:''} na rede${tot>nf+1?` (${tot} estabelecimentos no total; a ficha lista todos)`:''}.`); },60);
+    const n=$('net-svg'); if(n) setTimeout(()=>n.scrollIntoView({behavior:'smooth',block:'center'}),120); }
+  window.__estabRaiz=porRaiz;
+
+  // ---------- ficha da rede: lista de estabelecimentos
+  window.__estabBloco=b=>{ const L=lista(b); if(L.length<2) return ''; const PE=porEst(b); const nCt=c=>((PE.R||{})[c]||[]).reduce((a,g)=>a+g.n,0);
+    const S=L.slice().sort((x,y)=>(y.mf==='1')-(x.mf==='1')||(nCt(y.c)>0)-(nCt(x.c)>0)||(y.uf==='SP')-(x.uf==='SP')||(y.sit==='ativa')-(x.sit==='ativa')||x.od.localeCompare(y.od));
+    const tot=Math.max(EST.N[b]||L.length,L.length);
+    return `<p class="fi-nota">${tot} estabelecimento(s) com a raiz ${fmtR(b)}${tot>L.length?` (lista com ${L.length}: matriz, filiais em SP e as demais ativas)`:''} · ${EST.ref?'base CNPJ da Receita, '+esc(EST.ref):'base CNPJ da Receita'}. Sanções, sócios e processos são da pessoa jurídica (todos os estabelecimentos).</p><ul class="fi-list">${S.map(x=>`<li><b>${esc(fmtC(x.c))}</b> · ${x.mf==='1'?'matriz':'filial'}${x.sit?' · '+esc(x.sit):''}${x.mun?' · '+esc(x.mun)+(x.uf?'/'+esc(x.uf):''):''}${x.fan?' · '+esc(x.fan):''}${nCt(x.c)?` · <b>${nCt(x.c)} contrato(s) no PNCP</b>`:''}</li>`).join('')}</ul>`; };
 })();
 
 </script>
