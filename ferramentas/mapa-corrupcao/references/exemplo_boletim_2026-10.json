@@ -1,0 +1,191 @@
+{
+ "ref": "2026-10",
+ "rotulo": "Boletim out/2026",
+ "periodo": "setembro de 2026",
+ "data_base": "01/10/2026",
+ "kicker": "Boletim mensal do Observatório de Integridade Municipal – SP",
+ "titulo": "Cinco cidades paulistas perderam o prefeito em 2026",
+ "linha_fina": "Câmaras Municipais e Justiça Eleitoral cassaram sete mandatos de prefeitos e vices neste ano; um em cada três municípios tem parecer desfavorável do TCE-SP às contas recentes; e setembro concentrou operações com prisões de secretários, de um presidente de Câmara e de ex-dirigentes da Fazenda estadual.",
+ "abertura": "Setembro de 2026 foi um dos meses mais movimentados do ano para o controle da administração pública no interior e no litoral paulista. Em Ourinhos e Pratânia, as Câmaras Municipais cassaram os prefeitos ao julgar comissões processantes; em Bauru, três integrantes do primeiro escalão foram presos e depois denunciados pelo Ministério Público por suspeita de fraude na concessão do lixo; e operações do Gaeco e da Polícia Civil voltaram a apontar a presença do crime organizado em Câmaras e contratos municipais. Somadas às cassações decididas pela Justiça Eleitoral em Macedônia, Martinópolis e Narandiba, são cinco cidades que trocaram de prefeito em 2026 por decisão de outro Poder. Este boletim reúne os números do Observatório e as principais notícias do mês, sempre com a ressalva de que investigação, denúncia ou parecer do Tribunal de Contas não significam culpa.",
+ "kpis": [
+  {
+   "valor": "5",
+   "rotulo": "municípios com prefeito cassado em 2026 (7 mandatos, com os vices)",
+   "cor": "red"
+  },
+  {
+   "valor": "33%",
+   "rotulo": "dos municípios com parecer desfavorável do TCE-SP vigente (214 de 644)",
+   "cor": "gold"
+  },
+  {
+   "valor": "26%",
+   "rotulo": "dos municípios aparecem em operação ou investigação registrada pelo Observatório (170 de 644)",
+   "cor": "navy"
+  },
+  {
+   "valor": "19",
+   "rotulo": "fatos novos registrados na base em setembro",
+   "cor": "navy"
+  }
+ ],
+ "grafico": {
+  "titulo": "Pareceres prévios desfavoráveis vigentes, por exercício das contas",
+  "nota": "Decisões publicadas no Diário Oficial do TCE-SP de 2023 a 01/10/2026, descontadas as revertidas em reexame.",
+  "dados": [
+   [
+    "2019",
+    9
+   ],
+   [
+    "2020",
+    75
+   ],
+   [
+    "2021",
+    90
+   ],
+   [
+    "2022",
+    136
+   ],
+   [
+    "2023",
+    150
+   ],
+   [
+    "2024",
+    41
+   ]
+  ]
+ },
+ "destaques": [
+  {
+   "numero": "7 mandatos",
+   "titulo": "AS CASSAÇÕES DE 2026 VIERAM DE DOIS LADOS",
+   "texto": "Desde janeiro, sete prefeitos e vices perderam o mandato em cinco municípios. Em Macedônia, Martinópolis e Narandiba, a decisão foi da Justiça Eleitoral, por abuso de poder ou captação ilícita de votos nas eleições de 2024. Em Ourinhos e Pratânia, foram as Câmaras Municipais, ao julgar comissões processantes por infrações político-administrativas. São esferas distintas, com ritos e consequências próprios: a cassação eleitoral pode vir acompanhada de inelegibilidade; a da Câmara depende do voto de 2/3 dos vereadores."
+  },
+  {
+   "numero": "214 municípios",
+   "titulo": "UM EM CADA TRÊS MUNICÍPIOS COM PARECER DESFAVORÁVEL",
+   "texto": "A leitura de 896 edições do Diário Oficial do TCE-SP (2023 a 2026) encontrou 504 decisões desfavoráveis vigentes às contas anuais de prefeituras, em 214 dos 644 municípios do interior e do litoral. Em 72 deles, o Tribunal opinou contra as contas em mais de um exercício. O parecer é opinativo: quem julga as contas do prefeito é a Câmara Municipal, que só pode derrubá-lo com 2/3 dos votos. Em setembro, foram publicadas 19 decisões desfavoráveis, das quais 10 em pedidos de reexame que mantiveram o parecer."
+  },
+  {
+   "numero": "R$ 5,2 bilhões",
+   "titulo": "BAURU: SECRETÁRIOS PRESOS E DENUNCIADOS NA CONCESSÃO DO LIXO",
+   "texto": "É o valor estimado do contrato de 30 anos para a gestão de resíduos sólidos que está no centro da Operação Cavalo de Troia, do Gaeco. Em 9 de setembro, a secretária de Meio Ambiente, o secretário de Negócios Jurídicos e uma secretária-adjunta foram presos e exonerados; em 25 de setembro, o Ministério Público denunciou seis pessoas por organização criminosa e fraude à licitação. Na Câmara, uma comissão processante sobre a concessão notificou a prefeita para apresentar defesa; a Prefeitura afirma não haver indício de envolvimento dela."
+  },
+  {
+   "numero": "36 municípios",
+   "titulo": "O CRIME ORGANIZADO NAS CÂMARAS E NOS CONTRATOS",
+   "texto": "O Observatório já reúne evidências de atuação de facções ou organizações criminosas no setor público em 36 municípios. Só em setembro, a Operação Archimagus prendeu o presidente da Câmara de Sumaré, suspeito de financiar o tráfico; a Operação Nexus fez buscas no gabinete de um vereador de Itatiba; a Vectura Corrupta apurou o financiamento de campanhas pelo PCC na Baixada Santista; e a segunda fase da Operação Infiltrados aprofundou a investigação sobre policiais civis de Campinas ligados à facção."
+  },
+  {
+   "numero": "80%",
+   "titulo": "AS CONTAS IRREGULARES ESTÃO NO TERCEIRO SETOR",
+   "texto": "Das 917 ocorrências de contas julgadas irregulares pelo TCE-SP com imputação de débito entre 2018 e 2026, 737 tratam de repasses de prefeituras a entidades do Terceiro Setor, como organizações sociais de saúde e de educação. Os 499 responsáveis da lista são, na maioria, dirigentes dessas entidades. A presença na relação não gera inelegibilidade automática: cabe à Justiça Eleitoral avaliar cada caso."
+  }
+ ],
+ "noticias": [
+  {
+   "data": "03/09",
+   "municipio": "Ourinhos",
+   "titulo": "Câmara cassa prefeito de Ourinhos após sessão de 11 horas",
+   "texto": "Por 13 votos a 2, a Câmara Municipal cassou o mandato do prefeito Guilherme Gonçalves (Podemos), que já estava afastado por decisão judicial, ao julgar comissão processante sobre contratos de terceirização na saúde e na educação. O vice Alexandre Dauage (PL), que exercia o cargo interinamente, assumiu.",
+   "fonte": "Correio do Interior",
+   "url": "https://www.correiodointerior.com.br/camara-de-ourinhos-cassa-mandato-do-prefeito-guilherme-goncalves-apos-11-horas-de-sessao/"
+  },
+  {
+   "data": "03/09",
+   "municipio": "Governo do Estado",
+   "titulo": "Ex-dirigente da Fazenda é preso em nova fase de investigação sobre créditos de ICMS",
+   "texto": "A Operação Caldarium, do Ministério Público, prendeu um ex-dirigente da Secretaria da Fazenda e um advogado, suspeitos de integrar esquema de favorecimento na liberação de créditos de ICMS. Em 18 de setembro, o MPSP ofereceu denúncia contra investigados no desdobramento do caso.",
+   "fonte": "Migalhas",
+   "url": "https://www.migalhas.com.br/quentes/463812/ex-dirigente-da-fazenda-e-advogado-sao-presos-em-operacao"
+  },
+  {
+   "data": "09/09",
+   "municipio": "Bauru",
+   "titulo": "Gaeco prende secretários de Bauru em operação sobre licitação do lixo",
+   "texto": "A Operação Cavalo de Troia cumpriu mandados em prédios da Prefeitura e prendeu temporariamente três integrantes da administração, exonerados no mesmo dia. A investigação apura o direcionamento da concessão da gestão de resíduos sólidos.",
+   "fonte": "Metrópoles",
+   "url": "https://www.metropoles.com/sao-paulo/secretarios-bauru-operacao-presos"
+  },
+  {
+   "data": "09/09",
+   "municipio": "Sumaré",
+   "titulo": "Presidente da Câmara de Sumaré é preso em operação contra o tráfico",
+   "texto": "A Força Integrada de Combate ao Crime Organizado de Campinas prendeu temporariamente o vereador Hélio Silva (Cidadania), presidente da Câmara, suspeito de financiar o tráfico de drogas. A investigação apura também o uso de recursos ilícitos em campanhas. No dia seguinte, ele se licenciou da presidência da Câmara.",
+   "fonte": "Revista Oeste",
+   "url": "https://revistaoeste.com/politica/presidente-da-camara-de-sumare-sp-e-preso-em-operacao-contra-o-trafico/"
+  },
+  {
+   "data": "09/09",
+   "municipio": "Campinas",
+   "titulo": "Câmara de Campinas cassa vereador por quebra de decoro",
+   "texto": "Por 23 votos, um a mais que o necessário, a Câmara cassou o mandato do vereador Vini Oliveira (Cidadania), após comissão processante sobre reunião gravada com representantes de empresa interessada na concessão do transporte público.",
+   "fonte": "Metrópoles",
+   "url": "https://www.metropoles.com/sao-paulo/vereador-do-cidadania-tem-mandato-cassado-na-camara-municipal-de-campinas"
+  },
+  {
+   "data": "11/09",
+   "municipio": "Capivari",
+   "titulo": "STJ anula condenação de ex-prefeito de Capivari por improbidade",
+   "texto": "O Superior Tribunal de Justiça anulou a condenação imposta pelo TJSP em 2019 ao ex-prefeito Rodrigo Proença pela contratação temporária de professores sem concurso, por falta de prova de dolo, requisito exigido pela Lei de Improbidade desde 2021.",
+   "fonte": "O Semanário Regional",
+   "url": "https://www.jornalosemanario.com.br/apos-anos-de-disputa-judicial-stj-anula-condenacao-de-improbidade-do-ex-prefeito-rodrigo-proenca/"
+  },
+  {
+   "data": "15/09",
+   "municipio": "Itatiba",
+   "titulo": "Vereador de Itatiba é alvo de operação contra o PCC",
+   "texto": "A Operação Nexus, do Gaeco de Campinas, fez buscas na casa de um vereador e na Câmara Municipal. Segundo o Ministério Público, ele é suspeito de integrar o núcleo que monitorava as forças de segurança para proteger o tráfico.",
+   "fonte": "CNN Brasil",
+   "url": "https://www.cnnbrasil.com.br/nacional/sudeste/sp/vereador-e-alvo-de-operacao-contra-pcc-e-lavagem-de-dinheiro-em-sp/"
+  },
+  {
+   "data": "17/09",
+   "municipio": "Baixada Santista e Grande SP",
+   "titulo": "Vectura Corrupta apura financiamento de campanhas pelo PCC",
+   "texto": "A operação da Polícia Civil e do Ministério Público, terceira fase de investigação sobre o elo da facção com empresas de ônibus, cumpriu mandados em sete municípios além da Capital. Segundo o MPSP, há indícios de financiamento de campanhas eleitorais com recursos da organização.",
+   "fonte": "MPSP",
+   "url": "https://www.mpsp.mp.br/w/com-operacao-vectura-corrupta-ex-presidente-da-camara-de-sp-vira-alvo-de-prisao"
+  },
+  {
+   "data": "19/09",
+   "municipio": "Pratânia",
+   "titulo": "Vereadores cassam prefeito de Pratânia",
+   "texto": "Em sessão extraordinária, a Câmara cassou por 7 votos a 2 o mandato do prefeito Osmir José Félix (PP), ao julgar denúncia por supostas infrações político-administrativas. O vice deve assumir.",
+   "fonte": "Metrópoles",
+   "url": "https://www.metropoles.com/sao-paulo/prefeito-tem-mandato-cassado-por-vereadores-de-cidade-do-interior-de-sp"
+  },
+  {
+   "data": "25/09",
+   "municipio": "Campinas",
+   "titulo": "Nova fase da Operação Infiltrados mira esquema de policiais com o PCC",
+   "texto": "O Gaeco prendeu suposto operador de um investigador da Polícia Civil de Campinas. Relatórios do MPSP apontam cerca de R$ 500 mil em depósitos ligados a extorsões e lavagem de dinheiro, segundo o Metrópoles.",
+   "fonte": "Metrópoles",
+   "url": "https://www.metropoles.com/sao-paulo/prisao-de-funcionario-expoe-esquema-de-policiais-com-pcc-para-extorsoes"
+  }
+ ],
+ "padrao": {
+  "numero": "79",
+  "texto": "registros de prefeitos, vices e ex-prefeitos na base curada desde 2016, dos quais 18 envolvem prisão ou prisão decretada, 16 afastamento e 10 cassação. A maior parte dos casos ainda está em investigação ou em medida cautelar.",
+  "extra": "No total, o Observatório reúne 203 registros de 246 agentes públicos, 6.667 notícias pertinentes com link ativo, 917 ocorrências de contas irregulares, 504 pareceres prévios desfavoráveis vigentes e 296 processos de interesse público localizados no TJSP."
+ },
+ "acompanhar": [
+  "Bauru: defesa prévia da prefeita na comissão processante sobre a concessão do lixo e andamento da denúncia do Gaeco.",
+  "Caçapava: comissão processante sobre o uso do Fundo Municipal de Trânsito, em fase de oitivas.",
+  "Martinópolis, Narandiba e Macedônia: eleições suplementares marcadas para 25 de outubro.",
+  "Sumaré e Itatiba: andamento das investigações das operações Archimagus e Nexus.",
+  "Diário Oficial do TCE-SP: novos pareceres e reexames sobre as contas de 2023 e 2024."
+ ],
+ "pauta": [
+  "Boletim out/2026: cinco cidades paulistas perderam o prefeito em 2026",
+  "Um em cada três municípios tem parecer desfavorável do TCE-SP às contas recentes",
+  "Setembro teve 19 fatos novos na base, com prisões em Bauru, Sumaré e na Fazenda estadual",
+  "80% das contas julgadas irregulares envolvem repasses ao Terceiro Setor",
+  "Crime organizado: evidências em 36 municípios; quatro operações em setembro"
+ ],
+ "rodape": "Boletim mensal elaborado a partir dos dados públicos reunidos no painel do Observatório de Integridade Municipal – SP (base curada, notícias com link ativo, Diário Oficial do TCE-SP, relação de contas irregulares do TCE-SP e consulta pública do TJSP). Data-base: 01/10/2026. Investigação, denúncia, ação judicial ou apontamento do Tribunal de Contas não significam culpa; condenação criminal só é definitiva após o trânsito em julgado. Documento de trabalho, dados públicos."
+}
