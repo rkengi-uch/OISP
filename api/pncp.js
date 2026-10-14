@@ -1,19 +1,20 @@
-// Contratos de uma empresa com órgãos municipais e estaduais de SP, consultados na hora no
-// Portal Nacional de Contratações Públicas (PNCP). Intermediário simples: o PNCP não aceita
+// Contratos de uma empresa (matriz e todas as filiais, pela RAIZ do CNPJ) com órgãos municipais e estaduais
+// de SP, consultados na hora no Portal Nacional de Contratações Públicas (PNCP). A busca do PNCP só acha a raiz
+// quando ela vai formatada ("61.699.567"); os resultados são conferidos pelo CNPJ do fornecedor. Intermediário simples: o PNCP não aceita
 // consulta direta de outro site pelo navegador. Não guarda nada; resposta em cache por 1 dia.
 const ESF = { M: 'Municipal', E: 'Estadual' };
 
 // o PNCP às vezes derruba a conexão (ECONNRESET): até 6 tentativas por página
-async function pagina(cnpj, pag) {
+async function pagina(raiz, pag) {
   let erro;
   for (let t = 0; t < 6; t++) {
-    try { return await pagina1(cnpj, pag); } catch (e) { erro = e; await new Promise(r => setTimeout(r, 250 + 250 * t)); }
+    try { return await pagina1(raiz, pag); } catch (e) { erro = e; await new Promise(r => setTimeout(r, 250 + 250 * t)); }
   }
   throw erro;
 }
-async function pagina1(cnpj, pag) {
+async function pagina1(raiz, pag) {
   const u = 'https://pncp.gov.br/api/search/?' + new URLSearchParams({
-    q: '"' + cnpj + '"', tipos_documento: 'contrato', ufs: 'SP',
+    q: '"' + raiz.slice(0, 2) + '.' + raiz.slice(2, 5) + '.' + raiz.slice(5, 8) + '"', tipos_documento: 'contrato', ufs: 'SP',
     pagina: String(pag), tam_pagina: '100', ordenacao: '-data'
   });
   const ac = new AbortController(); const t = setTimeout(() => ac.abort(), 9000);
@@ -27,15 +28,18 @@ async function pagina1(cnpj, pag) {
 module.exports = async (req, res) => {
   const cnpj = String((req.query && req.query.cnpj) || '').replace(/\D/g, '');
   res.setHeader('Access-Control-Allow-Origin', '*');
-  if (cnpj.length !== 14) { res.status(400).json({ erro: 'informe um CNPJ com 14 dígitos' }); return; }
+  if (cnpj.length !== 14 && cnpj.length !== 8) { res.status(400).json({ erro: 'informe um CNPJ (14 dígitos) ou a raiz (8 dígitos)' }); return; }
+  const raiz = cnpj.slice(0, 8);
   try {
-    const G = new Map(); let total = 0, lidos = 0, pag = 1;
-    for (; pag <= 5; pag++) {
-      const d = await pagina(cnpj, pag); const its = d.items || [];
+    const G = new Map(), NI = new Set(); let total = 0, lidos = 0, pag = 1;
+    for (; pag <= 10; pag++) {
+      const d = await pagina(raiz, pag); const its = d.items || [];
       if (pag === 1) total = d.total || 0;
       lidos += its.length;
       for (const x of its) {
-        if ((x.fornecedor_ni || '') !== cnpj || x.cancelado || !ESF[x.esfera_id]) continue;
+        const ni = String(x.fornecedor_ni || '');
+        if (ni.slice(0, 8) !== raiz || x.cancelado || !ESF[x.esfera_id]) continue;
+        NI.add(ni);
         const esf = ESF[x.esfera_id];
         const mun = esf === 'Estadual' ? 'Governo do Estado de SP' : (x.municipio_nome || '');
         const k = (x.orgao_nome || '') + '|' + mun + '|' + esf;
@@ -46,14 +50,14 @@ module.exports = async (req, res) => {
         g.n++; g.v += vv;
         if (dt && (!g.d1 || dt < g.d1)) g.d1 = dt;
         if (dt && (!g.d2 || dt >= g.d2)) { g.d2 = dt; g.l = 'https://pncp.gov.br/app' + (x.item_url || ''); g.obj = String(x.description || '').slice(0, 200); }
-        g.k.push([dt, Math.round(Number(x.valor_global || 0) * 100) / 100, String(x.description || '').slice(0, 110), String(x.item_url || '').replace(/^\/contratos\//, '')]);
+        g.k.push([dt, Math.round(Number(x.valor_global || 0) * 100) / 100, String(x.description || '').slice(0, 110), String(x.item_url || '').replace(/^\/contratos\//, ''), ni]);
         G.set(k, g);
       }
       if (its.length < 100) break;
     }
-    const grupos = [...G.values()].map(g => Object.assign(g, { v: Math.round(g.v * 100) / 100, k: g.n > 1 ? g.k.sort((a, b) => (b[0] > a[0] ? 1 : -1)).slice(0, 12) : [] })).sort((a, b) => b.v - a.v || b.n - a.n);
+    const grupos = [...G.values()].map(g => Object.assign(g, { v: Math.round(g.v * 100) / 100, k: g.n > 1 ? g.k.sort((a, b) => (b[0] > a[0] ? 1 : -1)).slice(0, 12) : (g.k[0] && g.k[0][4].slice(8, 12) !== '0001' ? g.k : []) })).sort((a, b) => b.v - a.v || b.n - a.n);
     res.setHeader('Cache-Control', 'public, s-maxage=86400, stale-while-revalidate=604800');
-    res.status(200).json({ cnpj, grupos, contratos: grupos.reduce((a, g) => a + g.n, 0), parcial: lidos < total, em: new Date().toISOString().slice(0, 10) });
+    res.status(200).json({ cnpj, raiz, estabelecimentos: [...NI].sort(), grupos, contratos: grupos.reduce((a, g) => a + g.n, 0), parcial: lidos < total, em: new Date().toISOString().slice(0, 10) });
   } catch (e) {
     res.setHeader('Cache-Control', 'no-store');
     res.status(502).json({ erro: 'PNCP indisponível agora', motivo: String(e && (e.name === 'AbortError' ? 'tempo esgotado' : (e.message + (e.cause ? ' ' + (e.cause.code || e.cause.message || '') : ''))) || '').slice(0, 160) });
