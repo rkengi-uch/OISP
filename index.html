@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261014161609";</script>
+<head><script>window.__BUILD="20261015084640";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -948,6 +948,12 @@ table.hm{min-width:0; border-collapse:separate; border-spacing:2px;}
 .at-btn.tem-nova{opacity:1;} .at-btn.tem-nova .at-dot{display:block;}
 .at-btn.girando svg{animation:pqgira .8s linear infinite;}
 @media (prefers-reduced-motion:reduce){ .at-btn.girando svg{animation:none;} }
+
+#inicio .in-rod-w{border-top-color:var(--oi-line);}
+#inicio .in-rod{font-size:13px; gap:8px 18px;}
+#inicio .in-rod a{color:var(--oi-text); font-weight:600;} #inicio .in-rod a:hover{color:var(--oi-teal);}
+#inicio .in-rod a:focus-visible{outline:2px solid var(--oi-teal); outline-offset:2px; border-radius:3px;}
+#inicio .in-rod-n{color:#b8c6dc; font-size:12px;}
 /* ===== Página inicial do OISP (camada sobre o painel) =====
    Layout: barra com a marca; abertura em duas colunas (logo + texto e busca); faixa de números;
    grade de módulos = abas do painel, cada um com os atalhos das suas seções; fontes; rodapé.
@@ -1064,6 +1070,7 @@ html.oi-aberto, html.oi-aberto body{overflow:hidden;}
 .oi-mods-tog{all:unset; cursor:pointer; font:12px var(--sans); color:var(--oi-muted); margin-left:auto;}
 .oi-mods-tog:hover{color:var(--oi-teal);}
 .oi-mods-tog:focus-visible{outline:2px solid var(--oi-teal); outline-offset:2px;}
+
 .cd-bar{display:flex; justify-content:flex-end; margin:-4px 0 6px;}
 .cd-tog{font:12px var(--sans); background:none; border:1px solid var(--border); border-radius:4px; padding:4px 10px; color:var(--text-muted); cursor:pointer;}
 .cd-tog:hover{border-color:var(--gold); color:var(--text);}
@@ -5216,7 +5223,10 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     <li>Atos de controle externo (Tribunal de Contas do Estado, Tribunal de Contas do Município de São Paulo, TCU), sanções administrativas (CEIS/CNEP) e impedimentos.</li>
     <li>Cruzamentos de dados abertos (contratos públicos, quadro societário, dados eleitorais), apresentados como <b>sinais para verificação</b>, nunca como conclusão.</li></ul>
     <h3>O que o painel não é</h3>
-    <p>O Observatório não é órgão público, não investiga, não acusa e não julga. Não substitui a consulta aos autos, às decisões oficiais e aos órgãos competentes.</p>`],
+    <p>O Observatório não é órgão público, não investiga, não acusa e não julga. Não substitui a consulta aos autos, às decisões oficiais e aos órgãos competentes.</p>
+    <h3>Idealizadores</h3>
+    <ul><li><b>Ricardo Kengi Uchima</b>, cofundador · <a href="https://www.linkedin.com/in/ricardo-uchima" target="_blank" rel="noopener">LinkedIn</a></li>
+    <li><b>William Wistuba Melo da Cunha</b>, cofundador · <a href="https://www.linkedin.com/in/prof-willian-wistuba" target="_blank" rel="noopener">LinkedIn</a></li></ul>`],
    ['valores','Missão, visão e valores',()=>`
     <h3>Missão</h3><p>Tornar acessível, organizada e verificável a informação pública sobre integridade na administração dos municípios paulistas e do Governo do Estado, em apoio às investigações e ao controle social.</p>
     <h3>Visão</h3><p>Ser referência de informação pública confiável, rigorosa e equilibrada sobre integridade na gestão pública paulista.</p>
@@ -5312,7 +5322,11 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     <p>Lembre de manter o contexto: investigação não é condenação, e a situação processual pode ter mudado depois da data-base.</p>`],
    ['acessibilidade','Acessibilidade',()=>`
     <p>O painel busca seguir boas práticas de acessibilidade na web: navegação por teclado (atalho "/" para a busca), textos alternativos, contraste adequado, tema claro e escuro, leitura em telas pequenas e tabelas que podem ser baixadas em CSV.</p>
-    <p>Gráficos e redes de relações têm a informação equivalente em tabelas e fichas. Se encontrar barreira de acesso, informe pelo canal ${contato()}.</p>`]
+    <p>Gráficos e redes de relações têm a informação equivalente em tabelas e fichas. Se encontrar barreira de acesso, informe pelo canal ${contato()}.</p>`],
+   ['infra','Infraestrutura técnica',()=>`
+    <p>O painel é mantido com serviços de nuvem que guardam a base curada e fazem as consultas em tempo real às fontes oficiais.</p>
+    <ul><li><b>Supabase</b>: banco PostgreSQL, API REST, políticas de acesso e registro de atualizações.</li>
+    <li><b>Vercel, em infraestrutura AWS de São Paulo</b>: hospedagem, CDN, deploy contínuo e funções de consulta em tempo real (Receita Federal, PNCP e Portal da Transparência do TCE-SP).</li></ul>`]
   ];
   const IDX=Object.fromEntries(P.map(p=>[p[0],p]));
   const dlg=document.createElement('dialog'); dlg.className='in-dlg'; dlg.setAttribute('aria-labelledby','in-t');
