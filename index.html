@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261016114914";</script>
+<head><script>window.__BUILD="20261016131453";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -4353,7 +4353,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       sl.options[0].textContent='Impedidas de licitar ou contratar'+(busca?` (${fmt(nc)})`:''); sl.options[1].textContent='Impedidas de receber repasses'+(busca?` (${fmt(nr)})`:'');
       if(manual&&(sl.value==='c'?nc:nr)) return;
       const alvo=!busca?sl.value:(nc&&nr?(sl.value):(nr?'r':'c'));
-      if(alvo!==sl.value){ sl.value=alvo; sa.value=''; } }
+      if(alvo!==sl.value){ sl.value=alvo; sa.value=''; sl.dataset.auto='1'; } }   // troca automática: não é seleção do usuário (sem etiqueta no topo)
     const procTC=p=>{ p=String(p||'').replace(/\D/g,''); return p.length>=6?`${+p.slice(0,-5)}/${p.slice(-5,-2)}/${p.slice(-2)}`:''; };
     const tcLinks=x=>{ const v=new Set(); if(x.l==='r'&&procTC(x.p)) v.add(procTC(x.p)); (String(x.mo||'').match(/TC[-\s]*0*\d{2,6}[.\/]\d{3}[.\/]\d{2}/gi)||[]).forEach(m=>{ const d=m.match(/0*(\d{2,6})[.\/](\d{3})[.\/](\d{2})/); if(d) v.add(`${+d[1]}/${d[2]}/${d[3]}`); });
       return [...v].slice(0,4).map(n=>`<a class="imp-tc" href="https://www.tce.sp.gov.br/processos?XPROCESSO=${encodeURI(n)}" target="_blank" rel="noopener" title="Abrir o processo no site do TCE-SP">TC-${esc(n.replace(/\//g,'.'))}</a>`).join(' · '); };
@@ -4368,7 +4368,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
         <td>${esc((x.mo||'—').slice(0,160))}${(x.mo||'').length>160?'…':''}${(()=>{ const tl=tcLinks(x); return tl?`<span class="tj-sub">processo ${tl}</span>`:(x.p?`<span class="tj-sub">processo do órgão nº ${esc(x.p)}</span>`:''); })()}</td><td>${n?`<a class="clk imp-con" data-c="${esc(x.c)}">${fmt(n)} contrato${n===1?'':'s'}</a>`:'—'}</td></tr>`; }).join('')||'<tr><td colspan="6" class="empty-msg">Nada no filtro atual.</td></tr>'; }
     body.addEventListener('click',e=>{ const a=e.target.closest('a.imp-mun'); if(a){ e.preventDefault(); window.painelMun&&window.painelMun(a.dataset.mun); }
       const b=e.target.closest('a.imp-con'); if(b){ e.preventDefault(); local('ic-q',b.dataset.c); $('ic-body').closest('.panel').scrollIntoView({behavior:'smooth',block:'start'}); } });
-    exp.imp=linhas; $('imp-q').addEventListener('input',()=>{ manual=false; st.pag=0; render(); }); $('imp-lista').addEventListener('input',()=>{ manual=true; $('imp-al').value=''; st.pag=0; render(); }); $('imp-al').addEventListener('input',()=>{ st.pag=0; render(); }); ligaPager('imp',st,render);
+    exp.imp=linhas; $('imp-q').addEventListener('input',()=>{ manual=false; st.pag=0; render(); }); $('imp-lista').addEventListener('input',()=>{ manual=true; delete $('imp-lista').dataset.auto; $('imp-al').value=''; st.pag=0; render(); }); $('imp-al').addEventListener('input',()=>{ st.pag=0; render(); }); ligaPager('imp',st,render);
     R_.push(()=>{ manual=false; st.pag=0; render(); }); render();
     $('imp-foot').textContent=`Fonte: listas de apenados do Tribunal de Contas do Estado de São Paulo (www4.tce.sp.gov.br/apenados), exportadas em ${IMP.ref||'—'}. A lista de impedimentos de contratar reúne as penas vigentes comunicadas ao TCE-SP por órgãos estaduais e municipais; a de repasses, as entidades impedidas de receber novos recursos do órgão concessor até regularizar a prestação de contas. CPF e RG publicados pelo TCE-SP não são gravados no painel. Uma pena pode ter sido suspensa por decisão judicial depois da publicação: confira no órgão que a aplicou.`;
   })();
@@ -6068,7 +6068,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   const ctrls=sec=>[...sec.querySelectorAll('input,select')].filter(e=>e.id&&!IGN.has(e.id)&&!['range','radio','button','submit','hidden'].includes(e.type)&&!e.closest('.net-ctl,.net-tools,#net-wrap,#inicio,.ce-box,#co-emp,#co-mapa,.cx'));
   const val=e=>e.type==='checkbox'?e.checked:String(e.value);
   const DEF=new Map(); const instantaneo=()=>document.querySelectorAll('section.aba').forEach(s=>ctrls(s).forEach(e=>{ if(!DEF.has(e.id)) DEF.set(e.id,val(e)); }));
-  const ativo=e=>{ const d=DEF.has(e.id)?DEF.get(e.id):(e.type==='checkbox'?false:''); const v=val(e); if(v===d) return false; return e.type==='checkbox'?true:String(v).trim()!==''||d!==''; };
+  const ativo=e=>{ if(e.dataset&&e.dataset.auto==='1') return false; const d=DEF.has(e.id)?DEF.get(e.id):(e.type==='checkbox'?false:''); const v=val(e); if(v===d) return false; return e.type==='checkbox'?true:String(v).trim()!==''||d!==''; };
   const rotulo=e=>{ let l=''; const lb=document.querySelector(`label[for="${e.id}"]`); if(lb) l=lb.textContent; if(!l&&e.closest('label')) l=e.closest('label').textContent; if(!l) l=e.getAttribute('aria-label')||e.title||e.placeholder||e.id; return limpa(l).replace(/\s*[:：]\s*$/,'').trim(); };
   const valTxt=e=>e.type==='checkbox'?'':e.tagName==='SELECT'?limpa((e.options[e.selectedIndex]||{}).text||e.value).trim():String(e.value).trim();
   const chaveDe=e=>{ const p=e.closest('.panel'); const b=p&&p.querySelector('.exp-bar[data-k]'); if(b) return b.dataset.k; if(e.id==='rc-q') return 'rc'; return null; };
