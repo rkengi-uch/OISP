@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261016143456";</script>
+<head><script>window.__BUILD="20261016153340";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -6676,6 +6676,24 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       const feito=new Set();
       (p.lig||[]).forEach(l=>{ const eid=l.c?'c:'+l.c:'cx:'+chave(l.nome); if(!nodes.has(eid)) return; feito.add(eid); const fs=(l.f||[]).map(x=>x[0]).join('; '); lk(id,eid,'lig',`ligação citada pela fonte¦${p.n} e ${l.nome}: ${l.d} (fontes: ${fs})`); });
       (p.emp||[]).forEach(c=>{ if(nodes.has('c:'+c)&&!feito.has('c:'+c)) lk(id,'c:'+c,'emp',`ligação com a empresa¦${p.n} é ligado a ${nodes.get('c:'+c).label}, segundo ${p.fonte.replace(/^https?:\/\/(www\.)?/,'').split('/')[0]}`); }); });
+  }
+
+  // ---------- relatório e exportação (Gerar relatório, CSV, PDF): todas as listas da aba, com os filtros atuais
+  const munAgg=()=>{ const M={}; const ad=(m,k)=>{ if(!m) return null; const key=chave(m); return M[key]=M[key]||{m:munN(m===GOV?'São Paulo':m),pub:0,emp:[],pg:0}; };
+    V.co.forEach(c=>{ const a=ad(c[1]===GOV?'São Paulo':c[1]); if(a) a.pub++; });
+    V.emp.forEach(e=>{ const DS={}; (e.desp||[]).forEach(d=>{ DS[chave(d[0])]=d; }); [...new Set(munsE(e).map(x=>x))].forEach(m=>{ const a=ad(m); if(!a) return; if(!a.emp.includes(nomeE(e))) a.emp.push(nomeE(e)); const d=DS[chave(m)]; if(d) a.pg+=d[1]; }); });
+    const MU=vals('mun').map(m=>chave(m===GOV?'São Paulo':m)); return Object.entries(M).filter(([k])=>!MU.length||MU.includes(k)).map(([,a])=>a).sort((x,y)=>(y.pub+y.emp.length)-(x.pub+x.emp.length)); };
+  if(window.__expTab){ const T=window.__expTab; const G=()=>{ try{ filtrar(); }catch(e){} return V; };
+    const SOCS=c=>(X.soc||[]).filter(s=>s[0]===c).map(s=>tit(s[1])+' ('+String(s[2]||'sócio').toLowerCase()+')').join('; ');
+    const dsp=e=>e.desp&&e.desp.length?brl(e.despT)+' de '+e.desp.length+' município(s): '+e.desp.map(d=>d[0]).join(', '):'';
+    const colE=[['Empresa ou entidade',e=>nomeE(e),1],['CNPJ (matriz)',e=>e.c?fmtC(e.c):'não localizado',1],['Sede',e=>e.mun?munN(e.mun)+'/'+e.uf:''],['Setor',e=>e.cat,1],['Operação',e=>e.op,1],['Órgão',e=>e.org],['Ano',e=>e.ano,1],['Ligação citada',e=>rotFac(e.fac||'PCC'),1],['Atuação citada',e=>(e.atua||[]).join(', '),1],['Pagamentos de municípios (TCE-SP)',e=>dsp(e),1],['Sócios e dirigentes (Receita)',e=>SOCS(e.c)],['Observação',e=>e.obs||'',1],['Fonte',e=>e.fonte,1]];
+    T.coos={t:'Crime organizado: organizações sociais e prestadores de saúde citados',f:'crime_organizado_os_saude',get:()=>G().emp.filter(e=>e.os),cols:colE};
+    T.coemp={t:'Crime organizado: empresas citadas como investigadas',f:'crime_organizado_empresas',get:()=>G().emp.filter(e=>!e.os),cols:colE};
+    T.coag={t:'Crime organizado: agentes públicos com registros de suspeita de vínculo',f:'crime_organizado_agentes',get:()=>G().ag,cols:[['Agente',a=>a.n,1],['Cargo',a=>a.cargo.join(', '),1],['Município ou órgão',a=>a.mun,1],['Registros (operação, ano, medida)',a=>a.regs.map(r=>`${r.op} (${r.ano||''}) – ${r.medida||''}`).join('; '),1],['Situação',a=>a.regs.map(r=>r.situacao).filter(Boolean).join('; ')],['Setor',a=>a.set.join(', ')],['Vínculo apontado na base',a=>a.vinc.join(', ')],['Etiqueta',a=>a.fac?rotAg(a):'vínculo sem facção nomeada na fonte',1],['Nota',a=>a.x?a.x.tit+'. '+a.x.nota:'',1],['Fontes',a=>[...new Set(a.regs.map(r=>r.link).filter(Boolean).concat(a.x?(a.x.f||[]).map(f=>f[1]):[]))].join(' ; '),1]]};
+    T.copes={t:'Crime organizado: outras pessoas citadas como investigadas',f:'crime_organizado_pessoas',get:()=>outrasP(G().pes),cols:[['Pessoa',p=>p.n+(p.ap?' ("'+p.ap+'")':''),1],['Operação',p=>p.op,1],['Órgão',p=>p.org],['Papel atribuído pela fonte',p=>p.papel,1],['Situação',p=>p.sit||'',1],['Ligação citada',p=>p.fac?rotFac(p.fac):'sem imputação de facção',1],['Ligações com empresas',p=>(p.lig||[]).map(l=>l.nome+': '+l.d).join(' | ')],['Fonte',p=>p.fonte,1]]};
+    T.comun={t:'Crime organizado: municípios no mapa de concentração',f:'crime_organizado_municipios',get:()=>{ G(); return munAgg(); },cols:[['Município',a=>a.m,1],['Registros no setor público',a=>a.pub,1],['Empresas e entidades',a=>a.emp.length,1],['Quais',a=>a.emp.join('; '),1],['Pagamentos dessas empresas pelo município (TCE-SP)',a=>a.pg?brl(a.pg):'',1]]};
+    const barra=k=>{ const d=document.createElement('div'); d.className='exp-bar'; d.dataset.k=k; d.innerHTML=`<span class="exp-lbl">Baixar (filtros atuais):</span><button type="button" data-exp="${k}" data-fmt="csv" title="Baixar em CSV (abre no Excel)">⬇ CSV</button><button type="button" data-exp="${k}" data-fmt="pdf" title="Baixar em PDF">⬇ PDF</button>`; return d; };
+    [['co-mapa','comun'],['co-os','coos'],['co-emp','coemp'],['co-pes','coag'],['co-pes','copes']].forEach(([id,k])=>{ const el=$(id); if(el&&!document.querySelector(`.exp-bar[data-k="${k}"]`)) el.parentNode.insertBefore(barra(k),el); });
   }
 
   const ab=$('aba-crime');
