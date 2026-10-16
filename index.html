@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261016141229";</script>
+<head><script>window.__BUILD="20261016142049";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -1496,6 +1496,8 @@ html.cx-tk-on body{padding-bottom:calc(var(--tk-h) + env(safe-area-inset-bottom,
 @media (min-width:701px){ .abas-in{flex-wrap:wrap; overflow-x:visible;} .oi-nav{flex-wrap:wrap; overflow-x:visible; justify-content:flex-end;} }
 @media (max-width:700px){ .abas-in,.oi-nav{scrollbar-width:thin;} .abas-in::-webkit-scrollbar,.oi-nav::-webkit-scrollbar{display:block; height:4px;} .abas-in::-webkit-scrollbar-thumb,.oi-nav::-webkit-scrollbar-thumb{background:var(--border);} }
 .co-ag{border-left:4px solid var(--navy)}.co-ag ul{margin:6px 0 0;padding-left:18px;display:grid;gap:6px;font-size:12.5px}.co-sub-h{font:600 15px var(--sans);margin:18px 0 8px}
+/* ícone de link externo sempre do tamanho do texto */
+#aba-crime a svg, .co-lig a svg, .co-p a svg, .cx a svg{width:.85em; height:.85em; vertical-align:-.08em; flex:none;}
 
 /* círculos */
 .at-btn,.at-dot,.chip button,.co-leg-k i,.cx-num,.cx-play,.dot,.esf-ic,.mch-ticker .lbl i,.oi-sic-c,.oi-st,.pq-spin,.ra-chips .ra-rm,.ra-fab-ic,.ra-ico,.rc-chip button,.timeline li::before{border-radius:50% !important;}
@@ -6626,7 +6628,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     const x=a.x, pe=a.pes||[];
     const tag=a.fac?`<span class="co-fac">${esc(rotFac(a.fac))}</span>`:'<span class="co-fac co-fac-n">vínculo com o crime organizado, sem facção nomeada na fonte</span>';
     return `<article class="co-p co-ag"><b>${esc(a.n)}</b> <span class="co-sub">${esc(a.cargo.join(', '))} · ${esc(a.mun)}</span>${a.set.length||a.vinc.length?`<p class="co-sub">${a.set.length?'Setor: '+esc(a.set.join(', ')):''}${a.vinc.length?` · vínculo apontado na base: ${esc(a.vinc.join(', '))}`:''}</p>`:''}
-      ${x?`<p><b>${esc(x.tit)}</b></p><p>${esc(x.nota)} <span class="co-sub">${(x.f||[]).map(f=>`<a href="${esc(f[1])}" target="_blank" rel="noopener">${esc(f[0])} ${EXT}</a>`).join(' · ')}</span></p>`:''}
+      ${x?`<p class="co-sub" style="font-style:italic">${esc(x.tit)}</p><p>${esc(x.nota)} <span class="co-sub">${(x.f||[]).map(f=>`<a href="${esc(f[1])}" target="_blank" rel="noopener">${esc(f[0])} ${EXT}</a>`).join(' · ')}</span></p>`:''}
       ${pe.map(p=>`<p>${esc(p.papel)} <a href="${esc(p.fonte)}" target="_blank" rel="noopener">fonte ${EXT}</a></p>`).join('')}
       <details class="co-lig"${x?'':' open'}><summary>Registros na base curada (${a.regs.length})</summary><ul>${regs}</ul>${a.regs.length>6?`<p class="co-sub">+${a.regs.length-6} registro(s) na aba Pessoas e casos</p>`:''}</details>
       <div class="co-p-f">${tag}<button type="button" class="op-filter" data-ag="${esc(a.n)}" data-mun="${esc(a.mun)}">Rede</button></div></article>`; }
