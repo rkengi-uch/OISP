@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261016131453";</script>
+<head><script>window.__BUILD="20261016133111";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -1490,6 +1490,8 @@ html.cx-tk-on body{padding-bottom:calc(var(--tk-h) + env(safe-area-inset-bottom,
 .co-os{border-left-color:#c2410c !important;}
 .co-os p b{font:600 13px var(--sans); text-transform:none;}
 
+.co-filt{margin:0 0 12px;padding:8px 12px;border-left:4px solid var(--gold);background:var(--surface-2,rgba(252,163,17,.08));font-size:13px;}
+
 /* círculos */
 .at-btn,.at-dot,.chip button,.co-leg-k i,.cx-num,.cx-play,.dot,.esf-ic,.mch-ticker .lbl i,.oi-sic-c,.oi-st,.pq-spin,.ra-chips .ra-rm,.ra-fab-ic,.ra-ico,.rc-chip button,.timeline li::before{border-radius:50% !important;}
 .cd-bar{display:flex; justify-content:flex-end; margin:-4px 0 6px;}
@@ -2652,7 +2654,7 @@ $('next').addEventListener('click',()=>{ page++; renderTable(rows()); });
 // ---------- crime organizado
 let COF={set:null,reg:null,muns:null}; window.coFiltro={get:()=>COF,set:o=>{ COF=Object.assign({set:null,reg:null,muns:null},o||{}); if(COF.set||COF.muns){ if(mapMode!=='co'){ setCoMode(); } } render(); }};
 const coSelOK=(c,o)=>(!ESF_BASE(ESFF)||ESFF==='crim')&&(o.noCOF||((!COF.set||o.noSet||c[2].includes(COF.set))&&(!COF.muns||COF.muns.has(c[1]))));
-function coRows(o){ return fxUnion(()=>coRowsFX(o)); }
+function coRows(o){ return fxUnion(()=>coRowsFX(o)); } window.__coRows=coRows;
 function coRowsFX(o){ o=o||{}; const gsel=(F.mun&&!o.noMun)?giByName[F.mun]:null; return DATA.CO.filter(c=>(!TJF||tjOp(c[5])||tjTxt(c[6]))&&tceMun(c[1])&&(!F.niv||(c[12]||'Municipal')===F.niv)&&(o.noLens||lensOK(c[1],LENS&&LENS.co,c))&&(F.mun==='Governo do Estado de SP'&&!o.noMun?(c[1]==='Governo do Estado de SP'||c[12]==='Estadual'):(gsel==null||(c[0]===gsel&&c[12]!=='Estadual')))&&(F.ano==null||c[8]===F.ano)&&extOK({txt:c[6]+' '+c[5]+' '+c[2].join(' '),cargos:c[9],meds:c[10],op:c[5],org:c[11]||''},o)&&coSelOK(c,o)); }
 function setCoMode(){ mapMode='co'; document.querySelectorAll('#map-seg button').forEach(x=>x.classList.toggle('active',x.dataset.m==='co')); }
 function renderCO(){
@@ -6453,20 +6455,52 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   const nomeE=e=>e.r?tit(e.r):e.nome;
   let GMAP=null; const munN=m=>{ if(!m) return ''; if(!GMAP){ GMAP={}; ((typeof GEO!=='undefined'&&GEO.municipios)||[]).forEach(x=>{ GMAP[chave(x)]=x; }); } return tit(GMAP[chave(m)]||m); };
 
+  // ---------- filtros do painel: a aba obedece à busca, operação, município, ano e esfera ----------
+  // dentro de um mesmo filtro, vários valores somam (OU); entre filtros diferentes, todos valem (E)
+  const opK=o=>chave(String(o||'').split(' / ')[0].split(' (')[0]);
+  const vals=k=>{ if(window.__fxVals) return window.__fxVals(k); const f=typeof F!=='undefined'?F:{}; return f[k]!==''&&f[k]!=null?[f[k]]:[]; };
+  const tem=(hay,t)=>(' '+hay+' ').includes(' '+t+' ');
+  let V={co:CO,emp:X.emp,pes:X.pes,on:false};
+  function filtrar(){
+    const TX=vals('txt').map(chave).filter(t=>t.length>=3), OP=vals('op').map(opK), MU=vals('mun'), AN=vals('ano'), NV=vals('niv');
+    const on=!!(TX.length||OP.length||MU.length||AN.length||NV.length);
+    if(!on){ V={co:CO,emp:X.emp,pes:X.pes,on:false}; return; }
+    const co=window.__coRows?window.__coRows({}):CO;
+    const SOC={}; (X.soc||[]).forEach(x=>{ (SOC[x[0]]=SOC[x[0]]||[]).push(x[1]); });
+    const opsOK=o=>!OP.length||String(o||'').split(';').some(p=>OP.includes(opK(p)));
+    const munOK=e=>{ if(!MU.length) return true; if(MU.every(m=>m===GOV)) return false; const ms=[e.mun,...(e.atua||[])].filter(Boolean).map(chave); return MU.some(m=>ms.includes(chave(m))); };
+    const base=e=>opsOK(e.op)&&munOK(e)&&(!AN.length||AN.includes(e.ano))&&!(NV.length&&NV.every(n=>n==='Estadual'));
+    let emp=X.emp.filter(base), pes=X.pes.filter(p=>opsOK(p.op)&&!(NV.length&&NV.every(n=>n==='Estadual'))&&(!MU.length||(p.emp||[]).some(c=>emp.some(e=>e.c===c))||MU.some(m=>tem(chave(p.papel),chave(m)))));
+    if(TX.length){
+      const hE=e=>chave([e.nome,e.r,e.c,e.obs,e.op,(SOC[e.c]||[]).join(' ')].join(' ')), hP=p=>chave([p.n,p.ap,p.papel,p.sit].join(' '));
+      let pe=pes.filter(p=>TX.some(t=>tem(hP(p),t))), em=emp.filter(e=>TX.some(t=>tem(hE(e),t)));
+      const cs=new Set(em.map(e=>e.c).filter(Boolean)), cp=new Set(pe.flatMap(p=>p.emp||[]));
+      em=emp.filter(e=>em.includes(e)||(e.c&&cp.has(e.c))); pe=pes.filter(p=>pe.includes(p)||(p.emp||[]).some(c=>cs.has(c)));
+      // nome citado fora das listas: vale para as operações em que é citado
+      if(!em.length&&!pe.length&&window.__opsPessoa){ const S=new Set(); vals('txt').forEach(t=>window.__opsPessoa(t).forEach(k=>S.add(opK(k)))); if(S.size){ em=emp.filter(e=>e.op.split(';').some(o=>S.has(opK(o)))); pe=pes.filter(p=>S.has(opK(p.op))); } }
+      emp=em; pes=pe; }
+    if(AN.length&&!TX.length){ const so=new Set(emp.flatMap(e=>e.op.split(';').map(opK)).concat(co.map(c=>opK(c[5])))); pes=pes.filter(p=>so.has(opK(p.op))); }
+    V={co,emp,pes,on:true};
+  }
   // ---------- monta a aba ----------
+  let PRONTA=false;
+  function kpis(){ const top=$('co-topo'); if(!top) return;
+    const munCO=new Set(V.co.map(c=>c[1]).filter(m=>m&&m!==GOV));
+    const opsCO=new Set(V.co.map(c=>c[5]).filter(Boolean)); V.emp.forEach(e=>e.op.split(';').forEach(o=>opsCO.add(o.trim())));
+    const empSP=V.emp.filter(e=>e.uf==='SP');
+    const K=[[V.co.length,'registros de suspeitas no setor público'],[munCO.size,'municípios com registro'],[V.emp.length,'empresas citadas como investigadas'],[empSP.length,'com sede no Estado de SP'],[V.pes.length,'pessoas citadas como investigadas'],[opsCO.size,'operações e processos']];
+    top.innerHTML=`${V.on?`<p class="co-filt" role="status"><b>Filtro aplicado.</b> A aba mostra só o que corresponde aos filtros do topo (de ${fmt(CO.length)} registros, ${fmt(X.emp.length)} empresas e ${fmt(X.pes.length)} pessoas no total).</p>`:''}<div class="kpis kpis-light co-kpis">${K.map(([n,l])=>`<div class="kpi"><div class="num">${fmt(n)}</div><div class="lbl">${esc(l)}</div></div>`).join('')}</div>`; }
+  function atualizar(){ if(!PRONTA) return; filtrar(); kpis(); desMapa&&desMapa(); setores(); anos(); listaOS(); rEmp&&rEmp(0); listaPes(); }
   function montar(){
     const ab=$('aba-crime'); if(!ab||ab.dataset.cx) return; ab.dataset.cx='1';
-    const top=$('co-topo'); if(!top) return;
-    const munCO=new Set(CO.map(c=>c[1]).filter(m=>m&&m!==GOV));
-    const opsCO=new Set(CO.map(c=>c[5]).filter(Boolean)); X.emp.forEach(e=>e.op.split(';').forEach(o=>opsCO.add(o.trim())));
-    const empSP=X.emp.filter(e=>e.uf==='SP');
-    const K=[[CO.length,'registros de suspeitas no setor público'],[munCO.size,'municípios com registro'],[X.emp.length,'empresas citadas como investigadas'],[empSP.length,'com sede no Estado de SP'],[X.pes.length,'pessoas citadas como investigadas'],[opsCO.size,'operações e processos']];
-    top.innerHTML=`<div class="kpis kpis-light co-kpis">${K.map(([n,l])=>`<div class="kpi"><div class="num">${fmt(n)}</div><div class="lbl">${esc(l)}</div></div>`).join('')}</div>`;
+    if(!$('co-topo')) return; PRONTA=true; filtrar(); kpis();
     mapa(); setores(); anos(); listaOS(); listaEmp(); listaPes();
   }
+  (window.__aoRenderizar=window.__aoRenderizar||[]).push(()=>{ try{ const ab=$('aba-crime'); if(PRONTA) atualizar(); }catch(e){ console.error('crime organizado: filtros',e); } });
+  document.addEventListener('oisp-filtros',()=>{ try{ atualizar(); }catch(e){} });
 
   // ---------- mapa de bolhas ----------
-  let CAM='ambos';
+  let CAM='ambos', desMapa=null, rEmp=null, CH=null;
   function mapa(){
     const box=$('co-mapa'); if(!box||typeof GEO==='undefined') return;
     const W=GEO.mapa.w, H=GEO.mapa.h, NM=GEO.municipios;
@@ -6478,22 +6512,23 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     try{ const bb=box.querySelector('.co-base').getBBox(); if(bb.width>50) $('co-svg').setAttribute('viewBox',`${(bb.x-12).toFixed(0)} ${(bb.y-12).toFixed(0)} ${(bb.width+24).toFixed(0)} ${(bb.height+24).toFixed(0)}`); }catch(e){}
     const PI={}; paths.forEach(p=>{ PI[p.dataset.i]=p; });
     const cen=i=>{ const p=PI[i]; if(!p) return [0,0]; const b=p.getBBox(); return [b.x+b.width/2,b.y+b.height/2]; };
-    const agg={};
-    CO.forEach(c=>{ const m=c[1]===GOV?'São Paulo':c[1]; const i=idx[chave(m)]; if(i==null||!GEO.paths[i]) return; const a=agg[i]=agg[i]||{i,pub:[],emp:[]}; a.pub.push(c); });
-    X.emp.forEach(e=>{ const ms=(e.atua&&e.atua.length)?e.atua:(e.uf==='SP'&&e.mun?[e.mun]:[]); [...new Set(ms.map(chave))].forEach(k=>{ const i=idx[k]; if(i==null||!GEO.paths[i]) return; const a=agg[i]=agg[i]||{i,pub:[],emp:[]}; a.emp.push(e); }); });
-    const L=Object.values(agg);
-    const mx=Math.max(1,...L.map(a=>a.pub.length+a.emp.length));
+    let agg={}, L=[], mx=1;
+    function agregar(){ agg={};
+    V.co.forEach(c=>{ const m=c[1]===GOV?'São Paulo':c[1]; const i=idx[chave(m)]; if(i==null||!GEO.paths[i]) return; const a=agg[i]=agg[i]||{i,pub:[],emp:[]}; a.pub.push(c); });
+    V.emp.forEach(e=>{ const ms=(e.atua&&e.atua.length)?e.atua:(e.uf==='SP'&&e.mun?[e.mun]:[]); [...new Set(ms.map(chave))].forEach(k=>{ const i=idx[k]; if(i==null||!GEO.paths[i]) return; const a=agg[i]=agg[i]||{i,pub:[],emp:[]}; a.emp.push(e); }); });
+    L=Object.values(agg); mx=Math.max(1,...L.map(a=>a.pub.length+a.emp.length)); }
     const r=n=>n?4+Math.sqrt(n/mx)*34:0;
-    function desenhar(){
+    function desenhar(){ agregar();
       const g=box.querySelector('.co-bub'); const val=a=>CAM==='pub'?a.pub.length:CAM==='emp'?a.emp.length:a.pub.length+a.emp.length;
       const S=L.filter(a=>val(a)>0).sort((a,b)=>val(b)-val(a));
       g.innerHTML=S.map(a=>{ const [x,y]=cen(a.i); const n=val(a); const cls=CAM==='emp'||(!a.pub.length&&CAM==='ambos')?'e':CAM==='pub'||!a.emp.length?'p':'m';
         return `<circle class="co-b co-b-${cls}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r(n).toFixed(1)}" data-i="${a.i}" tabindex="0" role="button" aria-label="${esc(tit(NM[a.i]))}: ${n} registro${n===1?'':'s'}"></circle>`; }).join('');
-      $('co-rank').innerHTML=S.slice(0,12).map(a=>`<li><button type="button" data-i="${a.i}"><b>${esc(tit(NM[a.i]))}</b><span>${a.pub.length?a.pub.length+' no setor público':''}${a.pub.length&&a.emp.length?' · ':''}${a.emp.length?a.emp.length+' empresa'+(a.emp.length===1?'':'s'):''}</span></button></li>`).join('');
+      if(!S.length) g.innerHTML='';
+      $('co-rank').innerHTML=(S.length?'':'<li class="co-sub">Nada no filtro atual.</li>')+S.slice(0,12).map(a=>`<li><button type="button" data-i="${a.i}"><b>${esc(tit(NM[a.i]))}</b><span>${a.pub.length?a.pub.length+' no setor público':''}${a.pub.length&&a.emp.length?' · ':''}${a.emp.length?a.emp.length+' empresa'+(a.emp.length===1?'':'s'):''}</span></button></li>`).join('');
       const ns=[1,Math.max(2,Math.round(mx/4)),mx];
       $('co-leg').innerHTML=`<div class="co-leg-c">${[...new Set(ns)].map(n=>`<span><svg width="${2*r(n)+4}" height="${2*r(n)+4}" aria-hidden="true"><circle cx="${r(n)+2}" cy="${r(n)+2}" r="${r(n)}"></circle></svg>${n}</span>`).join('')}</div><div class="co-leg-k"><span><i class="co-k-p"></i>setor público</span><span><i class="co-k-e"></i>empresas citadas</span><span><i class="co-k-m"></i>os dois</span></div>`;
     }
-    desenhar();
+    desenhar(); desMapa=desenhar;
     box.querySelector('.co-mp-bar').addEventListener('click',e=>{ const b=e.target.closest('button[data-cam]'); if(!b) return; CAM=b.dataset.cam; box.querySelectorAll('.co-mp-bar button').forEach(x=>{ const on=x===b; x.classList.toggle('on',on); x.setAttribute('aria-pressed',on); }); desenhar(); });
     const tip=$('co-tip');
     const mostra=(i,ev)=>{ const a=agg[i]; if(!a) return; const pubs=a.pub.slice(0,4).map(c=>`<li>${esc(String(c[6]).slice(0,110))}${String(c[6]).length>110?'…':''}</li>`).join(''); const es=a.emp.slice(0,5).map(e=>`<li>${esc(nomeE(e))}</li>`).join('');
@@ -6512,24 +6547,26 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   // ---------- visualização 1: empresas por setor econômico ----------
   function setores(){
     const el=$('co-v1'); if(!el) return;
-    const g={}; X.emp.forEach(e=>{ const k=e.cat; const a=g[k]=g[k]||{sp:0,ou:0,nd:0}; if(e.uf==='SP') a.sp++; else if(e.uf) a.ou++; else a.nd++; });
+    const g={}; V.emp.forEach(e=>{ const k=e.cat; const a=g[k]=g[k]||{sp:0,ou:0,nd:0}; if(e.uf==='SP') a.sp++; else if(e.uf) a.ou++; else a.nd++; });
     const L=Object.entries(g).sort((a,b)=>(b[1].sp+b[1].ou+b[1].nd)-(a[1].sp+a[1].ou+a[1].nd)); const mx=Math.max(1,...L.map(([,a])=>a.sp+a.ou+a.nd));
     el.innerHTML=`<div class="co-bars">${L.map(([k,a])=>{ const t=a.sp+a.ou+a.nd; return `<div class="co-bar"><span class="co-bl">${esc(k)}</span><span class="co-bt" role="img" aria-label="${esc(k)}: ${t} empresas (${a.sp} com sede em SP, ${a.ou} em outros estados, ${a.nd} sem CNPJ localizado)"><i class="sp" style="width:${a.sp/mx*100}%"></i><i class="ou" style="width:${a.ou/mx*100}%"></i><i class="nd" style="width:${a.nd/mx*100}%"></i></span><b>${t}</b></div>`; }).join('')}</div><div class="co-leg-k"><span><i class="co-k-sp"></i>sede no Estado de SP</span><span><i class="co-k-ou"></i>outros estados</span><span><i class="co-k-nd"></i>CNPJ não localizado</span></div>`;
   }
   // ---------- visualização 2: registros por ano e setor ----------
   function anos(){
     const cv=$('co-v2'); if(!cv||!window.Chart) return;
-    const anosL=[...new Set(CO.map(c=>c[8]).filter(Boolean))].sort();
+    if(CH){ try{ CH.destroy(); }catch(e){} CH=null; }
+    const anosL=[...new Set(V.co.map(c=>c[8]).filter(Boolean))].sort();
     const PAL=['#2f5c99','#fca311','#d1495b','#1f9a6d','#8a63c9','#c77d11','#4a86c7','#7b4f2a','#14213d','#8a93a0'];
-    const ds=SET.map((s,i)=>({label:s,backgroundColor:PAL[i%PAL.length],data:anosL.map(a=>CO.filter(c=>c[8]===a&&(c[2]||[]).includes(s)).length)})).filter(d=>d.data.some(Boolean));
-    new Chart(cv,{type:'bar',data:{labels:anosL,datasets:ds},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:10,color:css('--text-muted'),font:{family:'Open Sans',size:11}}},tooltip:{callbacks:{footer:()=>'registros de suspeitas, segundo as fontes'}}},scales:{x:{stacked:true,ticks:{color:css('--text-muted')},grid:{display:false}},y:{stacked:true,ticks:{precision:0,color:css('--text-muted')},grid:{color:css('--border')}}}}});
+    const ds=SET.map((s,i)=>({label:s,backgroundColor:PAL[i%PAL.length],data:anosL.map(a=>V.co.filter(c=>c[8]===a&&(c[2]||[]).includes(s)).length)})).filter(d=>d.data.some(Boolean));
+    CH=new Chart(cv,{type:'bar',data:{labels:anosL,datasets:ds},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{position:'bottom',labels:{boxWidth:10,color:css('--text-muted'),font:{family:'Open Sans',size:11}}},tooltip:{callbacks:{footer:()=>'registros de suspeitas, segundo as fontes'}}},scales:{x:{stacked:true,ticks:{color:css('--text-muted')},grid:{display:false}},y:{stacked:true,ticks:{precision:0,color:css('--text-muted')},grid:{color:css('--border')}}}}});
   }
 
   // ---------- organizações sociais e prestadores de saúde ----------
   function listaOS(){
     const el=$('co-os'); if(!el) return;
-    const L=X.emp.filter(e=>e.os);
-    el.innerHTML=L.map(e=>`<article class="co-p co-os"><b>${esc(e.nome)}</b>${e.c?`<span class="co-sub">CNPJ ${esc(fmtC(e.c))}${e.mun?' · sede: '+esc(munN(e.mun))+'/'+esc(e.uf):''}</span>`:''}<p><b>${esc(e.op)}</b> · ${esc(e.org)} · ${e.ano}</p>${e.atua&&e.atua.length?`<p class="co-sub"><b>Atuação citada:</b> ${esc(e.atua.join(', '))}</p>`:''}<p>${esc(e.obs||'')}</p><div class="co-p-f"><span class="co-fac">${esc(e.rot||rotFac(e.fac||'PCC'))}</span><a href="${esc(e.fonte)}" target="_blank" rel="noopener">fonte ${EXT}</a>${e.c?`<button type="button" class="op-filter" data-rede="${e.c}" data-nome="${esc(e.nome)}">Rede</button><button type="button" class="op-filter" data-ficha="${e.c}">Ficha</button>`:''}</div></article>`).join('');
+    const L=V.emp.filter(e=>e.os);
+    el.innerHTML=(L.length?'':'<p class="co-sub">Nenhuma organização social ou prestador de saúde no filtro atual.</p>')+L.map(e=>`<article class="co-p co-os"><b>${esc(e.nome)}</b>${e.c?`<span class="co-sub">CNPJ ${esc(fmtC(e.c))}${e.mun?' · sede: '+esc(munN(e.mun))+'/'+esc(e.uf):''}</span>`:''}<p><b>${esc(e.op)}</b> · ${esc(e.org)} · ${e.ano}</p>${e.atua&&e.atua.length?`<p class="co-sub"><b>Atuação citada:</b> ${esc(e.atua.join(', '))}</p>`:''}<p>${esc(e.obs||'')}</p><div class="co-p-f"><span class="co-fac">${esc(e.rot||rotFac(e.fac||'PCC'))}</span><a href="${esc(e.fonte)}" target="_blank" rel="noopener">fonte ${EXT}</a>${e.c?`<button type="button" class="op-filter" data-rede="${e.c}" data-nome="${esc(e.nome)}">Rede</button><button type="button" class="op-filter" data-ficha="${e.c}">Ficha</button>`:''}</div></article>`).join('');
+    if(el.dataset.ev) return; el.dataset.ev='1';
     el.addEventListener('click',ev=>{ const b=ev.target.closest('button[data-rede]'); if(b){ verNaRede(b.dataset.rede,b.dataset.nome); return; } const f=ev.target.closest('button[data-ficha]'); if(f&&window.__abrirEmpresaCNPJ) window.__abrirEmpresaCNPJ(f.dataset.ficha); });
   }
 
@@ -6541,7 +6578,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     const SOC={}; (X.soc||[]).forEach(s=>{ (SOC[s[0]]=SOC[s[0]]||[]).push(s); });
     let pag=0; const PS=25;
     function r(){ const q=norm($('coe-q').value), op=$('coe-op').value, ct=$('coe-cat').value, uf=$('coe-uf').value;
-      const L=X.emp.filter(e=>(!op||e.op.split(';').map(o=>o.trim()).includes(op))&&(!ct||e.cat===ct)&&(!uf||(uf==='SP'?e.uf==='SP':e.uf&&e.uf!=='SP'))&&(!q||norm([e.nome,e.r,e.c,e.mun,e.uf,(SOC[e.c]||[]).map(s=>s[1]).join(' ')].join(' ')).includes(q)||(q.replace(/\D/g,'').length>=8&&String(e.c||'').includes(q.replace(/\D/g,'')))));
+      const L=V.emp.filter(e=>(!op||e.op.split(';').map(o=>o.trim()).includes(op))&&(!ct||e.cat===ct)&&(!uf||(uf==='SP'?e.uf==='SP':e.uf&&e.uf!=='SP'))&&(!q||norm([e.nome,e.r,e.c,e.mun,e.uf,(SOC[e.c]||[]).map(s=>s[1]).join(' ')].join(' ')).includes(q)||(q.replace(/\D/g,'').length>=8&&String(e.c||'').includes(q.replace(/\D/g,'')))));
       $('coe-n').textContent=fmt(L.length)+' empresa'+(L.length===1?'':'s'); if(pag*PS>=L.length) pag=0;
       $('coe-tb').innerHTML=L.slice(pag*PS,pag*PS+PS).map(e=>{ const so=(SOC[e.c]||[]); return `<tr><td><b>${esc(nomeE(e))}</b>${e.r&&chave(e.r)!==chave(e.nome)?`<div class="co-sub">na lista: ${esc(e.nome)}</div>`:''}${e.atua&&e.atua.length?`<div class="co-sub"><b>Atuação:</b> ${esc(e.atua.join(', '))}</div>`:''}${e.obs?`<div class="co-sub">${esc(e.obs)}</div>`:''}${e.amb?'<div class="co-sub co-amb">nome com mais de um CNPJ na Receita: confira</div>':''}</td><td style="white-space:nowrap">${e.c?esc(fmtC(e.c)):'<span class="co-sub">não localizado</span>'}${e.sit&&e.sit!=='ATIVA'?`<div class="co-sub">${esc(e.sit.toLowerCase())}</div>`:''}</td><td>${e.mun?esc(munN(e.mun))+'/'+esc(e.uf):''}</td><td>${esc(e.cat)}</td><td>${esc(e.op)}<div class="co-sub">${esc(e.org)} · ${e.ano}</div></td><td>${so.slice(0,4).map(s=>`${esc(tit(s[1]))} <span class="co-sub">(${esc(String(s[2]||'').toLowerCase())})</span>`).join('<br>')}${so.length>4?`<div class="co-sub">+${so.length-4}</div>`:''}</td><td><a href="${esc(e.fonte)}" target="_blank" rel="noopener">fonte ${EXT}</a></td><td class="co-ac">${e.c?`<button type="button" class="op-filter" data-rede="${e.c}" data-nome="${esc(nomeE(e))}">Rede</button><button type="button" class="op-filter" data-ficha="${e.c}">Ficha</button>`:''}</td></tr>`; }).join('');
       const np=Math.ceil(L.length/PS); $('coe-pg').innerHTML=np>1?Array.from({length:np},(_,i)=>`<button type="button" data-p="${i}" class="${i===pag?'on':''}">${i+1}</button>`).join(''):''; }
@@ -6549,15 +6586,17 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     ['coe-op','coe-cat','coe-uf'].forEach(id=>$(id).addEventListener('change',()=>{ pag=0; r(); }));
     $('coe-pg').addEventListener('click',e=>{ const b=e.target.closest('button[data-p]'); if(b){ pag=+b.dataset.p; r(); el.scrollIntoView({block:'start'}); } });
     el.addEventListener('click',e=>{ const b=e.target.closest('button[data-rede]'); if(b){ verNaRede(b.dataset.rede,b.dataset.nome); return; } const f=e.target.closest('button[data-ficha]'); if(f&&window.__abrirEmpresaCNPJ) window.__abrirEmpresaCNPJ(f.dataset.ficha); });
-    r();
+    rEmp=p=>{ if(p!=null) pag=p; r(); }; r();
   }
   function verNaRede(c,nome){ if(window.__mostrarAba) window.__mostrarAba('casos'); setTimeout(()=>{ if(window.__netAdd) window.__netAdd({cnpj:c,label:nome,tipo:'Empresa citada (crime organizado)'}); const s=$('net-svg'); if(s) s.scrollIntoView({block:'center'}); },200); }
 
   // ---------- pessoas citadas ----------
   function listaPes(){
     const el=$('co-pes'); if(!el) return;
-    const G={}; X.pes.forEach(p=>{ (G[p.op]=G[p.op]||[]).push(p); });
+    const G={}; V.pes.forEach(p=>{ (G[p.op]=G[p.op]||[]).push(p); });
     el.innerHTML=Object.entries(G).map(([op,L])=>`<div class="co-pg-op"><h3>${esc(op)} <span>${L.length}</span></h3><div class="co-pgrid">${L.map(p=>`<article class="co-p"><b>${esc(p.n)}</b>${p.ap?` <span class="co-sub">(“${esc(p.ap)}”)</span>`:''}<p>${esc(p.papel)}</p>${p.sit?`<p class="co-sub">${esc(p.sit)}</p>`:''}<div class="co-p-f">${p.fac?`<span class="co-fac">${esc(rotFac(p.fac))}</span>`:'<span class="co-fac co-fac-n">sem imputação de facção</span>'}<a href="${esc(p.fonte)}" target="_blank" rel="noopener">fonte ${EXT}</a><button type="button" class="op-filter" data-pes="${esc(p.n)}">Rede</button></div></article>`).join('')}</div></div>`).join('');
+    if(!V.pes.length) el.innerHTML='<p class="co-sub">Nenhuma pessoa citada no filtro atual.</p>';
+    if(el.dataset.ev) return; el.dataset.ev='1';
     el.addEventListener('click',e=>{ const b=e.target.closest('button[data-pes]'); if(!b) return; if(window.__mostrarAba) window.__mostrarAba('casos'); setTimeout(()=>{ if(window.__netAdd) window.__netAdd({id:'x:'+chave(b.dataset.pes),label:b.dataset.pes,tipo:'Pessoa citada (crime organizado)'}); const s=$('net-svg'); if(s) s.scrollIntoView({block:'center'}); },200); });
   }
 
