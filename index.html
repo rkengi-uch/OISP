@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261016112259";</script>
+<head><script>window.__BUILD="20261016114914";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -2200,6 +2200,22 @@ const EST_MAP={'Condenado':['Condenação'],'Réu, denunciado ou indiciado':['De
 const TIP_RX={'Organização Criminosa':/organiza[çc][ãa]o criminosa|fac[çc][ãa]o|\bpcc\b|quadrilha|associa[çc][ãa]o criminosa/i,'Lavagem de Dinheiro':/lavagem/i,'Ato de Improbidade Administrativa':/improbidade/i,'Crime Comum':/corrup|peculato|propina|desvi|fraud|concuss|estelionato/i,'Infração à Legislação Eleitoral':/eleitoral|abuso de poder|\btre\b|\btse\b|capta[çc][ãa]o il[íi]cita/i,'Infração Político-Administrativa':/comiss[ãa]o processante|infra[çc][ãa]o pol[íi]tico|c[âa]mara[^.]{0,40}cass|cass[^.]{0,40}c[âa]mara/i,'Crime de Responsabilidade':/crime de responsabilidade/i};
 const ORG_RX={'Polícia Federal':/pol[íi]cia federal|\bpf\b/i,'MPSP (Gaeco/PGJ)':/gaeco|mp-?sp|minist[ée]rio p[úu]blico(?! federal)|promotoria|\bpgj\b/i,'MPF':/\bmpf\b|minist[ée]rio p[úu]blico federal/i,'CGU':/\bcgu\b|controladoria/i,'TJSP':/tj-?sp|tribunal de justi[çc]a/i,'TRF-3':/\btrf/i,'Justiça Eleitoral':/\btre\b|justi[çc]a eleitoral|\btse\b/i,'Câmara Municipal':/c[âa]mara (municipal|de vereadores)|comiss[ãa]o processante/i,'STF':/\bstf\b|supremo/i,'STJ':/\bstj\b/i,'Polícia Civil':/pol[íi]cia civil/i,'TCE':/\btce\b|tribunal de contas/i};
 const opKey=o=>(o||'').split(' / ')[0].split(' (')[0].toLowerCase();
+// ---------- pessoa citada fora da base curada (empresário, operador, dirigente de OS): operações em que é citada
+const OPSP_C={};
+function opsPessoa(txt){ const raw=String(txt||'').trim(); if(!raw) return new Set(); if(OPSP_C[raw]) return OPSP_C[raw];
+  const nz=s=>String(s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+  const t=nz(raw), S=new Set(); OPSP_C[raw]=S;
+  if(t.split(' ').length<2||t.length<8) return S;
+  const tem=x=>(' '+nz(x)+' ').includes(' '+t+' ');
+  if(DATA.R.some(x=>tem(x.nome))) return S;   // agente da base: o filtro continua só pelo nome
+  S.lab=[]; const addOps=o=>String(o||'').split(/\s*;\s*/).forEach(p=>{ p=p.trim(); if(p&&!S.has(opKey(p))){ S.add(opKey(p)); S.lab.push(p); } });
+  (DATA.CIT||[]).forEach(c=>{ if(tem(c.obs)) addOps(c.op); });
+  (DATA.CO||[]).forEach(c=>{ if(tem(c[6])) addOps(c[5]); });
+  (DATA.NEWS||[]).forEach(n=>{ if(n[6]&&tem(n[3]+' '+n[5])) addOps(n[6]); });
+  (((DATA.TJSP||{}).consultas)||[]).forEach(c=>{ if(tem(c.nome)) (c.registros||[]).forEach(addOps); });
+  const X=window.CO_EMP||{}; (X.pes||[]).forEach(p=>{ if(tem(p.n)||tem(p.ap)) addOps(p.op); }); (X.emp||[]).forEach(e=>{ if(tem(e.obs)) addOps(e.op); });
+  return S; }
+window.__opsPessoa=opsPessoa;
 function extOK(o,opt){ opt=opt||{};
   const low=(o.txt||'').toLowerCase();
   if(F.cargo){ if(!o.cargos||!CARGO_MAP[F.cargo]||!CARGO_MAP[F.cargo].some(c=>o.cargos.includes(c))) return false; }
@@ -2208,7 +2224,7 @@ function extOK(o,opt){ opt=opt||{};
   if(F.tip && !TIP_RX[F.tip].test(o.txt||'')) return false;
   if(F.org && !(ORG_RX[F.org]&&ORG_RX[F.org].test((o.txt||'')+' '+(o.org||'')))) return false;
   if(F.op&&!opt.noOp){ const k=opKey(F.op); if(!opKey(o.op).includes(k)&&!low.includes(k)&&!(o.op||'').toLowerCase().includes(k)) return false; }
-  if(F.txt && !(low+' '+(o.op||'').toLowerCase()).includes(F.txt.toLowerCase())) return false;
+  if(F.txt && !(low+' '+(o.op||'').toLowerCase()).includes(F.txt.toLowerCase())&&!String(o.op||'').split(/\s*;\s*/).some(p=>opsPessoa(F.txt).has(opKey(p)))) return false;
   return true;
 }
 const newsObj=n=>({txt:n[3]+' '+n[5]+' '+n[6],cargos:n[8]?n[8].split('; '):[],meds:n[9]?n[9].split('; '):[],op:n[6],org:n[14]||''});
@@ -2284,7 +2300,7 @@ function rowsFX(ignoreMun,o){ o=o||{};
   const t=F.txt.toLowerCase();
   return R.filter(x=>(!F.niv||x.nivel===F.niv)&&(o.noLens||lensOK(x.mun,LENS&&LENS.base,x))&&(ignoreMun||!F.mun||x.mun===F.mun)&&(!F.cargo||x.cargo===F.cargo)&&(!F.tip||x.tip===F.tip)&&(!ESF_BASE(ESFF)||(ESF_MAP[x.tip]||'crim')===ESFF)&&(!F.org||x.orgs.includes(F.org))&&(!F.med||x.mg===F.med)
     &&(!F.est||(F.est==='Medida revertida/suspensa'?x.rev:x.est===F.est))&&(F.ano==null||x.ano===F.ano)&&(o.noOp||!F.op||x.op===F.op)
-    &&(!t||(x.nome+' '+x.op+' '+x.desc+' '+x.crimes+' '+x.empresa).toLowerCase().includes(t)||(window.__casaNome&&window.__casaNome(x.nome,F)))&&tjR(x)&&tceMun(x.mun));
+    &&(!t||(x.nome+' '+x.op+' '+x.desc+' '+x.crimes+' '+x.empresa).toLowerCase().includes(t)||(window.__casaNome&&window.__casaNome(x.nome,F))||opsPessoa(F.txt).has(opKey(x.op)))&&tjR(x)&&tceMun(x.mun));
 }
 function setF(k,v){ if(k==='txt') fxSet('txt',v,v?'add':undefined); else fxSet(k,v); syncInputs(); render(); }
 function syncInputs(){
@@ -2493,7 +2509,9 @@ function netDedup(nodes,adj,et){
   const ENTC={}; ((typeof DATA!=='undefined'&&DATA.ENT)||[]).forEach(e=>{ const d=String(e.cnpj||'').replace(/\D/g,''); if(d.length>=8) ENTC['n:'+e.ent]=d.slice(0,8); });
   // operações: mesma grafia normalizada ("Raio-X" = "Raio X") e nomes compostos ("Prato Feito / Trato Feito") juntam as partes
   const OPA={}; nodes.forEach(n=>{ if(n.type!=='op') return; const ps=String(n.label).split(/\s*\/\s*/).filter(Boolean); if(ps.length>1) ps.forEach(p=>{ OPA['Q'+nk(p)]='Q'+nk(n.label); }); });
-  const chaveNo=(id,n)=>{ if(n.type==='op'){ const k='Q'+nk(n.label); return OPA[k]||k; } if(ENTC[id]) return 'C'+ENTC[id]; if(id.startsWith('c:')){ const d=id.slice(2).replace(/\D/g,''); return d.length>=8?'C'+d.slice(0,8):null; }
+  // empresa citada só pelo nome (camada de registros) com CNPJ conhecido na lista de crime organizado: junta ao nó do CNPJ
+  const NC={}; (((window.CO_EMP||{}).emp)||[]).forEach(e=>{ if(e.c) NC[nk(e.nome)]=e.c.slice(0,8); });
+  const chaveNo=(id,n)=>{ if((id.startsWith('e:')||id.startsWith('cx:'))&&NC[nk(n.label)]) return 'C'+NC[nk(n.label)]; if(n.type==='op'){ const k='Q'+nk(n.label); return OPA[k]||k; } if(ENTC[id]) return 'C'+ENTC[id]; if(id.startsWith('c:')){ const d=id.slice(2).replace(/\D/g,''); return d.length>=8?'C'+d.slice(0,8):null; }
     if(PES[n.type]) return 'P'+nk(n.label);
     if(n.type==='orgp') return 'O'+nk(n.label).replace(/ (mt|ms|pr|mg|rj|es|go|df|ba|sc|rs|pe|ce|pa|am|ma|pb|rn|al|se|pi|to|ro|ac|ap|rr)$/,'');
     return null; };
@@ -2565,7 +2583,7 @@ function renderNet(rs){
   const {nodes,adj,et}=buildNet();
   const key=JSON.stringify(F)+'|'+(LENS?LENS.label:'')+'|'+(window.__netSelKey||'');
   const roots=netRoots(nodes);
-  if(NET.key!==key){ NET.key=key; NET.expanded=new Set(); NET.all=false; if(roots.length<=10) roots.forEach(r=>NET.expanded.add(r)); }
+  if(NET.key!==key){ NET.key=key; NET.expanded=new Set(); NET.all=false; if(roots.length<=10) roots.forEach(r=>NET.expanded.add(r)); else { const A2=window.__netAlias||{}; ((window.__netSelIds&&window.__netSelIds(nodes))||[]).slice(0,10).forEach(r=>{ const a=A2[r]||r; if(nodes.has(a)) NET.expanded.add(a); }); } }
   // nós visíveis = raízes + expandidos + vizinhos dos expandidos (estável)
   let vis;
   if(NET.all) vis=new Set(nodes.keys());
@@ -3852,6 +3870,7 @@ window.CONTEUDO_SP = {"glossario": [{"t": "Administração Pública", "d": "Conj
   window.__camadasTermo=v=>{ const q=nrm(v); return q.length>=3?camadas(q).map(c=>[c[0],c[2]]):[]; };
   function marcar(){ br.querySelectorAll('.bu-it').forEach((b,j)=>{ b.classList.toggle('ativo',j===sel); if(j===sel) b.scrollIntoView({block:'nearest'}); }); }
   function escolher(i){ const x=itensB[i]; if(!x) return; bd.close();
+    if(x._t==='p'||x._t==='r'){ const ops=window.__opsPessoa&&window.__opsPessoa(limpo(x.nome)); if(ops&&ops.size) setTimeout(()=>aviso(`${limpo(x.nome)} não está na base curada de agentes públicos: as visualizações mostram os registros das operações em que o nome é citado pelas fontes (${ops.lab.join('; ')}).`),400); }
     if(x._t==='p'){ window.painelNome&&window.painelNome(limpo(x.nome)); abrirFicha({tipo:'pessoa',nome:x.nome,termo:bq.value.trim()}); }
     else if(x._t==='m'){ window.painelMun&&window.painelMun(x.nome); abrirFicha({tipo:'mun',nome:x.nome,termo:bq.value.trim()}); }
     else if(x._t==='o'){ if(window.painelOp&&(F().op!==x.nome)) window.painelOp(x.nome); abrirFicha({tipo:'op',nome:x.nome,termo:bq.value.trim()}); }
@@ -4551,8 +4570,9 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   // seleção feita no campo "Adicionar à rede" (ids de nós ou CNPJs)
   const NSEL=window.__netSel=[]; const selKey=()=>{ window.__netSelKey=NSEL.map(x=>x.id||('c:'+x.cnpj)).join(','); };
   window.__netRootsX=nodes=>{ try{ window.__netPodar&&window.__netPodar(); }catch(e){} const fo=window.__netFoc||{ids:[],k:''}; const r=new Set();
-    NSEL.forEach(x=>{ const id=x.id||(x.cnpj&&((fo.cmap||{})[x.cnpj]||'c:'+x.cnpj)); if(id&&nodes.has(id)) r.add(id); });
-    fo.ids.forEach(id=>{ if(nodes.has(id)) r.add(id); });
+    const AL=window.__netAlias||{}, ali=id=>AL[id]||id;
+    NSEL.forEach(x=>{ let id=x.id||(x.cnpj&&((fo.cmap||{})[x.cnpj]||'c:'+x.cnpj)); id=id&&ali(id); if(id&&!nodes.has(id)&&x.cnpj&&nodes.has('c:'+x.cnpj)) id='c:'+x.cnpj; if(id&&nodes.has(id)) r.add(id); });
+    fo.ids.forEach(id=>{ id=ali(id); if(nodes.has(id)) r.add(id); });
     // nome filtrado (inclusive apelido, como "Ney Santos", ou parte do nome) vira nó da rede
     const txt=String(F().txt||'').trim();
     if(!fo.ids.length&&txt){ const k=chave(limpo(txt)), kf=nrm(txt).replace(/[^a-z0-9]+/g,' ').trim(); const P=(window.__ab||{}).PESK||{}; const pes=P[k]||P[kf];
@@ -4600,6 +4620,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     document.addEventListener('click',e=>{ if(!box.contains(e.target)) res.hidden=true; });
     chips.addEventListener('click',e=>{ const b=e.target.closest('[data-rm]'); if(!b) return; const x=NSEL.splice(+b.dataset.rm,1); selKey(); desenhar(); tirar(x); window.__renderNet&&window.__renderNet(); document.dispatchEvent(new Event('oisp-filtros')); });
     $('net-limpar').addEventListener('click',()=>{ const x=NSEL.splice(0); selKey(); desenhar(); tirar(x); window.__renderNet&&window.__renderNet(); document.dispatchEvent(new Event('oisp-filtros')); });
+    window.__netSelIds=()=>{ const fo=window.__netFoc||{}; const AL=window.__netAlias||{}; return NSEL.map(x=>{ const id=x.id||(x.cnpj&&((fo.cmap||{})[x.cnpj]||'c:'+x.cnpj)); return id&&(AL[id]||id); }).filter(Boolean); };
     window.__netAdd=x=>escolher(x); window.__netTipo=TIPO; desenhar();
     window.__netRemove=i=>{ tirar(NSEL.splice(i,1)); selKey(); desenhar(); window.__renderNet&&window.__renderNet(); document.dispatchEvent(new Event('oisp-filtros')); };
     window.__netLimpar=()=>{ if(!NSEL.length) return; NSEL.length=0; selKey(); desenhar(); window.__renderNet&&window.__renderNet(); document.dispatchEvent(new Event('oisp-filtros')); }; })();
