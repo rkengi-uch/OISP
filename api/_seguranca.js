@@ -1,8 +1,20 @@
-// Proteções comuns das funções /api: só GET/HEAD, origem própria, limite de requisições por IP e validação do CNPJ.
+// Proteções comuns das funções /api: só GET/HEAD, origem própria, só acessos do Brasil, limite de requisições por IP e validação do CNPJ.
 // O limite é por instância (memória da função): barra rajadas de um mesmo IP; o cache da CDN (s-maxage) absorve o resto.
 const JANELA = 60 * 1000, MAX = 30;           // até 30 consultas por minuto por IP em cada instância
 const ORIGENS = /^https:\/\/(oisp\.vercel\.app|oisp-[a-z0-9-]+\.vercel\.app)$/;
 const visto = new Map();
+
+const crypto = require('crypto');
+// só acessos do Brasil (país do IP informado pelo Vercel); exceção: chave de acesso na variável OISP_CHAVE_API do Vercel,
+// enviada no cabeçalho x-oisp-chave (para rotinas automáticas que rodam em servidores fora do país)
+function paisOK(req) {
+  const p = String(req.headers['x-vercel-ip-country'] || '').toUpperCase();
+  if (!p || p === 'BR') return true;            // sem o cabeçalho = ambiente local de testes
+  const chave = process.env.OISP_CHAVE_API, k = String(req.headers['x-oisp-chave'] || '');
+  if (!chave || !k) return false;
+  const a = crypto.createHash('sha256').update(k).digest(), b = crypto.createHash('sha256').update(chave).digest();
+  return crypto.timingSafeEqual(a, b);
+}
 
 function ip(req) { return String(req.headers['x-real-ip'] || req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'sem-ip'; }
 
@@ -30,6 +42,7 @@ function proteger(req, res) {
   if (req.method === 'OPTIONS') { res.setHeader('Access-Control-Allow-Methods', 'GET'); res.status(204).end(); return false; }
   if (req.method !== 'GET' && req.method !== 'HEAD') { res.setHeader('Allow', 'GET'); res.status(405).json({ erro: 'método não permitido' }); return false; }
   if (o && !ORIGENS.test(o)) { res.status(403).json({ erro: 'origem não permitida' }); return false; }
+  if (!paisOK(req)) { res.setHeader('Cache-Control', 'no-store'); res.status(403).json({ erro: 'consulta disponível apenas para acessos do Brasil' }); return false; }
   const s = limite(req);
   if (s) { res.setHeader('Retry-After', String(s)); res.setHeader('Cache-Control', 'no-store'); res.status(429).json({ erro: 'muitas consultas seguidas; tente de novo em instantes' }); return false; }
   return true;
