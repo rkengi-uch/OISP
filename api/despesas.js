@@ -36,12 +36,14 @@ async function exercicio(cnpj, id, ev) {
   throw erro;
 }
 
+const { proteger, cnpjValido } = require('./_seguranca');
+
 module.exports = async (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  if (!proteger(req, res)) return;
   const cnpj = String((req.query && req.query.cnpj) || '').replace(/\D/g, '');
   const liq = String((req.query && req.query.ev) || '') === 'liq'; // liquidado (evento 4) ou pago (evento 5, padrão)
   const EV = liq ? '4' : '5', RX = liq ? /liquid/i : /pago/i;
-  if (cnpj.length !== 14) { res.status(400).json({ erro: 'informe um CNPJ com 14 dígitos' }); return; }
+  if (!cnpjValido(cnpj)) { res.status(400).json({ erro: 'informe um CNPJ válido (14 dígitos)' }); return; }
   try {
     const ids = Array.from({ length: 13 }, (_, i) => i + 1);
     const falhas = []; let parcial = false;

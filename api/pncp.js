@@ -25,10 +25,12 @@ async function pagina1(raiz, pag) {
   } finally { clearTimeout(t); }
 }
 
+const { proteger, cnpjValido } = require('./_seguranca');
+
 module.exports = async (req, res) => {
+  if (!proteger(req, res)) return;
   const cnpj = String((req.query && req.query.cnpj) || '').replace(/\D/g, '');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  if (cnpj.length !== 14 && cnpj.length !== 8) { res.status(400).json({ erro: 'informe um CNPJ (14 dígitos) ou a raiz (8 dígitos)' }); return; }
+  if (!(cnpj.length === 8 || cnpjValido(cnpj))) { res.status(400).json({ erro: 'informe um CNPJ válido (14 dígitos) ou a raiz (8 dígitos)' }); return; }
   const raiz = cnpj.slice(0, 8);
   try {
     const G = new Map(), NI = new Set(); let total = 0, lidos = 0, pag = 1;
