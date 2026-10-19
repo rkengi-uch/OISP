@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js" integrity="sha384-DhxhYObIMeMNGyAG7iK11OHzBIKyEIeRL0ad1iFPAOwZB8iirUlTT0O/WJJUk8+o" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 <style>
 :root{
   --navy:#1a2b4a; --navy-dark:#0e1a30; --navy-mid:#243657;
@@ -3389,10 +3389,11 @@ syncInputs(); render();
   }
 
   // ---------- PDF (jsPDF, carregado só quando pedido)
-  function carregar(src){ return new Promise((ok,er)=>{ const sc=document.createElement('script'); sc.src=src; sc.onload=ok; sc.onerror=()=>er(new Error('falha ao carregar '+src)); document.head.appendChild(sc); }); }
+  const SRI={'https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js':'sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3','https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/5.0.9/jspdf.plugin.autotable.min.js':'sha384-A77YsHWitrPuAj8E0AuB033EXzymUxIajnWKPzrrzqFoYYSCEpFennDUjMG2R1L3'};
+  function carregar(src){ return new Promise((ok,er)=>{ const sc=document.createElement('script'); sc.src=src; if(SRI[src]){ sc.integrity=SRI[src]; sc.crossOrigin='anonymous'; sc.referrerPolicy='no-referrer'; } sc.onload=ok; sc.onerror=()=>er(new Error('falha ao carregar '+src)); document.head.appendChild(sc); }); }
   let libP=null;
   function libs(){ if(window.jspdf&&window.jspdf.jsPDF&&window.jspdf.jsPDF.API.autoTable) return Promise.resolve(window.jspdf.jsPDF);
-    return libP=libP||carregar('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js').then(()=>carregar('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js')).then(()=>window.jspdf.jsPDF).catch(e=>{ libP=null; throw e; }); }
+    return libP=libP||carregar('https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.2.1/jspdf.umd.min.js').then(()=>carregar('https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/5.0.9/jspdf.plugin.autotable.min.js')).then(()=>{ const J=window.jspdf.jsPDF; if(!J.API.autoTable&&window.jspdf_autotable&&window.jspdf_autotable.applyPlugin) window.jspdf_autotable.applyPlugin(J); return J; }).catch(e=>{ libP=null; throw e; }); }
   const MAPA={'–':'-','—':'-','‒':'-','−':'-','“':'"','”':'"','„':'"','‘':"'",'’':"'",'…':'...','•':'-',' ':' ',' ':' ',' ':' ','→':'->','↗':'','º':'º','ª':'ª'};
   const pt=t=>s(t).replace(/[\u0080-￿]/g,c=>MAPA[c]!==undefined?MAPA[c]:(c.charCodeAt(0)<=255?c:'')).replace(/\s+/g,' ').trim();
   const NAVY=[26,43,74], RED=[161,61,61], GOLD=[184,134,11], INK=[18,26,43], CINZA=[85,90,100];
@@ -6840,5 +6841,9 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',ticker); else ticker();
 })();
 
+</script>
+<script>
+// segurança: links com esquema perigoso (javascript:, data:, vbscript:) vindos de dados externos não são seguidos
+(function(){ document.addEventListener('click',e=>{ const a=e.target.closest&&e.target.closest('a[href]'); if(!a) return; const h=String(a.getAttribute('href')||'').replace(/[\u0000-\u001f\s]+/g,'').toLowerCase(); if(/^(javascript|vbscript|data):/.test(h)){ e.preventDefault(); e.stopPropagation(); } },true); })();
 </script>
 </body></html>
