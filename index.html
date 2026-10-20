@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261020145140";</script>
+<head><script>window.__BUILD="20261020162124";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -3749,7 +3749,7 @@ window.CONTEUDO_SP = {"glossario": [{"t": "Administração Pública", "d": "Conj
   const F=()=>(window.painelF&&window.painelF())||{};
 
   // ===================== ABAS =====================
-  const ABAS=[['geral','Visão geral'],['casos','Pessoas e casos'],['crime','Crime organizado'],['iris','Índice IRIS'],['justica','Justiça'],['contas','Controle externo'],['empresas','Empresas e contratos'],['eleicoes','Eleições'],['noticias','Notícias'],['biblioteca','Biblioteca'],['tube','Canais'],['dicionario','Dicionário'],['denunciar','Denunciar'],['metodo','Metodologia']];
+  const ABAS=[['geral','Visão geral'],['iris','Índice IRIS'],['casos','Pessoas e casos'],['crime','Crime organizado'],['justica','Justiça'],['contas','Controle externo'],['empresas','Empresas e contratos'],['eleicoes','Eleições'],['noticias','Notícias'],['biblioteca','Biblioteca'],['tube','Canais'],['dicionario','Dicionário'],['denunciar','Denunciar'],['metodo','Metodologia']];
   const fb=document.querySelector('.filterbar');
   const nav=document.createElement('nav'); nav.className='abas'; nav.setAttribute('role','tablist'); nav.setAttribute('aria-label','Seções do painel');
   nav.innerHTML='<div class="abas-in">'+ABAS.map(([k,t])=>`<button type="button" role="tab" id="tab-${k}" data-aba="${k}" aria-controls="aba-${k}" aria-selected="false">${t}</button>`).join('')+'</div>';
@@ -5956,7 +5956,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   // rodapé institucional na página inicial e no painel
   // rodapé em colunas (padrão do OIBR): marca, seções do painel, institucional e legal
   const INST=['sobre','valores','riscos','fontes','como-citar','infra'], LEGAL=['aviso-legal','termos','privacidade','cookies','direito-de-resposta','acessibilidade'];
-  const SECOES=[['geral','Painel'],['casos','Pessoas e casos'],['crime','Crime organizado'],['iris','Índice IRIS'],['justica','Justiça'],['contas','Controle externo'],['empresas','Empresas e contratos'],['eleicoes','Eleições'],['noticias','Notícias'],['biblioteca','Biblioteca anticorrupção'],['tube','Canais'],['dicionario','Dicionário'],['denunciar','Denunciar'],['metodo','Metodologia']];
+  const SECOES=[['geral','Painel'],['iris','Índice IRIS'],['casos','Pessoas e casos'],['crime','Crime organizado'],['justica','Justiça'],['contas','Controle externo'],['empresas','Empresas e contratos'],['eleicoes','Eleições'],['noticias','Notícias'],['biblioteca','Biblioteca anticorrupção'],['tube','Canais'],['dicionario','Dicionário'],['denunciar','Denunciar'],['metodo','Metodologia']];
   const li=id=>{ const p=IDX[id]; return p?`<li><a href="#${p[0]}" data-in="${p[0]}">${p[1]}</a></li>`:''; };
   const marca=()=>window.__oiAssinatura?window.__oiAssinatura({escuro:true,rot:'OISP, Observatório da Integridade – SP'}):'<b>OISP</b>';
   const links=()=>`<div class="in-cols"><div class="in-brand"><div class="in-logo">${marca()}</div><p>Repositório público de sinais de irregularidade e corrupção nos municípios paulistas e no Governo do Estado de São Paulo. Pesquisa em fontes abertas, sem caráter oficial.</p></div>
@@ -6395,12 +6395,12 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   const MODS=[
     {k:'geral',t:'Visão geral',d:'Mapa, manchetes, novidades e agenda, gráficos, matriz município × esfera e perfil do município.',
      o:[['Novidades e agenda','h2:Novidades'],['Mapa','h2:Mapa'],['Matriz município × esfera','#matriz-esferas'],['Gráficos','h2:Evolução anual'],['Perfil do município','sec:Perfil do município']]},
+    {k:'iris',t:'Índice IRIS',d:'IRIS-SP, índice de riscos à integridade do setor público: os 645 municípios e do Governo do Estado, com mapa, intervalos de confiança, funil por porte e a explicação de cada nota.',
+     o:[['Ficha do município','#ir-ficha-sec'],['Mapa do IRIS','#ir-mapa-sec'],['Como é calculado','#ir-metodo']]},
     {k:'casos',t:'Pessoas e casos',d:'Rede de relações (grafos), operações, linha do tempo do caso, funil processual, entidades, Governo do Estado, rede de relações e base de registros.',
      o:[['Rede de relações','#rede-relacoes'],['Linha do tempo do caso','#linha-do-tempo'],['Funil processual','#funil'],['Operações','sec:Operações mapeadas'],['Entidades','sec:Entidades'],['Governo do Estado','sec:Governo do Estado'],['Base de registros','sec:Base de registros']]},
     {k:'crime',t:'Crime organizado',d:'Mapa de bolhas da concentração no Estado, registros por setor e região, empresas e pessoas citadas como investigadas por suposta ligação com o PCC e suas ligações na rede.',
      o:[['Mapa da concentração','#co-mapa-sec'],['Setores','#crime-organizado'],['Organizações sociais de saúde','#co-saude'],['Empresas citadas','#co-empresas'],['Pessoas citadas','#co-pessoas']]},
-    {k:'iris',t:'Índice IRIS',d:'IRIS-SP, índice de riscos à integridade do setor público: os 645 municípios e do Governo do Estado, com mapa, intervalos de confiança, funil por porte e a explicação de cada nota.',
-     o:[['Ficha do município','#ir-ficha-sec'],['Mapa do IRIS','#ir-mapa-sec'],['Como é calculado','#ir-metodo']]},
     {k:'justica',t:'Justiça',d:'Processos no TJSP (1º e 2º grau) e condenações por improbidade no Cadastro Nacional do CNJ.',
      o:[['TJSP · 1º grau','#processos-tjsp'],['TJSP · 2º grau','#processos-tjsp-2g'],['CNIA (CNJ)','#cnia']]},
     {k:'contas',t:'Controle externo',d:'Contas julgadas irregulares e pareceres prévios do TCE-SP, balanços da Capital no TCMSP e listas do TCU.',
@@ -6435,7 +6435,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     ['denunciar','','den','Como denunciar','Canais oficiais do Estado, dos municípios e da União para relatar irregularidades.']];
   raiz.innerHTML=`<header class="oi-hdr"><div class="oi-wrap oi-hdr-in">
       <button type="button" class="oi-marca" data-oi-topo aria-label="OISP, página inicial">${assinatura({auto:true,rot:'OISP, Observatório da Integridade – SP'})}</button>
-      <nav class="oi-nav" aria-label="Abas do painel"><button type="button" data-oi-aba="geral">Painel</button><button type="button" data-oi-aba="casos">Pessoas e casos</button><button type="button" data-oi-aba="crime">Crime organizado</button><button type="button" data-oi-aba="iris">Índice IRIS</button><button type="button" data-oi-aba="justica">Justiça</button><button type="button" data-oi-aba="contas">Controle externo</button><button type="button" data-oi-aba="empresas">Empresas e contratos</button><button type="button" data-oi-aba="eleicoes">Eleições</button><button type="button" data-oi-aba="noticias">Notícias</button><button type="button" data-oi-aba="biblioteca">Biblioteca</button><button type="button" data-oi-aba="tube">Canais</button><button type="button" data-oi-aba="dicionario">Dicionário</button><button type="button" data-oi-aba="denunciar">Denunciar</button><button type="button" data-oi-aba="metodo">Metodologia</button></nav>
+      <nav class="oi-nav" aria-label="Abas do painel"><button type="button" data-oi-aba="geral">Painel</button><button type="button" data-oi-aba="iris">Índice IRIS</button><button type="button" data-oi-aba="casos">Pessoas e casos</button><button type="button" data-oi-aba="crime">Crime organizado</button><button type="button" data-oi-aba="justica">Justiça</button><button type="button" data-oi-aba="contas">Controle externo</button><button type="button" data-oi-aba="empresas">Empresas e contratos</button><button type="button" data-oi-aba="eleicoes">Eleições</button><button type="button" data-oi-aba="noticias">Notícias</button><button type="button" data-oi-aba="biblioteca">Biblioteca</button><button type="button" data-oi-aba="tube">Canais</button><button type="button" data-oi-aba="dicionario">Dicionário</button><button type="button" data-oi-aba="denunciar">Denunciar</button><button type="button" data-oi-aba="metodo">Metodologia</button></nav>
       <button type="button" class="oi-btn" data-oi-esf>Como ler o painel?</button></div></header>
     <section class="oi-hero"><div class="oi-wrap">
       <p class="oi-kick"><i aria-hidden="true"></i>OISP · Observar, vigiar, verificar</p>
