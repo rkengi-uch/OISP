@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261020113844";</script>
+<head><script>window.__BUILD="20261020143123";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -1601,6 +1601,21 @@ html.ir-modal-on, html.ir-modal-on body{overflow:hidden;}
 .nm .nm-tw{max-width:100%;}
 .ir-modal[hidden]{display:none!important;}
 .ir-sigla{margin:-2px 0 10px;font-size:13px;letter-spacing:.02em;opacity:.92;} .ir-sigla b{color:var(--gold,#e0a100);}
+/* IRIS: tabela "Todos os entes" com cabeçalho fixo, colunas de identificação fixas e rolagem espelhada no topo */
+.ir-topscroll{overflow-x:auto;overflow-y:hidden;height:14px;margin:0 0 2px;scrollbar-width:thin;} .ir-topscroll>div{height:1px;}
+.ir-tw{max-height:min(72vh,720px);overflow:auto;border:1px solid var(--border);overscroll-behavior:contain;background:var(--card);}
+.ir-tall{border-collapse:separate;border-spacing:0;}
+.ir-tall thead th{position:sticky;top:0;z-index:2;background:var(--card-head,var(--card));box-shadow:inset 0 -2px 0 var(--text);}
+.ir-tall td{background:var(--card);}
+.ir-tall tr:hover td{background:var(--panel-2,#eef0f3);}
+.ir-tall th:nth-child(1),.ir-tall td:nth-child(1){position:sticky;left:0;z-index:1;min-width:44px;width:44px;}
+.ir-tall th:nth-child(2),.ir-tall td:nth-child(2){position:sticky;left:44px;z-index:1;}
+.ir-tall thead th:nth-child(1),.ir-tall thead th:nth-child(2){z-index:3;}
+.ir-tw-x .ir-tall td:nth-child(2),.ir-tw-x .ir-tall th:nth-child(2){box-shadow:6px 0 6px -4px rgba(0,0,0,.22);}
+.ir-tw-x .ir-tall thead th:nth-child(2){box-shadow:inset 0 -2px 0 var(--text),6px 0 6px -4px rgba(0,0,0,.22);}
+.ir-topscroll{height:12px;border:1px solid var(--border);border-bottom:0;background:var(--panel-2,#eef0f3);}
+.ir-topscroll::-webkit-scrollbar,.ir-tw::-webkit-scrollbar{height:10px;width:10px;} .ir-topscroll::-webkit-scrollbar-thumb,.ir-tw::-webkit-scrollbar-thumb{background:var(--text-muted);border-radius:6px;} .ir-topscroll::-webkit-scrollbar-track,.ir-tw::-webkit-scrollbar-track{background:var(--panel-2,#eef0f3);}
+.ir-topscroll{scrollbar-color:var(--text-muted) var(--panel-2,#eef0f3);} .ir-tw{scrollbar-color:var(--text-muted) var(--panel-2,#eef0f3);}
 
 /* círculos */
 .at-btn,.at-dot,.chip button,.co-leg-k i,.cx-num,.cx-play,.dot,.esf-ic,.ir-dot,.ir-fp,.mch-ticker .lbl i,.oi-sic-c,.oi-st,.pq-spin,.ra-chips .ra-rm,.ra-fab-ic,.ra-ico,.rc-chip button,.timeline li::before{border-radius:50% !important;}
@@ -7191,6 +7206,10 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   const porNome=n=>{ const k=nk(n); if(k===nk(GOV)) return porU(R.S); return R.res.find(r=>nk(r.nome)===k); };
 
   // ---------- montagem ----------
+  // rolagem horizontal espelhada acima da tabela "Todos os entes"
+  function ajTopo(){ const tw=$('ir-tw'), ts=$('ir-tsc'); if(!tw||!ts) return; if(ts.nextElementSibling!==tw) tw.parentNode.insertBefore(ts,tw); const t=tw.querySelector('table'); ts.firstElementChild.style.width=t.scrollWidth+'px'; ts.hidden=t.scrollWidth<=tw.clientWidth+1;
+    if(!tw.dataset.sync){ tw.dataset.sync='1'; let lk=0; ts.addEventListener('scroll',()=>{ if(lk===2){ lk=0; return; } lk=1; tw.scrollLeft=ts.scrollLeft; }); tw.addEventListener('scroll',()=>{ if(lk===1){ lk=0; return; } lk=2; ts.scrollLeft=tw.scrollLeft; tw.classList.toggle('ir-tw-x',tw.scrollLeft>2); });
+      if(window.ResizeObserver) new ResizeObserver(()=>{ clearTimeout(ajTopo.t); ajTopo.t=setTimeout(ajTopo,80); }).observe(tw); else window.addEventListener('resize',()=>{ clearTimeout(ajTopo.t); ajTopo.t=setTimeout(ajTopo,150); }); } }
   function montar(){
     const root=$('iris-root'); if(!root||root.dataset.ok) return; root.dataset.ok='1';
     root.innerHTML=`<div class="ir-hero"><div class="ir-hero-in"><p class="ir-kick">Observatório da Integridade · indicador composto</p><h2>IRIS-SP <span>Índice de Riscos à Integridade do Setor Público</span></h2>
@@ -7205,7 +7224,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
         <section class="ir-sec"><div class="sec-label">Funil: acima do esperado para o tamanho</div><p class="sec-desc">Cada ponto é um ente: população (escala log) × sinais graves (responsabilização, apurações e crime organizado) por 100 mil habitantes. As faixas mostram a variação esperada só pelo acaso (95% e 99,8%) em torno da taxa média; pontos acima da faixa externa estão acima do esperado para o seu porte (Spiegelhalter, 2005).</p><div id="ir-funil" class="ir-funil"></div></section>
         <section class="ir-sec"><div class="sec-label">Governo do Estado × conjunto dos municípios</div><p class="sec-desc">Razão entre a taxa do Estado e a do conjunto dos 645 municípios, com a mesma exposição (habitantes e, na sensibilidade, receita corrente líquida). Valores abaixo de 1 indicam menos sinais por unidade de exposição.</p><div id="ir-rr"></div></section>
         <section class="ir-sec"><div class="sec-label">Qualidade estatística</div><div id="ir-qual"></div></section>
-        <section class="ir-sec"><div class="sec-label">Todos os entes</div><div class="tj-bar"><input id="ir-tq" type="search" placeholder="Buscar município…" aria-label="Buscar município" autocomplete="off"><select id="ir-tc" aria-label="Classe"><option value="">Todas as classes</option>${Object.keys(CLF).map(k=>`<option value="${k}">${CL[k]} (${CLF[k]})</option>`).join('')}</select><span class="tj2-count" id="ir-tn"></span></div><div class="table-wrap"><table class="ir-tab"><thead><tr><th>#</th><th>Ente</th><th>População</th><th>IRIS</th><th>IC 90%</th><th>Classe</th>${IRIS_CORE.PILARES.map(p=>`<th title="${esc(p.d)}">${esc(p.n)}</th>`).join('')}</tr></thead><tbody id="ir-tb"></tbody></table></div></section>
+        <section class="ir-sec"><div class="sec-label">Todos os entes</div><div class="tj-bar"><input id="ir-tq" type="search" placeholder="Buscar município…" aria-label="Buscar município" autocomplete="off"><select id="ir-tc" aria-label="Classe"><option value="">Todas as classes</option>${Object.keys(CLF).map(k=>`<option value="${k}">${CL[k]} (${CLF[k]})</option>`).join('')}</select><span class="tj2-count" id="ir-tn"></span></div><div class="ir-topscroll" id="ir-tsc" aria-hidden="true"><div></div></div><div class="table-wrap ir-tw" id="ir-tw" tabindex="0" aria-label="Tabela de todos os entes (role para ver mais)"><table class="ir-tab ir-tall"><thead><tr><th>#</th><th>Ente</th><th>População</th><th>IRIS</th><th>IC 90%</th><th>Classe</th>${IRIS_CORE.PILARES.map(p=>`<th title="${esc(p.d)}">${esc(p.n)}</th>`).join('')}</tr></thead><tbody id="ir-tb"></tbody></table></div></section>
         <section class="ir-sec ir-met"><div class="sec-label" id="ir-metodo">Como o índice é calculado</div><div id="ir-met"></div></section>
       </div>`;
     setTimeout(()=>{ try{ calc(); PRONTO=true; render(); }catch(e){ console.error('IRIS',e); $('ir-ficha').innerHTML='<p class="ir-sub">Não foi possível calcular o índice agora.</p>'; } },30);
@@ -7309,7 +7328,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
 
   // ---------- tabela ----------
   function tabela(){ const rnd=()=>{ const q=nk($('ir-tq').value), c=$('ir-tc').value; const L=R.ord.filter(r=>(!q||nk(r.nome).includes(q))&&(!c||r.classe===c));
-      $('ir-tn').textContent=fi(L.length)+' entes'; $('ir-tb').innerHTML=L.slice(0,700).map(r=>`<tr data-ir-u="${r.u}" class="ir-tr"><td>${r.pos}</td><td><a href="#" data-ir-u="${r.u}">${esc(r.nome)}</a></td><td>${fi(r.pop)}</td><td><b>${f1(r.iris)}</b></td><td>${f1(r.lo)}–${f1(r.hi)}</td><td><span class="ir-cls ir-${r.semRegistro?'c0':r.classe}">${r.semRegistro?'Sem registro':CL[r.classe]}</span></td>${IRIS_CORE.PILARES.map(p=>`<td>${f1(r.pil[p.k])}</td>`).join('')}</tr>`).join(''); };
+      $('ir-tn').textContent=fi(L.length)+' entes'; $('ir-tb').innerHTML=L.slice(0,700).map(r=>`<tr data-ir-u="${r.u}" class="ir-tr"><td>${r.pos}</td><td><a href="#" data-ir-u="${r.u}">${esc(r.nome)}</a></td><td>${fi(r.pop)}</td><td><b>${f1(r.iris)}</b></td><td>${f1(r.lo)}–${f1(r.hi)}</td><td><span class="ir-cls ir-${r.semRegistro?'c0':r.classe}">${r.semRegistro?'Sem registro':CL[r.classe]}</span></td>${IRIS_CORE.PILARES.map(p=>`<td>${f1(r.pil[p.k])}</td>`).join('')}</tr>`).join(''); }; ajTopo();
     $('ir-tq').addEventListener('input',rnd); $('ir-tc').addEventListener('change',rnd); rnd(); }
 
   // ---------- resumo do método ----------
