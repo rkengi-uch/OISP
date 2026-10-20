@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261020111013";</script>
+<head><script>window.__BUILD="20261020111323";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -7085,7 +7085,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   const recursos=()=>RECP=RECP||fetch('iris-nota-pdf.json',{cache:'force-cache'}).then(r=>{ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); }).catch(e=>{ RECP=null; throw e; });
   async function pdf(R,RF){
     const [J,RC]=await Promise.all([window.__pdfLibs(),recursos()]); const V=valores(R,RF), P=t=>preencher(t,V);
-    const doc=new J({unit:'mm',format:'a4'});
+    const doc=new J({unit:'mm',format:'a4',compress:true});
     [['DejaVuSans.ttf','DV','normal','sans'],['DejaVuSans-Bold.ttf','DV','bold','sansB'],['DejaVuSans-Oblique.ttf','DV','italic','sansI'],['DejaVuSerif-Bold.ttf','DVS','bold','serifB']].forEach(([f,n,s,k])=>{ doc.addFileToVFS(f,RC.fontes[k]); doc.addFont(f,n,s); });
     const PW=doc.internal.pageSize.getWidth(), PH=doc.internal.pageSize.getHeight(), M=18, CW=PW-2*M, TOP=20, BOT=PH-16;
     const INK=[20,28,43], CIN=[86,96,112], LNK=[31,79,143], LIN=[217,214,204], AZ=[31,95,174], MU=[143,150,163];
@@ -7130,7 +7130,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
       case 'ul': b.i.forEach(t=>rico(P(t),{x:M+5,w:CW-5,marca:'•',recuo:4,depois:1.2})); y+=1; break;
       case 'ol': b.i.forEach((t,i)=>rico(P(t),{x:M+6,w:CW-6,marca:(i+1)+'.',recuo:5.5,depois:1.2})); y+=1; break;
       case 'tab': tabela(b.h.map(P),b.r.map(l=>l.map(P))); break;
-      case 'eq': { const e=RC.eq[b.i]; let w=e.w*25.4/96, h=e.h*25.4/96; if(w>CW){ h*=CW/w; w=CW; } cabe(h+4); doc.addImage(e.png,'PNG',M+(CW-w)/2,y+1,w,h); y+=h+4; break; }
+      case 'eq': { const e=RC.eq[b.i]; let w=e.w*25.4/96, h=e.h*25.4/96; if(w>CW){ h*=CW/w; w=CW; } cabe(h+4); doc.addImage(e.png,'PNG',M+(CW-w)/2,y+1,w,h,'eq'+b.i,'FAST'); y+=h+4; break; }
       case 'dyn': if(b.k==='graf') grafico(); else { const T=dinTab(b.k,V); tabela(T.h,T.r); } break;
     } });
     const n=doc.internal.getNumberOfPages();
