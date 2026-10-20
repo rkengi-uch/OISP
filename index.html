@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261020101814";</script>
+<head><script>window.__BUILD="20261020102636";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -1559,6 +1559,7 @@ b.ir-c3,b.ir-c4{color:var(--ir4);} b.ir-c5{color:var(--ir5);}
 .ir-steps{margin:0;padding-left:20px;display:grid;gap:8px;font-size:13.5px;line-height:1.55;max-width:110ch;} .ir-steps ul{margin:6px 0 0;padding-left:4px;list-style:none;display:grid;gap:4px;}
 .ir-cta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px;margin:0 0 10px;padding:10px 14px;border:1px solid var(--border);border-left:5px solid var(--ir4);background:var(--card);text-decoration:none;color:var(--text);font-size:13px;}
 .ir-cta b{font:700 1rem var(--serif);letter-spacing:.02em;} .ir-cta-k{padding:1px 6px;font:700 10px var(--sans);text-transform:uppercase;background:var(--gold);color:#14213d;} .ir-cta-go{margin-left:auto;font-weight:700;color:var(--blue);} .ir-cta:hover{border-color:var(--ir4);}
+.ir-ext{width:.85em!important;height:.85em!important;display:inline-block;vertical-align:-.1em;margin-left:3px;flex:none;}
 
 /* círculos */
 .at-btn,.at-dot,.chip button,.co-leg-k i,.cx-num,.cx-play,.dot,.esf-ic,.ir-dot,.ir-fp,.mch-ticker .lbl i,.oi-sic-c,.oi-st,.pq-spin,.ra-chips .ra-rm,.ra-fab-ic,.ra-ico,.rc-chip button,.timeline li::before{border-radius:50% !important;}
@@ -6921,7 +6922,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
   const f1=v=>isFinite(v)?v.toLocaleString('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1}):'—';
   const f2=v=>isFinite(v)?v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}):'—';
   const fi=v=>Number(v||0).toLocaleString('pt-BR');
-  const EXT='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M20 14v6H4V4h6"/></svg>';
+  const EXT='<svg class="ir-ext" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M20 14v6H4V4h6"/></svg>';
   const GOV='Governo do Estado de SP';
   const CL={c1:'Muito baixo',c2:'Baixo',c3:'Moderado',c4:'Alto',c5:'Crítico',nd:'Sem dado'};
   const CLF={c1:'0 a 12',c2:'12 a 25',c3:'25 a 40',c4:'40 a 60',c5:'60 a 100'};
