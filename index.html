@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261021140930";</script>
+<head><script>window.__BUILD="20261021142032";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -1632,6 +1632,14 @@ html.ir-modal-on, html.ir-modal-on body{overflow:hidden;}
 .ir-dlb{font:11px var(--sans);fill:var(--text);cursor:pointer;paint-order:stroke;stroke:var(--card);stroke-width:3px;stroke-linejoin:round;}
 .ir-dlb1{font:700 14px var(--sans);fill:var(--ir5);} .ir-dlbe{font-weight:700;fill:var(--blue);}
 .ir-funil rect{cursor:pointer;}
+.ir-dtog{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin:6px 0 10px;}
+.ir-dtog-l{font:600 12px var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted);}
+.ir-seg{display:inline-flex;border:2px solid var(--blue);max-width:100%;}
+.ir-dtog .ir-seg button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:7px 16px;border:0;background:var(--card);color:var(--text);text-transform:none;letter-spacing:0;cursor:pointer;min-width:0;}
+.ir-dtog .ir-seg button+button{border-left:2px solid var(--blue);}
+.ir-dtog .ir-seg button b{font:700 13px var(--sans);} .ir-dtog .ir-seg button small{font:11px var(--sans);color:var(--text-muted);}
+.ir-dtog .ir-seg button[aria-selected="true"]{background:var(--blue);color:#fff;} .ir-dtog .ir-seg button[aria-selected="true"] small{color:rgba(255,255,255,.85);}
+.ir-dtog .ir-seg button:focus-visible{outline:3px solid var(--gold);outline-offset:2px;}
 
 /* círculos */
 .at-btn,.at-dot,.chip button,.co-leg-k i,.cx-num,.cx-play,.dot,.esf-ic,.ir-dot,.ir-fp,.mch-ticker .lbl i,.oi-sic-c,.oi-st,.pq-spin,.ra-chips .ra-rm,.ra-fab-ic,.ra-ico,.rc-chip button,.timeline li::before,i.ir-dp{border-radius:50% !important;}
@@ -7298,8 +7306,8 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
         <section class="ir-sec"><div class="sec-label" id="ir-mapa-sec">Mapa do IRIS-SP</div><p class="sec-desc">Cor pelo valor do índice. Clique num município (ou no quadro do Governo do Estado) para ver a explicação.</p><div class="ir-mgrid"><div class="ir-mapa-w" id="ir-mapa-w"></div><div id="ir-estado"></div></div></section>
         <section class="ir-sec"><div class="sec-label">Onde o alerta é maior</div><p class="sec-desc">Os 25 maiores índices, com o intervalo de 90% (incerteza dos dados e dos pesos). Intervalos que se sobrepõem indicam posições estatisticamente indistinguíveis.</p><div id="ir-cat" class="ir-cat"></div></section>
         <section class="ir-sec"><div class="sec-label">Anatomia dos maiores índices</div><p class="sec-desc">Quanto cada dimensão contribui para o índice dos 15 primeiros: o caminho mais curto para entender o porquê.</p><div id="ir-anat"></div></section>
-        <section class="ir-sec"><div class="sec-label" id="ir-disp-sec">Dispersão: índice final × porte do município</div>
-          <div class="ir-dtog" role="tablist" aria-label="Tipo de gráfico"><button type="button" role="tab" aria-selected="true" data-ir-dv="disp">Índice final × população</button><button type="button" role="tab" aria-selected="false" data-ir-dv="funil">Funil dos sinais graves</button></div>
+        <section class="ir-sec"><div class="sec-label" id="ir-disp-sec">Dispersão dos entes: nota final ou funil</div>
+          <div class="ir-dtog"><span class="ir-dtog-l" id="ir-dtog-l">Escolha o gráfico:</span><div class="ir-seg" role="tablist" aria-labelledby="ir-dtog-l"><button type="button" role="tab" aria-selected="true" data-ir-dv="disp"><b>Nota final</b><small>IRIS × população</small></button><button type="button" role="tab" aria-selected="false" data-ir-dv="funil"><b>Funil</b><small>sinais graves × população</small></button></div></div>
           <div id="ir-dv-disp"><p class="sec-desc">Cada ponto é um ente, na altura do seu IRIS (0 a 100) e na posição da sua população (escala log). As faixas coloridas são as classes do índice; os maiores índices aparecem nomeados, com o intervalo de 90%. Clique num ponto para ver a explicação.</p><div id="ir-disp" class="ir-funil"></div></div>
           <div id="ir-dv-funil" hidden><p class="sec-desc">Diagnóstico estatístico, não ranking: população (escala log) × sinais graves (responsabilização, apurações e crime organizado) por 100 mil habitantes, sem suavização. As faixas mostram a variação esperada só pelo acaso (95% e 99,8%) em torno da taxa média; pontos acima da faixa externa estão acima do esperado para o seu porte (Spiegelhalter, 2005). Municípios muito pequenos com um único registro grave ficam muito acima do funil, mas isso não os torna os de maior índice, porque o IRIS combina seis dimensões e limita cada uma a 100.</p><div id="ir-funil" class="ir-funil"></div></div></section>
         <section class="ir-sec"><div class="sec-label">Governo do Estado × conjunto dos municípios</div><p class="sec-desc">Razão entre a taxa do Estado e a do conjunto dos 645 municípios, com a mesma exposição (habitantes e, na sensibilidade, receita corrente líquida). Valores abaixo de 1 indicam menos sinais por unidade de exposição.</p><div id="ir-rr"></div></section>
@@ -7396,7 +7404,8 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     $('ir-disp').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Dispersão do IRIS final pela população: ${esc(t1.nome)} tem o maior índice, ${f1(t1.iris)}">${bandas}${xt}${yt}${ic}${pontos}${labs}
       <text x="${(W+l)/2}" y="${H-8}" class="ir-ax" text-anchor="middle">População (escala logarítmica)</text><text x="13" y="${(H-bt)/2}" class="ir-ax" transform="rotate(-90 13 ${(H-bt)/2})" text-anchor="middle">IRIS (0 a 100)</text></svg>
       <div class="ir-leg"><span><i class="ir-dp ir-dp-c5"></i>Crítico</span><span><i class="ir-dp ir-dp-c4"></i>Alto</span><span><i class="ir-dp ir-dp-c3"></i>Moderado</span><span><i class="ir-dp ir-dp-c2"></i>Baixo</span><span><i class="ir-dp ir-dp-c1"></i>Muito baixo</span><span><i class="ir-dp ir-dp-c0"></i>Sem registro</span><span><i class="ir-dest"></i>Governo do Estado</span><span><b>|</b> intervalo de 90% (10 maiores)</span></div>`;
-    const tg=document.querySelector('.ir-dtog'); if(tg&&!tg.dataset.ok){ tg.dataset.ok='1'; tg.addEventListener('click',ev=>{ const b=ev.target.closest('[data-ir-dv]'); if(!b) return; tg.querySelectorAll('[data-ir-dv]').forEach(x=>x.setAttribute('aria-selected',x===b?'true':'false')); $('ir-dv-disp').hidden=b.dataset.irDv!=='disp'; $('ir-dv-funil').hidden=b.dataset.irDv!=='funil'; }); } }
+    const tg=document.querySelector('.ir-dtog'); if(tg&&!tg.dataset.ok){ tg.dataset.ok='1'; tg.addEventListener('click',ev=>{ const b=ev.target.closest('[data-ir-dv]'); if(!b) return; verDisp(b.dataset.irDv,true); }); let v0=null; try{ v0=localStorage.getItem('ir-dv'); }catch(e){} if(v0==='funil') verDisp('funil'); } }
+  function verDisp(v,salvar){ const tg=document.querySelector('.ir-dtog'); if(!tg) return; tg.querySelectorAll('[data-ir-dv]').forEach(x=>x.setAttribute('aria-selected',x.dataset.irDv===v?'true':'false')); $('ir-dv-disp').hidden=v!=='disp'; $('ir-dv-funil').hidden=v!=='funil'; if(salvar) try{ localStorage.setItem('ir-dv',v); }catch(e){} }
   function funil(){ const F=R.diag.funil, W=760, H=380, l=58, rgt=14, t=12, bt=40;
     const pts=F.pts.filter(p=>p.pop>0), lx=Math.log10, xmin=lx(800), xmax=lx(5e7), ymax=Math.min(400,Math.max(20,...pts.map(p=>p.taxa))*1.05);
     const X=p=>l+(W-l-rgt)*(lx(p)-xmin)/(xmax-xmin), Y=v=>H-bt-(H-bt-t)*Math.sqrt(Math.max(0,Math.min(v,ymax))/ymax);   // eixo em raiz quadrada: separa os entes perto de zero
