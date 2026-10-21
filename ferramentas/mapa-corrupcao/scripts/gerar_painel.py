@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """Gera o painel do Mapa da Corrupção a partir do Supabase.
 
-Uso: python3 gerar_painel.py <index.html do painel publicado> [saida.html] [--comparar] [--recortes recortes_novos.json]
+Uso: python3 gerar_painel.py <index.html do painel publicado> [saida.html] [--comparar] [--recortes recortes_novos.json] [--sem-janela]
+
+Janela móvel de 10 anos: fatos anteriores ao corte (hoje − 10 anos) saem do DATA (ver janela10).
 
 Lê todas as tabelas pela API REST (chave publicável, só leitura), monta o
 objeto DATA no formato que o painel espera e o substitui no HTML. Layout,
@@ -398,6 +400,77 @@ def substituir(html, D, data_base=None):
                       lambda m: m.group(1) + str(cc[cod]) + m.group(2), html, count=1)
     return html
 
+# ---------- janela móvel de 10 anos (regra do usuário de 21/10/2026) ----------
+# O painel considera só fatos dos últimos 10 anos. Fato com data anterior ao corte (hoje − 10 anos, mesmo dia e mês)
+# sai do DATA; fato só com ano conta até 31/12 daquele ano; fato sem data fica. O Supabase continua com tudo
+# (nunca apagar registros); os retirados vão para janela_retirados.json/.sql, para o arquivo fatos_fora_janela.
+JANELA_ANOS = 10
+def _hoje_sp():
+    import datetime as _dt
+    f = _os.environ.get('JANELA_HOJE')   # teste: AAAA-MM-DD
+    if f: return _dt.date.fromisoformat(f)
+    try:
+        from zoneinfo import ZoneInfo
+        return _dt.datetime.now(ZoneInfo('America/Sao_Paulo')).date()
+    except Exception:
+        return _dt.date.today()
+def _data_fato(data, ano):
+    import datetime as _dt
+    m = re.match(r'^\s*(\d{1,2})/(\d{1,2})/(\d{4})', str(data or ''))
+    if m:
+        try: return _dt.date(int(m.group(3)), int(m.group(2)), int(m.group(1)))
+        except ValueError: pass
+    try:
+        a = int(ano)
+        if a > 1900: return _dt.date(a, 12, 31)
+    except (TypeError, ValueError): pass
+    return None
+def janela10(D):
+    hoje = _hoje_sp()
+    try: corte = hoje.replace(year=hoje.year - JANELA_ANOS)
+    except ValueError: corte = hoje.replace(year=hoje.year - JANELA_ANOS, day=28)
+    fora = []
+    def filtra(lista, colecao, chave, data):
+        mant = []
+        for x in lista or []:
+            d = data(x)
+            if d is not None and d < corte:
+                fora.append({'colecao': colecao, 'chave': str(chave(x)), 'data_fato': d.strftime('%d/%m/%Y'), 'item': x})
+            else:
+                mant.append(x)
+        return mant
+    D['R'] = filtra(D.get('R'), 'R', lambda x: x.get('id'), lambda x: _data_fato(x.get('data'), x.get('ano')))
+    D['CIT'] = filtra(D.get('CIT'), 'CIT', lambda x: '|'.join(str(x.get(k) or '') for k in ('mun', 'op', 'ano', 'link')), lambda x: _data_fato(x.get('data'), x.get('ano')))
+    D['CO'] = filtra(D.get('CO'), 'CO', lambda x: '|'.join(str(v) for v in (x[1], x[5], x[6], x[8])), lambda x: _data_fato(None, x[8] if len(x) > 8 else None))
+    D['NEWS'] = filtra(D.get('NEWS'), 'NEWS', lambda x: x[4] if len(x) > 4 else '', lambda x: _data_fato(x[10] if len(x) > 10 else None, x[1] if len(x) > 1 else None))
+    if isinstance(D.get('TCE'), dict) and isinstance(D['TCE'].get('itens'), list):
+        D['TCE']['itens'] = filtra(D['TCE']['itens'], 'TCE', lambda x: '|'.join(str(x.get(k) or '') for k in ('proc', 'resp', 'exerc')), lambda x: _data_fato(None, x.get('exerc')))
+    if isinstance(D.get('PAR'), list):
+        D['PAR'] = filtra(D['PAR'], 'PAR', lambda x: '|'.join(str(x.get(k) or '') for k in ('proc', 'mun', 'exerc')), lambda x: _data_fato(None, x.get('exerc')))
+    if isinstance(D.get('CNIA'), dict) and isinstance(D['CNIA'].get('itens'), list):
+        D['CNIA']['itens'] = filtra(D['CNIA']['itens'], 'CNIA', lambda x: '|'.join(str(x.get(k) or '') for k in ('numero', 'nome')), lambda x: _data_fato(x.get('data'), None))
+    # referências órfãs: registros de agentes retirados
+    ids = {f['chave'] for f in fora if f['colecao'] == 'R'}
+    if ids and isinstance(D.get('CNIA'), dict):
+        for c in D['CNIA'].get('itens') or []:
+            if c.get('registros'): c['registros'] = [r for r in c['registros'] if r not in ids]
+    return corte, fora
+def janela_saida(corte, fora, pasta, data_base):
+    import collections
+    cont = collections.Counter(f['colecao'] for f in fora)
+    json.dump({'corte': corte.strftime('%d/%m/%Y'), 'n': len(fora), 'por_colecao': cont, 'itens': fora},
+              open(_os.path.join(pasta, 'janela_retirados.json'), 'w', encoding='utf-8'), ensure_ascii=False)
+    q = lambda v: "'" + str(v).replace("'", "''") + "'"
+    with open(_os.path.join(pasta, 'janela_retirados.sql'), 'w', encoding='utf-8') as fh:
+        for i in range(0, len(fora), 200):
+            lote = fora[i:i + 200]
+            fh.write('insert into fatos_fora_janela (data_base, data_corte, colecao, chave, data_fato, item) values\n' +
+                     ',\n'.join(f"({q(data_base or '')}, {q(corte.strftime('%d/%m/%Y'))}, {q(f['colecao'])}, {q(f['chave'])}, {q(f['data_fato'])}, {q(json.dumps(f['item'], ensure_ascii=False))}::jsonb)" for f in lote) +
+                     '\non conflict (colecao, chave) do nothing;\n')
+    print('janela de 10 anos: corte', corte.strftime('%d/%m/%Y'), '| retirados do painel:', len(fora),
+          '(' + ', '.join(f'{k} {v}' for k, v in sorted(cont.items())) + ')' if fora else '(nenhum)',
+          '| arquivo: janela_retirados.sql (rode no Supabase; repetidos são ignorados)')
+
 if __name__ == '__main__':
     entrada = sys.argv[1]; saida = sys.argv[2] if len(sys.argv) > 2 and not sys.argv[2].startswith('--') else entrada
     html = open(entrada, encoding='utf-8').read()
@@ -407,6 +480,11 @@ if __name__ == '__main__':
         print('aviso: conteúdo antes de <!DOCTYPE html> removido (', _k, 'caracteres)', file=sys.stderr)
         html = html[_k:]
     D, data_base = montar_data()
+    _corte, _fora = (None, [])
+    if '--sem-janela' not in sys.argv:
+        _corte, _fora = janela10(D)
+        try: D['META'] = meta_qualidade(D)   # recalcula a qualidade sem os fatos retirados
+        except Exception as e: print('aviso: metadados de qualidade não recalculados:', e, file=sys.stderr)
     # Recortes de manchetes: ficam no próprio painel (imagens), não no Supabase.
     # Mantém os do painel atual e acrescenta os novos (--recortes arquivo.json), mais recentes primeiro.
     _i = html.find('const DATA = ') + len('const DATA = ')
@@ -436,5 +514,6 @@ if __name__ == '__main__':
         json.dump(conteudo, open(os.path.join(pasta, nome + '.json'), 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
     print('camadas separadas em', pasta, ':', ', '.join(f'{k}.json' for k in camadas), '(publique-as junto com o painel, no parâmetro files)')
     open(saida, 'w', encoding='utf-8').write(substituir(html, D, data_base))
+    if _corte is not None: janela_saida(_corte, _fora, os.path.dirname(os.path.abspath(saida)), data_base)
     print('painel gerado:', saida, '| registros:', len(D['R']), '| pendentes:',
           sum(1 for x in D['R'] if x.get('val') == 'Pendente'), '| data-base:', data_base)

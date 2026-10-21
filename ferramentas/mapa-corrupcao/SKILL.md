@@ -62,6 +62,7 @@ O projeto se chama **Observatório da Integridade – SP (OISP)** (antes, "Obser
    Depois de aplicar, marque cada decisão: `write_db` `db_op: "batch"` com `update` de `{aplicado: true, aplicado_em: "<ISO>"}` e `if_version` da leitura.
 
 1. **Ler o estado atual.** No Supabase, consulte o maior ID (`select max(substring(id from 2)::int) from registros`), a data da última execução (`log_atualizacoes`, `referencias` DATA_BASE) e as operações e municípios já registrados, para deduplicar.
+1A. **Aplicar a janela de 10 anos** (seção 2B) antes de pesquisar.
 2. **Definir a janela.** Em dias úteis, pesquise as últimas 48 horas. Às segundas-feiras, pesquise os últimos 7 dias, para recuperar o que escapou. Se houve dia sem execução concluída (créditos esgotados, falha ou interrupção), cubra sempre desde a última execução concluída (marca `execucao_diaria` em `log_atualizacoes`), seja qual for o intervalo.
 3. **Pesquisar.** Use as consultas de `references/consultas-de-busca.md`. Comece pelas fontes oficiais e depois vá para a imprensa. Para cada achado relevante, abra a página (não trabalhe só com o trecho do resultado de busca).
 4. **Filtrar.** Aplique o escopo (seção 1) e a política de fontes (`references/fontes-e-classificacao.md`). Descarte o que não passar e registre o motivo.
@@ -73,6 +74,17 @@ O projeto se chama **Observatório da Integridade – SP (OISP)** (antes, "Obser
 9. **Encerrar com o resumo de execução** (seção 8), mesmo que nada tenha sido encontrado.
 
 Nunca apague registros (exceto pendentes rejeitados pelo usuário, passo 0). Nunca altere um registro com `Status de validação = Validado` sem registrar o valor anterior no log.
+
+## 2B. Janela de 10 anos (regra do usuário de 21/10/2026; toda execução completa)
+
+O painel considera só fatos dos últimos 10 anos. Na primeira execução completa de cada dia (a que passa pela verificação de pendência), os fatos que passaram dos 10 anos saem do painel, e o Índice IRIS e todas as visualizações passam a ser calculados sem eles.
+
+1. **Corte** = hoje (America/Sao_Paulo) menos 10 anos, mesmo dia e mês (em 21/10/2026, o corte é 21/10/2016). Sai o fato com data anterior ao corte. Fato só com ano conta até 31/12 daquele ano; fato sem nenhuma data fica.
+2. **Data do fato por coleção:** R → `data` (dd/mm/aaaa) ou 31/12 do `ano`; CIT → `data` ou 31/12 do `ano`; CO → 31/12 do ano (posição 8); NEWS → posição 10 ou 31/12 do ano (posição 1); TCE.itens → 31/12 do `exerc`; PAR → 31/12 do `exerc`; CNIA.itens → `data`. A agenda (eventos futuros), o LOG e as tabelas de referência não passam pela janela.
+3. **Como aplicar:** o `scripts/gerar_painel.py` aplica a janela sozinho (função `janela10`) depois de ler o Supabase, limpa as referências órfãs (ids de R retirados em `CNIA.itens[].registros`; recortes de `SHOTS` cuja notícia saiu), recalcula os metadados de qualidade, o cabeçalho e a legenda, e grava ao lado do painel `janela_retirados.json` e `janela_retirados.sql`. Se o DATA for editado diretamente, sem o gerador, rode `python3 scripts/janela10.py <index.html> [saida.html]`, que faz o mesmo sobre o painel já publicado. Para testar outra data: variável `JANELA_HOJE=AAAA-MM-DD`. `--sem-janela` desliga a regra (não use na execução diária).
+4. **Arquivo dos retirados:** rode o `janela_retirados.sql` no Supabase (tabela `fatos_fora_janela`, com RLS e sem acesso público; `on conflict (colecao, chave) do nothing`, então os já arquivados nos dias anteriores são ignorados). O Supabase continua com todos os registros: a janela vale para o painel e o site, não para a base mestre (regra "Nunca apague registros"). Liste os retirados do dia (só os novos no arquivo) no lote diário do Drive, numa seção "Fora da janela de 10 anos". Recortes de manchetes que saírem com a notícia são repostos pelas próximas candidatas, pela regra das manchetes.
+5. **Índice IRIS:** é recalculado a cada abertura do painel com os dados restantes (o `iris_core.js` também ignora fatos anteriores ao corte, mesmo que algum escape da poda). Não altere o código. Na verificação com Playwright antes de republicar, abra a aba Índice IRIS (`window.__mostrarAba('iris')`) e confira que a ficha, o mapa e a tabela "Todos os entes" renderizam sem erro de console e que a Nota Metodológica abre.
+6. **Resumo:** informe a linha "Janela de 10 anos" (seção 8). Se a poda falhar, registre o erro, não grave a marca de conclusão e não republique um DATA parcialmente podado.
 
 ## 3. Classificação dos registros
 
@@ -383,6 +395,7 @@ Impedimentos TCE-SP (mensal): [sem arquivos do usuário / importados: c de contr
 QSA (mensal): [e] empresas consultadas, [s] sócios; vínculos: [v] ([f] com CPF parcial)
 TSE (mensal): [fl] candidaturas barradas (2020/2024); [d] doações de sócios a eleitos; [f] fornecedores de campanha
 Cadastro de pessoas: [n] nomes ([h] possíveis homônimos, [a] com apelido) / sem nomes novos
+Janela de 10 anos: corte [dd/mm/aaaa]; retirados do painel hoje [n] (R [r], CIT [c], CO [o], NEWS [n], TCE [t], PAR [p], CNIA [i]) / nenhum fato novo fora da janela
 Painel: [republicado no mesmo link com dados/*.json / sem alterações]
 Pendências para o usuário: [ex.: 3 registros aguardando validação; fonte oficial inacessível: …]
 ```
