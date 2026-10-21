@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261021092844";</script>
+<head><script>window.__BUILD="20261021140930";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -1618,9 +1618,23 @@ html.ir-modal-on, html.ir-modal-on body{overflow:hidden;}
 .ir-topscroll{scrollbar-color:var(--text-muted) var(--panel-2,#eef0f3);} .ir-tw{scrollbar-color:var(--text-muted) var(--panel-2,#eef0f3);}
 .nm-eq mtext{font-family:inherit;}
 .ir-pt-dano{background:var(--red-weak,#f6e3e3)!important;color:#7a1f2b!important;}
+/* IRIS: dispersão índice final × população */
+.ir-dtog{display:flex;flex-wrap:wrap;gap:6px;margin:4px 0 8px;} .ir-dtog button{font:600 11.5px var(--sans);letter-spacing:.04em;text-transform:uppercase;border:1px solid var(--border);background:var(--card);color:var(--text-2);padding:7px 12px;cursor:pointer;} .ir-dtog button[aria-selected="true"]{background:var(--blue);border-color:var(--blue);color:#fff;}
+.ir-bd{opacity:.16;} .ir-bd-c1{fill:var(--ir1);} .ir-bd-c2{fill:var(--ir2);} .ir-bd-c3{fill:var(--ir3);} .ir-bd-c4{fill:var(--ir4);} .ir-bd-c5{fill:var(--ir5);}
+.ir-bdl{font:600 10px var(--sans);letter-spacing:.04em;fill:var(--text-muted);text-transform:uppercase;}
+.ir-dp{stroke:var(--card);stroke-width:.8;cursor:pointer;} i.ir-dp{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:-1px;}
+.ir-dp-c0{fill:var(--ir0);background:var(--ir0);stroke:var(--text-muted);} .ir-dp-c1{fill:var(--ir1);background:var(--ir1);stroke:var(--text-muted);} .ir-dp-c2{fill:var(--ir2);background:var(--ir2);} .ir-dp-c3{fill:var(--ir3);background:var(--ir3);} .ir-dp-c4{fill:var(--ir4);background:var(--ir4);} .ir-dp-c5{fill:var(--ir5);background:var(--ir5);}
+.ir-dpt{stroke:var(--text);stroke-width:1.2;}
+.ir-dp1{stroke:var(--text);stroke-width:2.5;filter:drop-shadow(0 0 4px rgba(127,29,29,.55));}
+.ir-dest{fill:var(--blue);stroke:var(--card);stroke-width:1.2;cursor:pointer;} i.ir-dest{display:inline-block;width:9px;height:9px;transform:rotate(45deg);background:var(--blue);margin:0 2px;}
+.ir-dic{stroke:var(--text);stroke-width:1.2;opacity:.45;} .ir-dic1{stroke-width:2.2;opacity:.8;}
+.ir-dld{stroke:var(--text-muted);stroke-width:.8;}
+.ir-dlb{font:11px var(--sans);fill:var(--text);cursor:pointer;paint-order:stroke;stroke:var(--card);stroke-width:3px;stroke-linejoin:round;}
+.ir-dlb1{font:700 14px var(--sans);fill:var(--ir5);} .ir-dlbe{font-weight:700;fill:var(--blue);}
+.ir-funil rect{cursor:pointer;}
 
 /* círculos */
-.at-btn,.at-dot,.chip button,.co-leg-k i,.cx-num,.cx-play,.dot,.esf-ic,.ir-dot,.ir-fp,.mch-ticker .lbl i,.oi-sic-c,.oi-st,.pq-spin,.ra-chips .ra-rm,.ra-fab-ic,.ra-ico,.rc-chip button,.timeline li::before{border-radius:50% !important;}
+.at-btn,.at-dot,.chip button,.co-leg-k i,.cx-num,.cx-play,.dot,.esf-ic,.ir-dot,.ir-fp,.mch-ticker .lbl i,.oi-sic-c,.oi-st,.pq-spin,.ra-chips .ra-rm,.ra-fab-ic,.ra-ico,.rc-chip button,.timeline li::before,i.ir-dp{border-radius:50% !important;}
 .cd-bar{display:flex; justify-content:flex-end; margin:-4px 0 6px;}
 .cd-tog{font:12px var(--sans); background:none; border:1px solid var(--border); border-radius:4px; padding:4px 10px; color:var(--text-muted); cursor:pointer;}
 .cd-tog:hover{border-color:var(--gold); color:var(--text);}
@@ -7284,7 +7298,10 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
         <section class="ir-sec"><div class="sec-label" id="ir-mapa-sec">Mapa do IRIS-SP</div><p class="sec-desc">Cor pelo valor do índice. Clique num município (ou no quadro do Governo do Estado) para ver a explicação.</p><div class="ir-mgrid"><div class="ir-mapa-w" id="ir-mapa-w"></div><div id="ir-estado"></div></div></section>
         <section class="ir-sec"><div class="sec-label">Onde o alerta é maior</div><p class="sec-desc">Os 25 maiores índices, com o intervalo de 90% (incerteza dos dados e dos pesos). Intervalos que se sobrepõem indicam posições estatisticamente indistinguíveis.</p><div id="ir-cat" class="ir-cat"></div></section>
         <section class="ir-sec"><div class="sec-label">Anatomia dos maiores índices</div><p class="sec-desc">Quanto cada dimensão contribui para o índice dos 15 primeiros: o caminho mais curto para entender o porquê.</p><div id="ir-anat"></div></section>
-        <section class="ir-sec"><div class="sec-label">Funil: acima do esperado para o tamanho</div><p class="sec-desc">Cada ponto é um ente: população (escala log) × sinais graves (responsabilização, apurações e crime organizado) por 100 mil habitantes. As faixas mostram a variação esperada só pelo acaso (95% e 99,8%) em torno da taxa média; pontos acima da faixa externa estão acima do esperado para o seu porte (Spiegelhalter, 2005).</p><div id="ir-funil" class="ir-funil"></div></section>
+        <section class="ir-sec"><div class="sec-label" id="ir-disp-sec">Dispersão: índice final × porte do município</div>
+          <div class="ir-dtog" role="tablist" aria-label="Tipo de gráfico"><button type="button" role="tab" aria-selected="true" data-ir-dv="disp">Índice final × população</button><button type="button" role="tab" aria-selected="false" data-ir-dv="funil">Funil dos sinais graves</button></div>
+          <div id="ir-dv-disp"><p class="sec-desc">Cada ponto é um ente, na altura do seu IRIS (0 a 100) e na posição da sua população (escala log). As faixas coloridas são as classes do índice; os maiores índices aparecem nomeados, com o intervalo de 90%. Clique num ponto para ver a explicação.</p><div id="ir-disp" class="ir-funil"></div></div>
+          <div id="ir-dv-funil" hidden><p class="sec-desc">Diagnóstico estatístico, não ranking: população (escala log) × sinais graves (responsabilização, apurações e crime organizado) por 100 mil habitantes, sem suavização. As faixas mostram a variação esperada só pelo acaso (95% e 99,8%) em torno da taxa média; pontos acima da faixa externa estão acima do esperado para o seu porte (Spiegelhalter, 2005). Municípios muito pequenos com um único registro grave ficam muito acima do funil, mas isso não os torna os de maior índice, porque o IRIS combina seis dimensões e limita cada uma a 100.</p><div id="ir-funil" class="ir-funil"></div></div></section>
         <section class="ir-sec"><div class="sec-label">Governo do Estado × conjunto dos municípios</div><p class="sec-desc">Razão entre a taxa do Estado e a do conjunto dos 645 municípios, com a mesma exposição (habitantes e, na sensibilidade, receita corrente líquida). Valores abaixo de 1 indicam menos sinais por unidade de exposição.</p><div id="ir-rr"></div></section>
         <section class="ir-sec"><div class="sec-label">Qualidade estatística</div><div id="ir-qual"></div></section>
         <section class="ir-sec"><div class="sec-label">Todos os entes</div><div class="tj-bar"><input id="ir-tq" type="search" placeholder="Buscar município…" aria-label="Buscar município" autocomplete="off"><select id="ir-tc" aria-label="Classe"><option value="">Todas as classes</option>${Object.keys(CLF).map(k=>`<option value="${k}">${CL[k]} (${CLF[k]})</option>`).join('')}</select><span class="tj2-count" id="ir-tn"></span></div><div class="ir-topscroll" id="ir-tsc" aria-hidden="true"><div></div></div><div class="table-wrap ir-tw" id="ir-tw" tabindex="0" aria-label="Tabela de todos os entes (role para ver mais)"><table class="ir-tab ir-tall"><thead><tr><th>#</th><th>Ente</th><th>População</th><th>IRIS</th><th>IC 90%</th><th>Classe</th>${IRIS_CORE.PILARES.map(p=>`<th title="${esc(p.d)}">${esc(p.n)}</th>`).join('')}</tr></thead><tbody id="ir-tb"></tbody></table></div></section>
@@ -7298,7 +7315,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     $('ir-pills').innerHTML=`<span class="cx-pill blue">Entes avaliados: ${fi(R.res.length)}</span><span class="cx-pill">Com algum sinal: ${fi(R.res.filter(r=>!r.semRegistro).length)}</span><span class="cx-pill">Classe alta ou crítica: ${fi(R.res.filter(r=>r.classe==='c4'||r.classe==='c5').length)}</span><span class="cx-pill">Versão ${esc(R.versao)} · ${esc((window.IRIS_POP||{}).ano?'população IBGE '+window.IRIS_POP.ano:'')}</span>${NOTA?`<button type="button" class="cx-pill ir-pill-link ir-nota-btn" data-ir-nota>Nota metodológica</button>`:''}<a class="cx-pill ir-pill-link" href="#ir-metodo" data-ir-go="ir-metodo">Como é calculado</a>`;
     $('ir-dl').innerHTML=R.res.map(r=>`<option value="${esc(r.nome)}">`).join('');
     const ini=(window.painelF&&window.painelF().mun)||''; SEL=(ini&&porNome(ini))||R.ord[0];
-    ficha(); mapa(); cat(); anat(); funil(); rr(); qual(); tabela(); metodo();
+    ficha(); mapa(); cat(); anat(); dispersao(); funil(); rr(); qual(); tabela(); metodo();
     $('ir-q').addEventListener('change',e=>{ const r=porNome(e.target.value); if(r){ SEL=r; ficha(); marcarMapa(); $('ir-ficha-sec').scrollIntoView({behavior:'smooth',block:'start'}); } });
     document.getElementById('iris-root').addEventListener('click',e=>{ const b=e.target.closest('[data-ir-u]'); if(b){ e.preventDefault(); SEL=porU(+b.dataset.irU); ficha(); marcarMapa(); $('ir-ficha-sec').scrollIntoView({behavior:'smooth',block:'start'}); return; }
       const g=e.target.closest('[data-ir-go]'); if(g){ e.preventDefault(); const t=$(g.dataset.irGo); if(t) t.scrollIntoView({behavior:'smooth',block:'start'}); return; }
@@ -7353,6 +7370,33 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     $('ir-anat').innerHTML=`<div class="ir-anat">${L.map(r=>{ const C=contrib(r); return `<a href="#" class="ir-arow" data-ir-u="${r.u}"><span class="ir-an">${esc(r.nome)}</span><span class="ir-abar">${C.map(c=>`<i style="width:${c.v.toFixed(2)}%;background:${PCOR[c.k]}" title="${esc(c.n)}: +${f1(c.v)}"></i>`).join('')}</span><b>${f1(r.iris)}</b></a>`; }).join('')}</div><div class="ir-leg ir-leg-p">${IRIS_CORE.PILARES.map(p=>`<span><i style="background:${PCOR[p.k]}"></i>${esc(p.n)} (peso ${Math.round(p.w*100)}%)</span>`).join('')}</div>`; }
 
   // ---------- funil ----------
+  // ---------- dispersão: IRIS final × população ----------
+  function dispersao(){ const W=800, H=430, l=46, rgt=92, t=16, bt=42, lx=Math.log10, xmin=lx(700), xmax=lx(6e7);
+    const X=p=>l+(W-l-rgt)*(lx(Math.max(700,p))-xmin)/(xmax-xmin), Y=v=>H-bt-(H-bt-t)*Math.max(0,Math.min(100,v))/100;
+    const pts=R.res.filter(r=>r.pop>0), top=R.ord.filter(r=>r.u!==R.S).slice(0,10), t1=top[0], St=porU(R.S), cap=porNome('São Paulo');
+    const faixas=[[0,12,'c1'],[12,25,'c2'],[25,40,'c3'],[40,60,'c4'],[60,100,'c5']];
+    const bandas=faixas.map(([a,b,c])=>`<rect x="${l}" y="${Y(b)}" width="${W-l-rgt}" height="${Y(a)-Y(b)}" class="ir-bd ir-bd-${c}"/><text x="${W-rgt+6}" y="${(Y(b)+Y(a))/2-2}" class="ir-bdl"><tspan>${CL[c]}</tspan><tspan x="${W-rgt+6}" dy="12">${a}–${b}</tspan></text>`).join('');
+    const xt=[1e3,1e4,1e5,1e6,1e7].map(v=>`<line x1="${X(v)}" y1="${t}" x2="${X(v)}" y2="${H-bt}" class="ir-grid"/><text x="${X(v)}" y="${H-bt+16}" class="ir-ax" text-anchor="middle">${v>=1e6?(v/1e6)+' mi':(v/1e3)+' mil'}</text>`).join('');
+    const yt=[0,20,40,60,80,100].map(v=>`<text x="${l-6}" y="${Y(v)+4}" class="ir-ax" text-anchor="end">${v}</text>`).join('');
+    const cls=r=>r.semRegistro?'c0':r.classe;
+    // rótulos dos 10 maiores, do Estado e da capital, com desvio simples de colisão
+    const alvo=top.concat([St]).concat(cap&&!top.includes(cap)?[cap]:[]), caixas=[], rot=[];
+    alvo.forEach(r=>{ const px=X(r.pop), py=Y(r.iris), txt=r===t1?`${r.nome} · ${f1(r.iris)} · 1º`:`${r.nome} ${f1(r.iris)}`, w=txt.length*(r===t1?7.4:6.2)+6, h=13;
+      let lado=px+w+14<W-rgt?1:-1, ly=py-4, k=0, cx;
+      const bate=(x0,y0)=>caixas.some(b=>!(x0+w<b[0]||x0>b[0]+b[2]||y0-h>b[1]||y0<b[1]-b[3]));
+      for(;k<14;k++){ cx=lado>0?px+10:px-10-w; if(!bate(cx,ly)&&cx>l) break; ly+=(k%2?-1:1)*(k+1)*7; }
+      caixas.push([cx,ly,w,h]); rot.push({r,px,py,cx,ly,w,txt,lado}); });
+    const ic=top.map(r=>`<line x1="${X(r.pop)}" x2="${X(r.pop)}" y1="${Y(r.hi)}" y2="${Y(r.lo)}" class="ir-dic${r===t1?' ir-dic1':''}"><title>${esc(r.nome)}: IC 90% ${f1(r.lo)} a ${f1(r.hi)}</title></line>`).join('');
+    const pontos=pts.slice().sort((a,b)=>a.iris-b.iris).map(r=>{ const st=r.u===R.S, um=r===t1, tp=top.includes(r);
+      const dica=`<title>${esc(r.nome)}: IRIS ${f1(r.iris)} (${CL[r.classe]||'—'}), ${r.pos}º de ${R.res.length} · IC 90%: ${f1(r.lo)} a ${f1(r.hi)} · ${fi(r.pop)} hab.</title>`;
+      if(st){ const x=X(r.pop), y=Y(r.iris); return `<rect x="${x-6}" y="${y-6}" width="12" height="12" transform="rotate(45 ${x} ${y})" class="ir-dest" data-ir-u="${r.u}">${dica}</rect>`; }
+      return `<circle cx="${X(r.pop).toFixed(1)}" cy="${Y(r.iris).toFixed(1)}" r="${um?9:tp?5.2:3}" class="ir-dp ir-dp-${cls(r)}${um?' ir-dp1':tp?' ir-dpt':''}" data-ir-u="${r.u}">${dica}</circle>`; }).join('');
+    const labs=rot.map(o=>{ const um=o.r===t1, ty=o.ly; const lx2=o.lado>0?o.cx-2:o.cx+o.w+2;
+      return `<line x1="${o.px+(o.lado>0?(um?9:5):-(um?9:5))}" y1="${o.py}" x2="${lx2}" y2="${ty-4}" class="ir-dld"/><text x="${o.lado>0?o.cx:o.cx+o.w}" y="${ty}" class="ir-dlb${um?' ir-dlb1':''}${o.r.u===R.S?' ir-dlbe':''}" text-anchor="${o.lado>0?'start':'end'}" data-ir-u="${o.r.u}">${esc(o.r.u===R.S?'Governo do Estado '+f1(o.r.iris):o.txt)}</text>`; }).join('');
+    $('ir-disp').innerHTML=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Dispersão do IRIS final pela população: ${esc(t1.nome)} tem o maior índice, ${f1(t1.iris)}">${bandas}${xt}${yt}${ic}${pontos}${labs}
+      <text x="${(W+l)/2}" y="${H-8}" class="ir-ax" text-anchor="middle">População (escala logarítmica)</text><text x="13" y="${(H-bt)/2}" class="ir-ax" transform="rotate(-90 13 ${(H-bt)/2})" text-anchor="middle">IRIS (0 a 100)</text></svg>
+      <div class="ir-leg"><span><i class="ir-dp ir-dp-c5"></i>Crítico</span><span><i class="ir-dp ir-dp-c4"></i>Alto</span><span><i class="ir-dp ir-dp-c3"></i>Moderado</span><span><i class="ir-dp ir-dp-c2"></i>Baixo</span><span><i class="ir-dp ir-dp-c1"></i>Muito baixo</span><span><i class="ir-dp ir-dp-c0"></i>Sem registro</span><span><i class="ir-dest"></i>Governo do Estado</span><span><b>|</b> intervalo de 90% (10 maiores)</span></div>`;
+    const tg=document.querySelector('.ir-dtog'); if(tg&&!tg.dataset.ok){ tg.dataset.ok='1'; tg.addEventListener('click',ev=>{ const b=ev.target.closest('[data-ir-dv]'); if(!b) return; tg.querySelectorAll('[data-ir-dv]').forEach(x=>x.setAttribute('aria-selected',x===b?'true':'false')); $('ir-dv-disp').hidden=b.dataset.irDv!=='disp'; $('ir-dv-funil').hidden=b.dataset.irDv!=='funil'; }); } }
   function funil(){ const F=R.diag.funil, W=760, H=380, l=58, rgt=14, t=12, bt=40;
     const pts=F.pts.filter(p=>p.pop>0), lx=Math.log10, xmin=lx(800), xmax=lx(5e7), ymax=Math.min(400,Math.max(20,...pts.map(p=>p.taxa))*1.05);
     const X=p=>l+(W-l-rgt)*(lx(p)-xmin)/(xmax-xmin), Y=v=>H-bt-(H-bt-t)*Math.sqrt(Math.max(0,Math.min(v,ymax))/ymax);   // eixo em raiz quadrada: separa os entes perto de zero
