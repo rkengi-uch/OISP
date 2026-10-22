@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261022110943";</script>
+<head><script>window.__BUILD="20261022113040";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -7347,7 +7347,8 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
         d.innerHTML=`<div class="sec-label">Índice IRIS-SP: ressalva sobre o Governo do Estado</div>${ressalva()}<p class="ir-sub">Detalhes na <button type="button" class="ir-linkbtn" data-ir-nota>Nota Metodológica do IRIS-SP</button>.</p>`; am.insertBefore(d,am.firstChild); } }
     $('ir-pills').innerHTML=`<span class="cx-pill blue">Municípios avaliados: ${fi(R.nMun)}</span><span class="cx-pill">Governo do Estado: simulação</span><span class="cx-pill">Com algum sinal: ${fi(R.res.filter(r=>!r.semRegistro).length)}</span><span class="cx-pill">Classe alta ou crítica: ${fi(R.res.filter(r=>r.classe==='c4'||r.classe==='c5').length)}</span><span class="cx-pill">Versão ${esc(R.versao)} · ${esc((window.IRIS_POP||{}).ano?'população IBGE '+window.IRIS_POP.ano:'')}</span>${NOTA?`<button type="button" class="cx-pill ir-pill-link ir-nota-btn" data-ir-nota>Nota metodológica</button>`:''}<a class="cx-pill ir-pill-link" href="#ir-metodo" data-ir-go="ir-metodo">Como é calculado</a>`;
     $('ir-dl').innerHTML=R.res.map(r=>`<option value="${esc(r.nome)}">`).join('');
-    const ini=(window.painelF&&window.painelF().mun)||''; SEL=(ini&&porNome(ini))||R.ord[0];
+    SEL=R.ord.find(r=>r.u!==R.S)||R.ord[0];   // ao abrir ou recarregar a página, sempre o município de maior IRIS (não o último pesquisado)
+    if($('ir-q')) $('ir-q').value='';
     ficha(); mapa(); cat(); anat(); dispersao(); funil(); rr(); qual(); tabela(); metodo();
     $('ir-q').addEventListener('change',e=>{ const r=porNome(e.target.value); if(r){ SEL=r; ficha(); marcarMapa(); $('ir-ficha-sec').scrollIntoView({behavior:'smooth',block:'start'}); } });
     document.getElementById('iris-root').addEventListener('click',e=>{ const b=e.target.closest('[data-ir-u]'); if(b){ e.preventDefault(); SEL=porU(+b.dataset.irU); ficha(); marcarMapa(); $('ir-ficha-sec').scrollIntoView({behavior:'smooth',block:'start'}); return; }
