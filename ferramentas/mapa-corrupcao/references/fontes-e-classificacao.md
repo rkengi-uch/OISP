@@ -6,7 +6,7 @@
 
 | Código | Significado | Aplicação nesta base |
 |---|---|---|
-| A | Completamente confiável | Fonte oficial primária: Agência SP (agenciasp.sp.gov.br, portal oficial do Governo do Estado), Controladoria Geral do Estado (CGE-SP), Corregedoria Geral da Administração, secretarias estaduais (SES-SP, SSP-SP, Seduc etc.), MPSP (inclui Gaeco), PF, Polícia Civil-SP, TJSP, TRF3, STJ, STF, TRE-SP, TSE, TCE-SP, CGU, Receita Federal, Ministério Público de Contas, Diário Oficial, atas e resoluções de Câmara Municipal |
+| A | Completamente confiável | Fonte oficial primária: Ministério Público do Trabalho (mpt.mp.br; inquéritos civis, recomendações, TACs e ações sobre assédio eleitoral), Agência SP (agenciasp.sp.gov.br, portal oficial do Governo do Estado), Controladoria Geral do Estado (CGE-SP), Corregedoria Geral da Administração, secretarias estaduais (SES-SP, SSP-SP, Seduc etc.), MPSP (inclui Gaeco), PF, Polícia Civil-SP, TJSP, TRF3, STJ, STF, TRE-SP, TSE, TCE-SP, CGU, Receita Federal, Ministério Público de Contas, Diário Oficial, atas e resoluções de Câmara Municipal |
 | B | Geralmente confiável | Grande imprensa e agências: Estadão / Estadão Conteúdo, Folha / Folhapress, g1 e afiliadas Globo, CNN Brasil, UOL, Metrópoles, Poder360, Band, Record, SBT News, Agência Brasil, Veja, piauí, Gazeta do Povo |
 | C | Razoavelmente confiável | Jornais e portais regionais com redação identificada (ex.: EPTV, TV TEM, jornais de cidade), agregadores e reproduções de outras fontes |
 | D–F | Não usualmente confiável, não confiável ou não avaliável | NÃO usar na base |
