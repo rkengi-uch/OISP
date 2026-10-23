@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261022113040";</script>
+<head><script>window.__BUILD="20261023081522";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -2800,7 +2800,7 @@ function renderTable(rs){
   const pages=Math.max(1,Math.ceil(arr.length/PS)); page=Math.min(page,pages-1);
   const sl=arr.slice(page*PS,page*PS+PS);
   $('tbody').innerHTML=sl.map(x=>`<tr class="row" data-id="${x.id}"><td><a class="clk" data-mun="${esc(x.mun)}">${esc(x.mun)}</a></td><td><span class="nm-link" data-nome="${esc(x.nome)}" title="Filtrar o painel por este nome">${esc(x.nome)}</span>${TCEIDS.has(x.id)?' <span class="badge b-tce" title="Também na lista de contas julgadas irregulares do TCE-SP">TCE</span>':''}</td><td>${esc(x.cargo)}</td><td>${esc(x.medida)}</td><td>${esc(x.tip)}</td><td>${esc(x.op)}</td><td>${x.ano||'s/d'}</td><td>${x.est==='Condenado'?'<span class="badge b-cond">Condenado</span>':esc(x.est)}${x.rev?' <span class="badge b-rev">revertida</span>':''}${x.val==='Pendente'?' <span class="badge b-val" title="Incluído pela atualização automática; aguardando validação">a validar</span>':''}</td><td><span class="badge cred cred-${esc((x.cred||'')[0])}" title="${esc(credTitle(x.cred))}">${esc(x.cred)}</span></td></tr>`+
-    (open===x.id?`<tr class="detail"><td colspan="9"><p style="margin:0 0 6px;">${esc(x.desc)}</p><p style="margin:0 0 4px;">${x.nivel==='Estadual'?'<b>Governo do Estado</b> · órgão: '+esc(x.orgest)+' · ':''}<b>Crimes apurados:</b> ${esc(x.crimes)} · <b>Órgão:</b> ${esc(x.orgao)} · <b>Data:</b> ${esc(x.data)} · <b>Situação:</b> ${esc(x.situacao)}</p>${x.empresa?`<p style="margin:0 0 4px;"><b>Empresa/entidade citada:</b> ${esc(x.empresa)}</p>`:''}<p style="margin:0;"><b>Fonte:</b> ${esc(x.fonte)} — ${/^http/.test(x.link)?`<a href="${esc(x.link)}" target="_blank" rel="noopener">link</a>`:esc(x.link)}${x.link2?` · <a href="${esc(x.link2)}" target="_blank" rel="noopener">link complementar</a>`:''}${(OPL[x.op]||[]).length?` · <a class="clk" data-op="${esc(x.op)}">ver fontes da operação (${OPL[x.op].length})</a>`:''}</p>${(()=>{ const nl=nwRel(x,5); return nl.length?`<div class="nw-rel"><b>Notícias relacionadas</b><ul class="nw-list">${nl.map(n=>nwItem(n,{mun:1})).join('')}</ul></div>`:''; })()}${(x.hist||[]).length?`<div class="hist"><b>Histórico de atualizações</b><ul style="margin:4px 0 0; padding-left:16px;">${x.hist.map(h=>`<li>${esc(h.data)} · ${esc(h.campo)}: <s>${esc(h.antes)}</s> → ${esc(h.depois)} <a href="${esc(h.fonte)}" target="_blank" rel="noopener">[fonte]</a></li>`).join('')}</ul></div>`:''}</td></tr>`:'')).join('')||'<tr><td colspan="9" class="empty-msg">Nenhum registro com os filtros atuais. Use "Limpar filtros".</td></tr>';
+    (open===x.id?`<tr class="detail"><td colspan="9"><p style="margin:0 0 6px;">${esc(x.desc)}</p><p style="margin:0 0 4px;">${x.nivel==='Estadual'?'<b>Governo do Estado</b> · órgão: '+esc(x.orgest)+' · ':''}<b>Crimes apurados:</b> ${esc(x.crimes)} · <b>Órgão:</b> ${esc(x.orgao)} · <b>Data:</b> ${esc(x.data)} · <b>Situação:</b> ${esc(x.situacao)}</p>${x.empresa?`<p style="margin:0 0 4px;"><b>Empresa/entidade citada:</b> ${String(x.empresa).split(';').map(t=>t.trim()).filter(Boolean).map(t=>{ const n=t.replace(/\(.*?\)/g,'').trim(); return `<span class="nm-link emp-link" data-tipo="empresa" data-nome="${esc(n)}" tabindex="0" role="button">${esc(t)}</span>`; }).join('; ')}</p>`:''}<p style="margin:0;"><b>Fonte:</b> ${esc(x.fonte)} — ${/^http/.test(x.link)?`<a href="${esc(x.link)}" target="_blank" rel="noopener">link</a>`:esc(x.link)}${x.link2?` · <a href="${esc(x.link2)}" target="_blank" rel="noopener">link complementar</a>`:''}${(OPL[x.op]||[]).length?` · <a class="clk" data-op="${esc(x.op)}">ver fontes da operação (${OPL[x.op].length})</a>`:''}</p>${(()=>{ const nl=nwRel(x,5); return nl.length?`<div class="nw-rel"><b>Notícias relacionadas</b><ul class="nw-list">${nl.map(n=>nwItem(n,{mun:1})).join('')}</ul></div>`:''; })()}${(x.hist||[]).length?`<div class="hist"><b>Histórico de atualizações</b><ul style="margin:4px 0 0; padding-left:16px;">${x.hist.map(h=>`<li>${esc(h.data)} · ${esc(h.campo)}: <s>${esc(h.antes)}</s> → ${esc(h.depois)} <a href="${esc(h.fonte)}" target="_blank" rel="noopener">[fonte]</a></li>`).join('')}</ul></div>`:''}</td></tr>`:'')).join('')||'<tr><td colspan="9" class="empty-msg">Nenhum registro com os filtros atuais. Use "Limpar filtros".</td></tr>';
   $('page-info').textContent=`Página ${page+1} de ${pages} · ${arr.length} registros`;
   document.querySelectorAll('th').forEach(th=>{ th.classList.remove('sorted-asc','sorted-desc'); if(th.dataset.k===sortK) th.classList.add(sortDir>0?'sorted-asc':'sorted-desc'); });
 }
@@ -3991,9 +3991,9 @@ window.CONTEUDO_SP = {"glossario": [{"t": "Administração Pública", "d": "Conj
     if(t.closest('[data-fechar]')) dlg.close();
     const fe=t.closest('[data-ir-empresas]'); if(fe){ dlg.close(); mostrarAba('empresas',{topo:true}); const q=$('sc-q'); if(q){ q.value=fe.dataset.irEmpresas; q.dispatchEvent(new Event('input')); } }
     if(t.closest('[data-esf-abrir]')){ const b=$('esf-abrir'); dlg.close(); b&&b.click(); }
-    const nl=t.closest('.nm-link'); if(nl){ e.preventDefault(); e.stopPropagation(); abrirFicha({tipo:'pessoa',nome:nl.dataset.nome}); } });
+    const nl=t.closest('.nm-link'); if(nl){ e.preventDefault(); e.stopPropagation(); if(window.__abrirEmpresaNome&&window.__abrirEmpresaNome(nl.dataset.nome,nl)) return; abrirFicha({tipo:'pessoa',nome:nl.dataset.nome}); } });
   // nomes clicáveis abrem a ficha, e a ficha filtra o painel automaticamente
-  const abrirNome=el=>abrirFicha({tipo:'pessoa',nome:el.dataset.nome});
+  const abrirNome=el=>{ if(window.__abrirEmpresaNome&&window.__abrirEmpresaNome(el.dataset.nome,el)) return; abrirFicha({tipo:'pessoa',nome:el.dataset.nome}); };
   window.addEventListener('click',e=>{ const el=e.target.closest&&e.target.closest('.nm-link'); if(!el||dlg.contains(el)||el.closest('.pq-ficha')) return; e.preventDefault(); e.stopImmediatePropagation(); abrirNome(el); },true);
   window.addEventListener('keydown',e=>{ if(e.key!=='Enter') return; const el=e.target.closest&&e.target.closest('.nm-link'); if(!el||dlg.contains(el)||el.closest('.pq-ficha')) return; e.preventDefault(); e.stopImmediatePropagation(); abrirNome(el); },true);
   // botão "Ficha por esfera" no perfil do município
@@ -4066,7 +4066,7 @@ window.CONTEUDO_SP = {"glossario": [{"t": "Administração Pública", "d": "Conj
   function marcar(){ br.querySelectorAll('.bu-it').forEach((b,j)=>{ b.classList.toggle('ativo',j===sel); if(j===sel) b.scrollIntoView({block:'nearest'}); }); }
   function escolher(i){ const x=itensB[i]; if(!x) return; bd.close();
     if(x._t==='p'||x._t==='r'){ const ops=window.__opsPessoa&&window.__opsPessoa(limpo(x.nome)); if(ops&&ops.size) setTimeout(()=>aviso(`${limpo(x.nome)} não está na base curada de agentes públicos: as visualizações mostram os registros das operações em que o nome é citado pelas fontes (${ops.lab.join('; ')}).`),400); }
-    if(x._t==='p'){ window.painelNome&&window.painelNome(limpo(x.nome)); abrirFicha({tipo:'pessoa',nome:x.nome,termo:bq.value.trim()}); }
+    if(x._t==='p'){ if(window.__abrirEmpresaNome&&window.__abrirEmpresaNome(x.nome,null,x.cnpj||x.c||'')) return; window.painelNome&&window.painelNome(limpo(x.nome)); abrirFicha({tipo:'pessoa',nome:x.nome,termo:bq.value.trim()}); }
     else if(x._t==='m'){ window.painelMun&&window.painelMun(x.nome); abrirFicha({tipo:'mun',nome:x.nome,termo:bq.value.trim()}); }
     else if(x._t==='o'){ if(window.painelOp&&(F().op!==x.nome)) window.painelOp(x.nome); abrirFicha({tipo:'op',nome:x.nome,termo:bq.value.trim()}); }
     else if(x._t==='r'){ window.painelNome&&window.painelNome(limpo(x.nome)); abrirFicha({tipo:'pessoa',nome:x.nome,termo:x.num}); }
@@ -5042,7 +5042,8 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     return out.sort((a,b)=>b[0]-a[0]||a[1].n.length-b[1].n.length).slice(0,lim||12).map(x=>x[1]); }
   window.__entBuscar=buscarEnt;
   // aplica a escolha como filtro comum do painel (etiqueta no topo)
-  function aplicar(e){ if(e.t==='m') window.painelMun&&window.painelMun(e.n); else if(e.t==='o') window.painelOp&&window.painelOp(e.n); else window.painelNome&&window.painelNome(e.n);
+  function aplicar(e){ if(e.t==='e'&&window.__abrirEmpresaNome&&window.__abrirEmpresaNome(e.n,null,String(e.k||'').replace(/\D/g,'').length===14?e.k:'')){ return; }
+    if(e.t==='m') window.painelMun&&window.painelMun(e.n); else if(e.t==='o') window.painelOp&&window.painelOp(e.n); else window.painelNome&&window.painelNome(e.n);
     aviso&&aviso(`Filtro aplicado: ${e.n}. Para tirar, use o × da etiqueta no topo.`); }
   window.__entAplicar=aplicar;
   // ---------- lista de sugestões
@@ -5841,6 +5842,40 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     box.addEventListener('click',e=>{ if(e.target.closest('.ce-rede')){ e.preventDefault(); window.__mostrarAba&&window.__mostrarAba('casos'); const n=$('net-svg'); if(n) setTimeout(()=>n.scrollIntoView({behavior:'smooth',block:'center'}),80); } }); }
   if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',()=>setTimeout(montar,0)); else setTimeout(montar,0);
   setTimeout(montar,1500);
+})();
+
+</script>
+<script>
+// Cartão da empresa em qualquer aba (regra do usuário de 23/10/2026): clicar ou pesquisar uma empresa ou entidade
+// abre o cartão com Receita Federal, PNCP, despesas no Portal da Transparência do TCE-SP e links de consulta
+// (o mesmo da aba Empresas e contratos e da rede de relações).
+(function(){
+  const so=t=>String(t||'').replace(/\D/g,'');
+  const nk=t=>String(t||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\(.*?\)/g,' ').replace(/[^a-z0-9]+/g,' ').trim();
+  const semSuf=t=>nk(t).replace(/\b(ltda|eireli|epp|me|mei|s a|sa|s s|ss|cia|companhia)\b/g,' ').replace(/\s+/g,' ').trim();
+  const PJ=/\b(ltda|s a|eireli|epp|me|mei|cia|companhia|comercio|servicos|construtora|construcoes|engenharia|distribuidora|instituto|associacao|fundacao|cooperativa|consultoria|transportes|tecnologia|empreendimentos|participacoes|incorporadora|industria|holding|agropecuaria|organizacao social|hospital|clinica|laboratorio|editora|grafica|locadora|terraplenagem|terraplanagem|pavimentacao|saneamento|ambiental|seguranca|vigilancia|limpeza|alimentacao|medicamentos|farmaceutica|informatica|sistemas|solucoes)\b/;
+  // procura o CNPJ no índice único de entidades (dados/entidades.json), pela razão social ou por grafia alternativa
+  function cnpjPorNome(nome){ const ix=window.__entIdx||[]; const k=nk(nome), s=semSuf(nome); if(!k) return '';
+    for(const e of ix){ if(e.t!=='e') continue; const c=so(e.k); if(c.length!==14) continue; const nomes=[e.n].concat(e.a||[]);
+      if(nomes.some(n=>{ const a=nk(n); return a===k||(s.split(' ').length>=2&&semSuf(n)===s); })) return c; }
+    return ''; }
+  function ehEmpresa(nome,el){ if(el&&(el.dataset.cnpj||el.dataset.tipo==='empresa'||el.classList.contains('emp-link'))) return true;
+    const sub=el&&el.parentElement&&el.parentElement.querySelector('.tj-sub'); if(sub&&/^empresa/i.test(sub.textContent.trim())) return true;
+    if(sub&&/^pessoa/i.test(sub.textContent.trim())) return false;
+    if(PJ.test(nk(nome))) return true;
+    // só pelo índice: se o nome também é de pessoa da base, prevalece a pessoa (homônimos e firmas individuais)
+    const k=nk(nome), ix=window.__entIdx||[]; if(ix.some(e=>e.t==='p'&&nk(e.n)===k)) return false;
+    return !!cnpjPorNome(nome); }
+  // abre o cartão; devolve true quando tratou o clique (nome de empresa ou entidade)
+  function abrir(nome,el,cnpj){ nome=String(nome||'').trim(); if(!nome&&!cnpj) return false;
+    let c=so(cnpj||(el&&el.dataset.cnpj)||''); if(!c&&!ehEmpresa(nome,el)) return false;
+    if(!c) c=cnpjPorNome(nome);
+    if(c.length===14&&window.__abrirEmpresaCNPJ){ window.__abrirEmpresaCNPJ(c,nome); return true; }
+    if(window.__fichaRedeAbrir) return !!window.__fichaRedeAbrir({id:'e:'+nome,type:'emp',label:nome});
+    return false; }
+  window.__abrirEmpresaNome=abrir;
+  // garante o índice de entidades carregado (para achar o CNPJ pelo nome)
+  setTimeout(()=>{ try{ window.__entCarregar&&window.__entCarregar(); }catch(e){} },1500);
 })();
 
 </script>
