@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head><script>window.__BUILD="20261023081522";</script>
+<head><script>window.__BUILD="20261023091206";</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Observatório da Integridade – SP</title>
@@ -4035,7 +4035,9 @@ window.CONTEUDO_SP = {"glossario": [{"t": "Administração Pública", "d": "Conj
     pes.forEach(p=>p._t='p'); mun.forEach((m,i)=>mun[i]={_t:'m',nome:m}); ops.forEach((o,i)=>ops[i]={_t:'o',nome:o}); pr.forEach((p,i)=>pr[i]={_t:'r',num:p[0],nome:p[1],cam:p[2],mun:p[3]});
     const munPrimeiro=mun.some(m=>nrm(m.nome)===q);
     const gMun=()=>grupo('Municípios',mun,m=>`<b>${esc(m.nome)}</b><small>ficha do município</small>`);
-    br.innerHTML=(munPrimeiro?gMun():'')+grupo('Pessoas e empresas',pes,p=>`<b>${esc(p.nome)}</b><small>${esc([p.tipo==='empresa'?'empresa':'',[...p.mun].slice(0,2).join(', '),[...p.cam].join(' · '),p.al&&p.al.length?'também: '+p.al.slice(0,2).join('; '):''].filter(Boolean).join(' — '))}</small>`)+
+    // CNPJ completo (ou raiz de 8 dígitos) digitado: primeira opção abre o cartão da empresa (Receita, PNCP, TCE-SP)
+    const cj=(window.__cnpjValido&&window.__cnpjValido(dig))||(dig.length===8&&/^[\d.\s\/-]+$/.test(bq.value.trim()))?[{_t:'cnpj',c:dig,nome:(window.__nomePorCNPJ&&window.__nomePorCNPJ(dig))||''}]:[];
+    br.innerHTML=grupo('Empresa pelo CNPJ',cj,x=>`<b>${esc(x.nome||('CNPJ '+bq.value.trim()))}</b><small>abrir o cartão da empresa: Receita Federal, contratos no PNCP, despesas no TCE-SP e links de consulta</small>`)+(munPrimeiro?gMun():'')+grupo('Pessoas e empresas',pes,p=>`<b>${esc(p.nome)}</b><small>${esc([p.tipo==='empresa'?'empresa':'',[...p.mun].slice(0,2).join(', '),[...p.cam].join(' · '),p.al&&p.al.length?'também: '+p.al.slice(0,2).join('; '):''].filter(Boolean).join(' — '))}</small>`)+
       (munPrimeiro?'':gMun())+grupo('Operações',ops,o=>`<b>${esc(o.nome)}</b><small>filtrar o painel pela operação</small>`)+
       grupo('Processos',pr,p=>`<b>${esc(p.num)}</b><small>${esc(p.cam)} — ${esc(p.nome)}</small>`);
     const cams=q.length>=3?camadas(q).map(c=>({_t:'c',nome:c[0],n:c[2],aba:c[1],go:c[3]})):[];
@@ -4066,6 +4068,7 @@ window.CONTEUDO_SP = {"glossario": [{"t": "Administração Pública", "d": "Conj
   function marcar(){ br.querySelectorAll('.bu-it').forEach((b,j)=>{ b.classList.toggle('ativo',j===sel); if(j===sel) b.scrollIntoView({block:'nearest'}); }); }
   function escolher(i){ const x=itensB[i]; if(!x) return; bd.close();
     if(x._t==='p'||x._t==='r'){ const ops=window.__opsPessoa&&window.__opsPessoa(limpo(x.nome)); if(ops&&ops.size) setTimeout(()=>aviso(`${limpo(x.nome)} não está na base curada de agentes públicos: as visualizações mostram os registros das operações em que o nome é citado pelas fontes (${ops.lab.join('; ')}).`),400); }
+    if(x._t==='cnpj'){ window.__abrirEmpresaCNPJ&&window.__abrirEmpresaCNPJ(x.c,x.nome||''); return; }
     if(x._t==='p'){ if(window.__abrirEmpresaNome&&window.__abrirEmpresaNome(x.nome,null,x.cnpj||x.c||'')) return; window.painelNome&&window.painelNome(limpo(x.nome)); abrirFicha({tipo:'pessoa',nome:x.nome,termo:bq.value.trim()}); }
     else if(x._t==='m'){ window.painelMun&&window.painelMun(x.nome); abrirFicha({tipo:'mun',nome:x.nome,termo:bq.value.trim()}); }
     else if(x._t==='o'){ if(window.painelOp&&(F().op!==x.nome)) window.painelOp(x.nome); abrirFicha({tipo:'op',nome:x.nome,termo:bq.value.trim()}); }
@@ -5874,6 +5877,30 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     if(window.__fichaRedeAbrir) return !!window.__fichaRedeAbrir({id:'e:'+nome,type:'emp',label:nome});
     return false; }
   window.__abrirEmpresaNome=abrir;
+  // ---------- CNPJ digitado em qualquer campo de busca ----------
+  function cnpjValido(c){ c=so(c); if(c.length!==14||/^(\d)\1+$/.test(c)) return false;
+    const dv=n=>{ const w=n===12?[5,4,3,2,9,8,7,6,5,4,3,2]:[6,5,4,3,2,9,8,7,6,5,4,3,2]; let s=0; for(let i=0;i<n;i++) s+=(+c[i])*w[i]; const r=s%11; return r<2?0:11-r; };
+    return dv(12)===+c[12]&&dv(13)===+c[13]; }
+  const tit=t=>String(t||'').toLowerCase().replace(/(^|[\s\-\/(])([a-zà-ú])/g,(m,a,b)=>a+b.toUpperCase()).replace(/\b(De|Da|Do|Das|Dos|E)\b/g,w=>w.toLowerCase()).replace(/\bLtda\b/gi,'Ltda').replace(/\bS\/?a\b/g,'S.A.');
+  // nome da empresa pelo CNPJ nas camadas do painel (crime organizado, índice de entidades, PNCP, Receita)
+  function nomePorCNPJ(c){ c=so(c); const b=c.slice(0,8);
+    const X=(window.CO_EMP||{}).emp||[]; const e=X.find(x=>so(x.c)===c)||X.find(x=>so(x.c).slice(0,8)===b); if(e) return e.nome||tit(e.r);
+    const ix=window.__entIdx||[]; const i=ix.find(x=>x.t==='e'&&so(x.k)===c)||ix.find(x=>x.t==='e'&&so(x.k).slice(0,8)===b); if(i) return i.n;
+    const PN=window.__pncp||{}; if(PN.B&&PN.B[b]) return tit(PN.B[b][0]);
+    const R=window.__rfb; if(R&&R.C&&R.C[b]) return tit(R.C[b][0]); return ''; }
+  window.__cnpjValido=cnpjValido; window.__nomePorCNPJ=nomePorCNPJ;
+  function abrirCNPJ(c){ c=so(c); if(!window.__abrirEmpresaCNPJ) return false; window.__abrirEmpresaCNPJ(c,nomePorCNPJ(c)||''); return true; }
+  window.__abrirCartaoCNPJ=abrirCNPJ;
+  // em qualquer campo de busca das abas e dos filtros: CNPJ completo e válido abre o cartão da empresa
+  const ultimo=new WeakMap(); let tm=null;
+  const campo=el=>el&&el.tagName==='INPUT'&&/^(search|text)$/.test(el.type||'text')&&!el.closest('#ce-box')&&!el.closest('.pq-ficha')&&!el.closest('#busca-dlg')&&(el.closest('section.aba')||el.closest('.filterbar')||el.closest('.tj-bar'));
+  function tentar(el,ja){ const c=so(el.value); if(!cnpjValido(c)) return false; if(!ja&&ultimo.get(el)===c) return false; ultimo.set(el,c); return abrirCNPJ(c); }
+  document.addEventListener('input',e=>{ const el=e.target; if(!campo(el)) return; clearTimeout(tm); tm=setTimeout(()=>tentar(el,false),700); },true);
+  document.addEventListener('keydown',e=>{ if(e.key!=='Enter') return; const el=e.target; if(!campo(el)) return; if(cnpjValido(el.value)){ clearTimeout(tm); tentar(el,true); } },true);
+  // busca única: camada "Crime organizado: empresas citadas" (por nome ou CNPJ)
+  (window.__buscaCamadas=window.__buscaCamadas||[]).push((q,has,L,termo)=>{ const X=(window.CO_EMP||{}).emp||[]; const dg=so(termo);
+    const n=X.filter(e=>has([e.nome,e.r,e.mun,e.op].join(' '))||(dg.length>=8&&so(e.c).includes(dg))).length;
+    if(n) L.push(['Crime organizado: empresas citadas como investigadas','crime',n,()=>{ const A=window.__ab; A&&A.mostrarAba('crime'); setTimeout(()=>{ const i=document.getElementById('coe-q'); if(i){ i.value=termo; i.dispatchEvent(new Event('input',{bubbles:true})); i.scrollIntoView({block:'center'}); } },250); }]); });
   // garante o índice de entidades carregado (para achar o CNPJ pelo nome)
   setTimeout(()=>{ try{ window.__entCarregar&&window.__entCarregar(); }catch(e){} },1500);
 })();
@@ -6836,7 +6863,7 @@ const REGIOES_SP = {"nomes":["Araraquara","Araçatuba","Bauru","Campinas","Marí
     function r(){ const q=norm($('coe-q').value), op=$('coe-op').value, ct=$('coe-cat').value, uf=$('coe-uf').value;
       const L=V.emp.filter(e=>(!op||e.op.split(';').map(o=>o.trim()).includes(op))&&(!ct||e.cat===ct)&&(!uf||(uf==='SP'?e.uf==='SP':e.uf&&e.uf!=='SP'))&&(!q||norm([e.nome,e.r,e.c,e.mun,e.uf,(SOC[e.c]||[]).map(s=>s[1]).join(' ')].join(' ')).includes(q)||(q.replace(/\D/g,'').length>=8&&String(e.c||'').includes(q.replace(/\D/g,'')))));
       $('coe-n').textContent=fmt(L.length)+' empresa'+(L.length===1?'':'s'); if(pag*PS>=L.length) pag=0;
-      $('coe-tb').innerHTML=L.slice(pag*PS,pag*PS+PS).map(e=>{ const so=(SOC[e.c]||[]); return `<tr><td><b>${esc(nomeE(e))}</b>${e.r&&chave(e.r)!==chave(e.nome)?`<div class="co-sub">na lista: ${esc(e.nome)}</div>`:''}${e.atua&&e.atua.length?`<div class="co-sub"><b>Atuação citada:</b> ${esc(e.atua.join(', '))}</div>`:''}${despTxt(e)}${e.obs?`<div class="co-sub">${esc(e.obs)}</div>`:''}${e.amb?'<div class="co-sub co-amb">nome com mais de um CNPJ na Receita: confira</div>':''}</td><td style="white-space:nowrap">${e.c?esc(fmtC(e.c)):'<span class="co-sub">não localizado</span>'}${e.sit&&e.sit!=='ATIVA'?`<div class="co-sub">${esc(e.sit.toLowerCase())}</div>`:''}</td><td>${e.mun?esc(munN(e.mun))+'/'+esc(e.uf):''}</td><td>${esc(e.cat)}</td><td>${esc(e.op)}<div class="co-sub">${esc(e.org)} · ${e.ano}</div></td><td>${so.slice(0,4).map(s=>`${esc(tit(s[1]))} <span class="co-sub">(${esc(String(s[2]||'').toLowerCase())})</span>`).join('<br>')}${so.length>4?`<div class="co-sub">+${so.length-4}</div>`:''}</td><td><a href="${esc(e.fonte)}" target="_blank" rel="noopener">fonte ${EXT}</a></td><td class="co-ac">${e.c?`<button type="button" class="op-filter" data-rede="${e.c}" data-nome="${esc(nomeE(e))}">Rede</button><button type="button" class="op-filter" data-ficha="${e.c}">Ficha</button>`:''}</td></tr>`; }).join('');
+      $('coe-tb').innerHTML=L.slice(pag*PS,pag*PS+PS).map(e=>{ const so=(SOC[e.c]||[]); return `<tr><td><b class="nm-link emp-link" data-tipo="empresa" data-nome="${esc(nomeE(e))}" data-cnpj="${esc(e.c||'')}" tabindex="0" role="button" title="Abrir o cartão da empresa">${esc(nomeE(e))}</b>${e.r&&chave(e.r)!==chave(e.nome)?`<div class="co-sub">na lista: ${esc(e.nome)}</div>`:''}${e.atua&&e.atua.length?`<div class="co-sub"><b>Atuação citada:</b> ${esc(e.atua.join(', '))}</div>`:''}${despTxt(e)}${e.obs?`<div class="co-sub">${esc(e.obs)}</div>`:''}${e.amb?'<div class="co-sub co-amb">nome com mais de um CNPJ na Receita: confira</div>':''}</td><td style="white-space:nowrap">${e.c?esc(fmtC(e.c)):'<span class="co-sub">não localizado</span>'}${e.sit&&e.sit!=='ATIVA'?`<div class="co-sub">${esc(e.sit.toLowerCase())}</div>`:''}</td><td>${e.mun?esc(munN(e.mun))+'/'+esc(e.uf):''}</td><td>${esc(e.cat)}</td><td>${esc(e.op)}<div class="co-sub">${esc(e.org)} · ${e.ano}</div></td><td>${so.slice(0,4).map(s=>`${esc(tit(s[1]))} <span class="co-sub">(${esc(String(s[2]||'').toLowerCase())})</span>`).join('<br>')}${so.length>4?`<div class="co-sub">+${so.length-4}</div>`:''}</td><td><a href="${esc(e.fonte)}" target="_blank" rel="noopener">fonte ${EXT}</a></td><td class="co-ac">${e.c?`<button type="button" class="op-filter" data-rede="${e.c}" data-nome="${esc(nomeE(e))}">Rede</button><button type="button" class="op-filter" data-ficha="${e.c}">Ficha</button>`:''}</td></tr>`; }).join('');
       const np=Math.ceil(L.length/PS); $('coe-pg').innerHTML=np>1?Array.from({length:np},(_,i)=>`<button type="button" data-p="${i}" class="${i===pag?'on':''}">${i+1}</button>`).join(''):''; }
     let tm; $('coe-q').addEventListener('input',()=>{ clearTimeout(tm); tm=setTimeout(()=>{ pag=0; r(); },150); });
     ['coe-op','coe-cat','coe-uf'].forEach(id=>$(id).addEventListener('change',()=>{ pag=0; r(); }));
