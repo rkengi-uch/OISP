@@ -60,6 +60,10 @@ def montar_data():
         if x['data_coleta']: o['coleta'] = x['data_coleta']
         if x['validado_em']: o['validado'] = x['validado_em']
         if x['historico'] is not None: o['hist'] = x['historico']
+        # cargo atual (o campo `cargo` é o cargo À ÉPOCA do fato)
+        if x.get('cargo_atual'):
+            o['catual'] = x['cargo_atual']; o['catobs'] = x.get('cargo_atual_obs') or ''
+            o['catf'] = x.get('cargo_atual_fonte') or ''; o['catd'] = x.get('cargo_atual_verificado_em') or ''
         R.append(o)
     D['R'] = R
     CIT = []
