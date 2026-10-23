@@ -29,6 +29,7 @@ Use consultas curtas (3 a 6 palavras), sempre com "SP" ou "São Paulo" e, quando
 - `fraude licitação prefeitura SP`
 - `rachadinha Câmara SP`
 - `assédio eleitoral prefeitura SP` · `assédio eleitoral organização social SP` · `MPT assédio eleitoral SP` · `MPT recomendação assédio eleitoral` (regra de 21/10/2026)
+- `Corregedoria PM apura abordagem SP` · `Ouvidoria da Polícia pede afastamento PMs` · `IPM policiais militares denúncia abuso` · `flagrante forjado PMs SP` · `MPSP controle externo atividade policial` (regra de 23/10/2026: abuso de autoridade e quebra de integridade policial)
 - `coação eleitoral servidores prefeitura SP` · `uso da máquina pública eleição prefeito SP` · `conduta vedada prefeito SP TRE` · `abuso de poder político prefeito SP AIJE`
 
 ## 3. Crime organizado no setor público
